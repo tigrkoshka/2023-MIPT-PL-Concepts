@@ -3,6 +3,8 @@ project(Assembler)
 
 set(CMAKE_CXX_STANDARD 20)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+
 include_directories(/usr/local/opt/gcc@12/include/c++/12)
 
-add_executable(Assembler main.cpp executor.cpp executor.hpp specs.hpp utils.hpp)
+add_executable(Assembler main.cpp executor.cpp specs.cpp utils.cpp)

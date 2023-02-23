@@ -1,20 +1,19 @@
 #pragma once
 
+#include <cstdint>
 #include <unordered_map>
 
-namespace karma {
-namespace detail {
-namespace utils {
+namespace karma::detail::utils {
 
 template <typename K, typename V>
 using Map = std::unordered_map<K, V>;
 
 template <typename K, typename V>
-Map<V, K> RevertMap(const Map<K, V>& m) {
+Map<V, K> RevertMap(const Map<K, V>& map) {
     Map<V, K> reverted;
-    reverted.reserve(m.size());
+    reverted.reserve(map.size());
 
-    for (const auto& [k, v] : m) {
+    for (const auto& [k, v] : map) {
         reverted[v] = k;
     }
 
@@ -24,17 +23,6 @@ Map<V, K> RevertMap(const Map<K, V>& m) {
 // GetSignedValue expects bit_size to be no more than 31
 // and the signed value to be in the two's complement representation (see:
 // https://en.m.wikipedia.org/wiki/Signed_number_representations#Two.27s_complement)
-int32_t GetSignedInt(uint32_t ui, uint32_t bit_size) {
-    uint32_t sign_bit = 1u << (bit_size - 1);
+int32_t GetSignedInt(uint32_t value, uint32_t bit_size);
 
-    if ((ui & sign_bit) > 0) {
-        uint32_t modulo = (1u << bit_size) - 1 - ui;
-        return -static_cast<int32_t>(modulo);
-    }
-
-    return static_cast<int32_t>(ui);
-}
-
-}  // namespace utils
-}  // namespace detail
-}  // namespace karma
+}  // namespace karma::detail::utils

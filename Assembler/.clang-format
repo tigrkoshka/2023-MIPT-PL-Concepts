@@ -3,12 +3,14 @@ BasedOnStyle: Google
 Language: Cpp
 UseTab: Never
 IndentWidth: 4
+AllowAllArgumentsOnNextLine: false
 AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: Consecutive
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLambdasOnASingleLine: Empty
 BinPackArguments: false
+BinPackParameters: false
 DerivePointerAlignment: false
 PackConstructorInitializers: Never
 PointerAlignment: Left
