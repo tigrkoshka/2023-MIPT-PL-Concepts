@@ -1,0 +1,42 @@
+\section{\St{Karma} executable file}
+
+To run a program on a \St{Karma} computer one needs to generate an executable file which contains meta-information about the machine code and the code itself.
+The executable file is stored in a remote storage (e.g.\ a hard drive or an SSD) as a byte sequence.
+The header of the executable file takes up exactly 512 bytes.
+The format of the executable file is described in \hyperlink{flags:bits}{Table 5}.
+
+\hypertarget{executable:format}{}
+{
+    \renewcommand{\arraystretch}{1.4}
+    \begin{table}[h!]
+        \centering
+        \caption{\St{Karma} executable file format}
+        \vspace{2mm}
+        \begin{tabular}{| c | c |}
+            \hline
+            Bytes  & Contents                            \\
+            \hline
+            0..15  & \St{ASCII} string ``ThisIsKarmaExec'' \\
+            16..19 & Program code size                     \\
+            20..23 & Program constants size                \\
+            24..27 & Program data size                     \\
+            28..31 & Address of the first instruction      \\
+            32..35 & Initial stack pointer value           \\
+            36..39 & ID of the target processor            \\
+            512..  & Code segment                          \\
+            & Constants segment                   \\
+            & Data segment                        \\
+            \hline
+        \end{tabular}
+    \end{table}
+}
+
+Notes:
+
+\begin{itemize}
+    \item The \St{ASCII} string at the beginning of the executable file contains 15 explicit characters and an implicit `\textbackslash 0' at the end
+    \item The code, constants and data segments sizes are written in bytes
+    \item The code, constants and data segments are loaded into the virtual \St{Karma} computer starting from the first memory cell
+    \item The execution of the program starts from the instruction the address of which is specified in the executable file header
+    \item The header also specifies the initial stack head address
+\end{itemize}

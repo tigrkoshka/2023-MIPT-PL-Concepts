@@ -1,0 +1,55 @@
+\documentclass{article}
+
+\usepackage{titlesec}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{parskip}
+\usepackage{array}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+
+\hypersetup{colorlinks=true, linkcolor=magenta}
+
+\newcommand{\St}[1]{{\fontfamily{qcr}\selectfont #1}}
+\newcommand{\Ss}[1]{{\fontfamily{cmss}\selectfont #1}}
+
+
+\title{\St{Karma} Computer}
+\author{Tigran Koshkelian}
+\date{ }
+
+%--------------------Make all page a usable space
+\titlespacing*{\section}{0pt}{0pt}{0pt}
+\titlespacing*{\subsection}{0pt}{0pt}{0pt}
+\setlength{\oddsidemargin}{0.2in}
+\setlength{\evensidemargin}{0.2in}
+\setlength{\topmargin}{-.4in}
+\setlength{\headsep}{-.5in}
+\setlength{\textwidth}{6.5in}
+\setlength{\textheight}{10.2in}
+%--------------------
+
+\begin{document}
+
+    \maketitle
+
+    {
+        \hypersetup{hidelinks}
+        \tableofcontents
+    }
+
+    \newpage
+
+    \input{architecture}
+    \newpage
+
+    \input{processor}
+    \newpage
+
+    \input{executable}
+    \newpage
+
+    \input{samples}
+    \newpage
+
+\end{document}

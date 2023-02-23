@@ -1,0 +1,76 @@
+\section{Architecture}
+
+\St{Karma} is a computer with a Von Neumann architecture with an address space of $2^{20}$ words, each of which takes up 32 bits.
+
+Each command takes up \textit{exactly one} word, 8 high bits of which specify the operation code and the use of the rest 24 bits is command-specific.
+
+The processor has 16 one-word (32 bits each) registers \St{r0}-\St{r15}, as well as an additional \St{flags} register (also one-word).
+Their usage is described in \hyperlink{registers}{Table 1}.
+
+\hypertarget{registers}{}
+{
+    \renewcommand{\arraystretch}{1.4}
+    \begin{table}[h!]
+        \centering
+        \caption{Usage of \St{Karma} processor registers}
+        \vspace{2mm}
+        \begin{tabular}{| c | c |}
+            \hline
+            \St{r0}-\St{r12} & Free usage                  \\
+            \St{r13}         & Call frame pointer          \\
+            \St{r14}         & Stack pointer               \\
+            \St{r15}         & Instruction pointer         \\
+            \St{flags}       & Comparison operation result \\
+            \hline
+        \end{tabular}
+    \end{table}
+}
+
+With respect to the operation code each command may be of one of the following formats:
+
+\begin{itemize}
+    \item \Ss{RM} (register-memory):
+
+    \begin{itemize}
+        \item 8 bits of operation code
+        \item 4 bits of register number (either source or receiver)
+        \item 20 bits of memory address (an unsigned number from $0$ to $2^{20} - 1$)
+    \end{itemize}
+
+    Example: \St{load r0, 12323}
+
+    \item \Ss{RR} (register-register):
+
+    \begin{itemize}
+        \item 8 bits of operation code
+        \item 4 bits of receiver register number
+        \item 4 bits of source register number
+        \item 16 bits of source modifier aka immediate operand (a signed number from $-2^{15}$ to $2^{15}-1$)
+    \end{itemize}
+
+    Example: \St{mov r1, r2, -123}
+
+    \item \Ss{RI} (register-immediate value):
+
+    \begin{itemize}
+        \item 8 bits of operation code
+        \item 4 bits of receiver register number
+        \item 20 bits of immediate operand (a signed number from $-2^{19}$ to $2^{19}-1$)
+    \end{itemize}
+
+    Example: \St{ori r2, 64}
+
+    \item \Ss{J} (jump):
+
+    \begin{itemize}
+        \item 8 bits of operation code
+        \item 4 bits ignored
+        \item 20 bits of memory address (an unsigned number from $0$ to $2^{20} - 1$)
+    \end{itemize}
+
+    Example: \St{calli 3121}
+
+\end{itemize}
+
+For the sake of not overcomplicating matters all arguments of any command are required.
+If one does not need the source modifier in a command of the \Ss{RR} format, the immediate operand should be specified as 0.
