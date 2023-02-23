@@ -1,0 +1,16 @@
+BasedOnStyle: Google
+---
+Language: Cpp
+UseTab: Never
+IndentWidth: 4
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments: Consecutive
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLambdasOnASingleLine: Empty
+BinPackArguments: false
+DerivePointerAlignment: false
+PackConstructorInitializers: Never
+PointerAlignment: Left
+SortIncludes: CaseSensitive
+InsertTrailingCommas: Wrapped
