@@ -1,9 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <cstdint>
-#include <limits>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -13,51 +10,49 @@ namespace karma {
 
 class Executor {
    private:
+    using Word          = detail::specs::Word;
+    using TwoWords      = detail::specs::TwoWords;
+    using Double        = detail::specs::Double;
     using CommandCode   = detail::specs::CommandCode;
     using CommandFormat = detail::specs::CommandFormat;
     using SyscallCode   = detail::specs::SyscallCode;
     using Flag          = detail::specs::Flag;
-    using Word          = detail::specs::Word;
+    using CommandBin    = detail::specs::CommandBin;
+    using Register      = detail::specs::Register;
+    using Receiver      = detail::specs::Receiver;
+    using Source        = detail::specs::Source;
+    using Address       = detail::specs::Address;
+    using Modifier      = detail::specs::Modifier;
+    using Immediate     = detail::specs::Immediate;
 
-    // TODO: maybe rethink (detail::specs has a enum)
-    using Register = uint32_t;
-    using Address  = detail::specs::Address;
-
-   private:
+   public:
     struct Error;
     struct InternalError;
     struct ExecutionError;
     struct ExecFileError;
 
    private:
-    static double ToDbl(uint64_t ull);
-    static uint64_t ToUll(double dbl);
+    static Double ToDbl(TwoWords);
+    static TwoWords ToUll(Double);
 
-    [[nodiscard]] uint64_t GetTwoRegisters(Register lower) const;
-    void PutTwoRegisters(uint64_t value, Register lower);
+    [[nodiscard]] TwoWords GetTwoRegisters(Source) const;
+    void PutTwoRegisters(TwoWords, Receiver);
 
     template <std::totally_ordered T>
-    void WriteComparisonToFlags(T lhs, T rhs);
-    void Jump(Flag flag, Address dst);
+    void WriteComparisonToFlags(T, T);
+    void Jump(Flag, Address);
 
-    void Divide(uint64_t lhs, uint64_t rhs, Register recv);
-    bool Syscall(Register reg, SyscallCode code);
-    void Push(Word value);
-    void Pop(Register recv, Word modifier);
-    Word Call(Address callee);
+    void Divide(TwoWords, TwoWords, Receiver);
+    bool Syscall(Register, SyscallCode);
+    void Push(Word);
+    void Pop(Receiver, Modifier);
+    Address Call(Address);
 
-    bool ExecuteRMCommand(CommandCode command_code,
-                          Register reg,
-                          Address address);
-    bool ExecuteRRCommand(CommandCode command_code,
-                          Register recv,
-                          Register src,
-                          int32_t modifier);
-    bool ExecuteRICommand(CommandCode command_code,
-                          Register reg,
-                          int32_t immediate);
-    bool ExecuteJCommand(CommandCode command_code, Word immediate);
-    bool ExecuteCommand(Word command);
+    bool ExecuteRMCommand(CommandCode, Register, Address);
+    bool ExecuteRRCommand(CommandCode, Receiver, Source, Modifier);
+    bool ExecuteRICommand(CommandCode, Register, Immediate);
+    bool ExecuteJCommand(CommandCode, Address);
+    bool ExecuteCommand(CommandBin);
 
     void ExecuteImpl(const std::string& exec_path);
 
@@ -65,10 +60,6 @@ class Executor {
     void Execute(const std::string& exec_path);
 
    private:
-    static const Word kMaxWord         = std::numeric_limits<Word>::max();
-    static const uint64_t kMaxTwoWords = std::numeric_limits<uint64_t>::max();
-    static const uint8_t kMaxChar      = std::numeric_limits<char8_t>::max();
-
     std::vector<Word> memory_{detail::specs::kMemorySize};
     std::vector<Word> registers_{detail::specs::kNRegisters};
     Word flags_{0};

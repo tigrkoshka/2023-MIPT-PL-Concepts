@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <unordered_map>
 
@@ -11,14 +12,19 @@ namespace karma::detail::specs {
 // TODO: divide this namespace
 
 // TODO: maybe remove typedefs from here (semantically incorrect)
+
 ////////////////////////////////////////////////////////////////////////////////
-///                                 Typedefs                                 ///
+///                        Architecture-defined typedefs                     ///
 ////////////////////////////////////////////////////////////////////////////////
 
-using Word    = uint32_t;
-using Address = uint32_t;
+using Word     = uint32_t;
+using TwoWords = uint64_t;
+using Double   = double;  // TODO: std::float64_t in C++23 (supported by GCC@13)
+using Char     = unsigned char;
 
-const uint32_t kWordSize = sizeof(Word);
+const size_t kWordSize     = sizeof(Word);
+const Word kMaxWord        = std::numeric_limits<Word>::max();
+static const Char kMaxChar = std::numeric_limits<Char>::max();
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                  Syntax                                  ///
@@ -28,10 +34,44 @@ static const char8_t kCommentSep = ';';
 static const char8_t kLabelEnd   = ':';
 
 ////////////////////////////////////////////////////////////////////////////////
+///                           Registers and memory                           ///
+////////////////////////////////////////////////////////////////////////////////
+
+using Register = Word;
+
+enum RegisterEnum : Register {
+    R0  = 0,
+    R1  = 1,
+    R2  = 2,
+    R3  = 3,
+    R4  = 4,
+    R5  = 5,
+    R6  = 6,
+    R7  = 7,
+    R8  = 8,
+    R9  = 9,
+    R10 = 10,
+    R11 = 11,
+    R12 = 12,
+    R13 = 13,
+    R14 = 14,
+    R15 = 15,
+};
+
+static const Register kCallFrameRegister   = R13;
+static const Register kStackRegister       = R14;
+static const Register kInstructionRegister = R15;
+
+extern const std::unordered_map<std::string, Register> kRegisterToNum;
+
+static const size_t kNRegisters = 16ull;
+static const size_t kMemorySize = 1ull << 20ull;
+
+////////////////////////////////////////////////////////////////////////////////
 ///                                 Commands                                 ///
 ////////////////////////////////////////////////////////////////////////////////
 
-enum CommandCode : uint32_t {
+enum CommandCode : Word {
     HALT    = 0,
     SYSCALL = 1,
     ADD     = 2,
@@ -86,14 +126,14 @@ enum CommandCode : uint32_t {
     STORER2 = 71,
 };
 
-enum CommandFormat : uint32_t {
+enum CommandFormat : Word {
     RM = 0,
     RR = 1,
     RI = 2,
     J  = 3,
 };
 
-enum SyscallCode : uint32_t {
+enum SyscallCode : Word {
     EXIT        = 0,
     SCANINT     = 100,
     SCANDOUBLE  = 101,
@@ -110,36 +150,16 @@ extern const std::unordered_map<std::string, CommandCode> kCommandToCode;
 extern const std::unordered_map<CommandCode, std::string> kCodeToCommand;
 
 ////////////////////////////////////////////////////////////////////////////////
-///                           Registers and memory                           ///
+///                          Command format typedefs                         ///
 ////////////////////////////////////////////////////////////////////////////////
 
-enum Register : uint32_t {
-    R0  = 0,
-    R1  = 1,
-    R2  = 2,
-    R3  = 3,
-    R4  = 4,
-    R5  = 5,
-    R6  = 6,
-    R7  = 7,
-    R8  = 8,
-    R9  = 9,
-    R10 = 10,
-    R11 = 11,
-    R12 = 12,
-    R13 = 13,
-    R14 = 14,
-    R15 = 15,
-};
+using CommandBin = Word;
 
-static const Register kCallFrameRegister   = R13;
-static const Register kStackRegister       = R14;
-static const Register kInstructionRegister = R15;
-
-extern const std::unordered_map<std::string, Register> kRegisterToNum;
-
-static const size_t kNRegisters   = 16ull;
-static const size_t kMemorySize   = 1ull << 20ull;
+using Receiver  = Register;
+using Source    = Register;
+using Address   = Word;
+using Modifier  = Word;
+using Immediate = Word;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Flags                                  ///
@@ -164,15 +184,15 @@ static const Word kLess    = NOT_EQUAL + LESS + LESS_OR_EQUAL;
 
 namespace cmd {
 
-const uint32_t kCodeShift    = 24u;
-const uint32_t kRegisterMask = 0xfu;
-const uint32_t kRecvShift    = 20u;
-const uint32_t kSrcShift     = 16u;
-const uint32_t kAddressMask  = 0xfffffu;
-const uint32_t kModSize      = 16u;
-const uint32_t kModMask      = 0xffffu;
-const uint32_t kImmSize      = 20u;
-const uint32_t kImmMask      = 0xfffffu;
+const Word kCodeShift    = 24u;
+const Word kRegisterMask = 0xfu;
+const Word kRecvShift    = 20u;
+const Word kSrcShift     = 16u;
+const Word kAddressMask  = 0xfffffu;
+const Word kModSize      = 16u;
+const Word kModMask      = 0xffffu;
+const Word kImmSize      = 20u;
+const Word kImmMask      = 0xfffffu;
 
 }  // namespace cmd
 

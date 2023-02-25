@@ -31,37 +31,4 @@ std::unordered_map<V, K> RevertMap(const std::unordered_map<K, V>& map) {
     return reverted;
 }
 
-/**
- * @return
- * The low bit_size bits of value interpreted as a signed integer
- *
- * @param
- * value must be in the two's complement representation
- * (see <a href=https://shorturl.at/gkmtC>Wikipedia</a> for explanation)
- *
- * @param
- * bit_size must be in (0, 8 * sizeof(value)]
- */
-template <std::unsigned_integral Uint>
-std::make_signed_t<Uint> GetSigned(Uint value, uint32_t bit_size) {
-    using Int = std::make_signed_t<Uint>;
-
-    if (bit_size == sizeof value) {
-        return *reinterpret_cast<Int*>(&value);
-    }
-
-    // clear high bits
-    uint32_t shift = sizeof value - bit_size;
-    value          = value << shift >> shift;
-
-    Uint sign_bit = 1u << (bit_size - 1);
-
-    if ((value & sign_bit) > 0) {
-        Uint modulo = (1u << bit_size) - 1 - value;
-        return -static_cast<Int>(modulo);
-    }
-
-    return static_cast<Int>(value);
-}
-
 }  // namespace karma::detail::util

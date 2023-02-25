@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <concepts>
-#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <ios>
@@ -12,8 +11,6 @@
 #include <type_traits>
 
 namespace karma {
-
-namespace util = detail::util;
 
 using namespace detail::specs;  // NOLINT(google-build-using-namespace)
 
@@ -91,16 +88,7 @@ struct Executor::ExecutionError : Error {
     }
 
     template <typename T>
-        requires std::is_same_v<T, Word> || std::is_same_v<T, uint64_t>
-    static ExecutionError ImmediateAdditionOverflow(T src_val, T immediate) {
-        std::ostringstream ss;
-        ss << "a word overflow occurred when adding the immediate operand "
-           << immediate << " to the source value " << src_val;
-        return ExecutionError{ss.str()};
-    }
-
-    template <typename T>
-        requires std::is_same_v<T, uint64_t> || std::is_same_v<T, double>
+        requires std::is_same_v<T, TwoWords> || std::is_same_v<T, Double>
     static ExecutionError DivisionByZero(T dividend, T divisor) {
         std::ostringstream ss;
         ss << "a division by zero occurred when dividing " << dividend << " by "
@@ -108,22 +96,22 @@ struct Executor::ExecutionError : Error {
         return ExecutionError{ss.str()};
     }
 
-    static ExecutionError QuotientOverflow(uint64_t dividend,
-                                           uint64_t divisor) {
+    static ExecutionError QuotientOverflow(TwoWords dividend,
+                                           TwoWords divisor) {
         std::ostringstream ss;
         ss << "a quotient overflow occurred when dividing " << dividend
            << " by " << divisor;
         return ExecutionError{ss.str()};
     }
 
-    static ExecutionError DtoiOverflow(double value) {
+    static ExecutionError DtoiOverflow(Double value) {
         std::ostringstream ss;
         ss << "a word overflow occurred when casting " << value
            << " to integer";
         return ExecutionError{ss.str()};
     }
 
-    static ExecutionError InvalidPutCharValue(Word value) {
+    static ExecutionError InvalidPutCharValue(Immediate value) {
         std::ostringstream ss;
         ss << "the value in the register for the PUTCHAR syscall is " << value
            << ", which is an invalid char, because it is greater than 255";
@@ -157,7 +145,7 @@ struct Executor::ExecFileError : Error {
         return ExecFileError{ss.str()};
     }
 
-    static ExecFileError TooSmallForHeader(std::streamsize size) {
+    static ExecFileError TooSmallForHeader(size_t size) {
         std::ostringstream ss;
         ss << "exec size is " << size << ", which is less than "
            << exec::kHeaderSize << " bytes required for the header";
@@ -172,10 +160,10 @@ struct Executor::ExecFileError : Error {
         return ExecFileError{ss.str()};
     }
 
-    static ExecFileError InvalidExecSize(std::streamsize exec_size,
-                                         uint32_t code_size,
-                                         uint32_t consts_size,
-                                         uint32_t data_size) {
+    static ExecFileError InvalidExecSize(size_t exec_size,
+                                         size_t code_size,
+                                         size_t consts_size,
+                                         size_t data_size) {
         std::ostringstream ss;
         ss << "the exec file size (" << exec_size << ") does not equal "
            << exec::kHeaderSize + code_size + consts_size + data_size
@@ -192,20 +180,20 @@ struct Executor::ExecFileError : Error {
 ///                                   Utils                                  ///
 ////////////////////////////////////////////////////////////////////////////////
 
-double Executor::ToDbl(uint64_t ull) {
-    return *reinterpret_cast<double*>(&ull);
+Double Executor::ToDbl(TwoWords ull) {
+    return *reinterpret_cast<Double*>(&ull);
 }
 
-uint64_t Executor::ToUll(double dbl) {
-    return *reinterpret_cast<uint64_t*>(&dbl);
+TwoWords Executor::ToUll(Double dbl) {
+    return *reinterpret_cast<TwoWords*>(&dbl);
 }
 
-uint64_t Executor::GetTwoRegisters(Register lower) const {
-    return (static_cast<uint64_t>(registers_[lower + 1]) << kWordSize) +
-           static_cast<uint64_t>(registers_[lower]);
+TwoWords Executor::GetTwoRegisters(Source lower) const {
+    return (static_cast<TwoWords>(registers_[lower + 1]) << kWordSize) +
+           static_cast<TwoWords>(registers_[lower]);
 }
 
-void Executor::PutTwoRegisters(uint64_t value, Register lower) {
+void Executor::PutTwoRegisters(TwoWords value, Receiver lower) {
     registers_[lower]     = static_cast<Word>(value);
     registers_[lower + 1] = static_cast<Word>(value >> kWordSize);
 }
@@ -236,18 +224,18 @@ void Executor::Jump(Flag flag, Address dst) {
 ///                             Separate commands                            ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Executor::Divide(uint64_t lhs, uint64_t rhs, Register recv) {
+void Executor::Divide(TwoWords lhs, TwoWords rhs, Receiver recv) {
     if (rhs == 0) {
         throw ExecutionError::DivisionByZero(lhs, rhs);
     }
 
-    uint64_t quotient = lhs / rhs;
+    TwoWords quotient = lhs / rhs;
 
-    if (quotient > static_cast<uint64_t>(kMaxWord)) {
+    if (quotient > static_cast<TwoWords>(kMaxWord)) {
         throw ExecutionError::QuotientOverflow(lhs, rhs);
     }
 
-    uint64_t remainder = lhs % rhs;
+    TwoWords remainder = lhs % rhs;
 
     registers_[recv]     = static_cast<Word>(quotient);
     registers_[recv + 1] = static_cast<Word>(remainder);
@@ -260,12 +248,15 @@ bool Executor::Syscall(Register reg, SyscallCode code) {
         }
 
         case SCANINT: {
-            std::cin >> registers_[reg];
+            std::make_signed_t<Word> val{};
+            std::cin >> val;
+
+            registers_[reg] = static_cast<Word>(val);
             break;
         }
 
         case SCANDOUBLE: {
-            double val{};
+            Double val{};
             std::cin >> val;
 
             PutTwoRegisters(ToUll(val), reg);
@@ -273,7 +264,7 @@ bool Executor::Syscall(Register reg, SyscallCode code) {
         }
 
         case PRINTINT: {
-            std::cout << util::GetSigned(registers_[reg], kWordSize);
+            std::cout << static_cast<std::make_signed_t<Word>>(registers_[reg]);
             break;
         }
 
@@ -283,7 +274,7 @@ bool Executor::Syscall(Register reg, SyscallCode code) {
         }
 
         case GETCHAR: {
-            unsigned char val{};
+            Char val{};
             std::cin >> val;
 
             registers_[reg] = static_cast<Word>(val);
@@ -295,7 +286,7 @@ bool Executor::Syscall(Register reg, SyscallCode code) {
                 throw ExecutionError::InvalidPutCharValue(registers_[reg]);
             }
 
-            std::cout << static_cast<unsigned char>(registers_[reg]);
+            std::cout << static_cast<Char>(registers_[reg]);
             break;
         }
 
@@ -311,12 +302,12 @@ void Executor::Push(Word value) {
     memory_[registers_[kStackRegister]--] = value;
 }
 
-void Executor::Pop(Register recv, Word modifier) {
-    registers_[recv] = memory_[++registers_[kStackRegister]] + modifier;
+void Executor::Pop(Receiver recv, Modifier mod) {
+    registers_[recv] = memory_[++registers_[kStackRegister]] + mod;
 }
 
-Executor::Word Executor::Call(Address callee) {
-    Word ret = registers_[kInstructionRegister];
+Executor::Address Executor::Call(Address callee) {
+    Address ret = registers_[kInstructionRegister];
 
     Push(registers_[kInstructionRegister]);
     registers_[kInstructionRegister] = callee;
@@ -328,131 +319,116 @@ Executor::Word Executor::Call(Address callee) {
 ///                              Execute command                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-bool Executor::ExecuteRMCommand(CommandCode command_code,
-                                Register reg,
-                                Address address) {
-    switch (command_code) {
+bool Executor::ExecuteRMCommand(CommandCode code, Register reg, Address addr) {
+    switch (code) {
         case LOAD: {
-            registers_[reg] = memory_[address];
+            registers_[reg] = memory_[addr];
             break;
         }
 
         case STORE: {
-            memory_[address] = registers_[reg];
+            memory_[addr] = registers_[reg];
             break;
         }
 
         case LOAD2: {
-            registers_[reg]     = memory_[address];
-            registers_[reg + 1] = memory_[address + 1];
+            registers_[reg]     = memory_[addr];
+            registers_[reg + 1] = memory_[addr + 1];
             break;
         }
 
         case STORE2: {
-            memory_[address]     = registers_[reg];
-            memory_[address + 1] = registers_[reg + 1];
+            memory_[addr]     = registers_[reg];
+            memory_[addr + 1] = registers_[reg + 1];
             break;
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(RM, command_code);
+            throw InternalError::UnknownCommandForFormat(RM, code);
         }
     }
 
     return true;
 }
 
-bool Executor::ExecuteRRCommand(CommandCode command_code,
-                                Register recv,
-                                Register src,
-                                int32_t modifier) {
-    auto lhs_32 = [this, recv]() -> Word {
+bool Executor::ExecuteRRCommand(CommandCode code,
+                                Receiver recv,
+                                Source src,
+                                Modifier mod) {
+    auto lhs_word = [this, recv]() -> Word {
         return registers_[recv];
     };
 
-    auto lhs_64 = [this, recv]() -> uint64_t {
+    auto lhs_two_words = [this, recv]() -> TwoWords {
         return GetTwoRegisters(recv);
     };
 
-    auto lhs_dbl = [&lhs_64]() -> double {
-        return ToDbl(lhs_64());
+    auto lhs_dbl = [&lhs_two_words]() -> Double {
+        return ToDbl(lhs_two_words());
     };
 
-    auto rhs_32 = [this, src, modifier]() -> Word {
-        Word val = registers_[src];
-
-        if (val > kMaxWord - modifier) {
-            throw ExecutionError::ImmediateAdditionOverflow(val, modifier);
-        }
-
-        return val + modifier;
+    auto rhs_word = [this, src, mod]() -> Word {
+        return registers_[src] + mod;
     };
 
-    auto rhs_64 = [this, src, modifier]() -> uint64_t {
-        uint64_t val    = GetTwoRegisters(src);
-        auto modifier64 = static_cast<uint64_t>(modifier);
-
-        if (val > kMaxTwoWords - modifier64) {
-            throw ExecutionError::ImmediateAdditionOverflow(val, modifier64);
-        }
-
-        return val + modifier64;
+    auto rhs_two_words = [this, src, mod]() -> TwoWords {
+        return GetTwoRegisters(src) + static_cast<TwoWords>(mod);
     };
 
-    auto rhs_dbl = [&rhs_64]() -> double {
-        return ToDbl(rhs_64());
+    auto rhs_dbl = [&rhs_two_words]() -> Double {
+        return ToDbl(rhs_two_words());
     };
 
-    switch (command_code) {
+    switch (code) {
         case ADD: {
-            registers_[recv] += rhs_32();
+            registers_[recv] += rhs_word();
             break;
         }
 
         case SUB: {
-            registers_[recv] -= rhs_32();
+            registers_[recv] -= rhs_word();
             break;
         }
 
         case MUL: {
-            uint64_t res = static_cast<uint64_t>(lhs_32()) *
-                           static_cast<uint64_t>(rhs_32());
+            TwoWords res = static_cast<TwoWords>(lhs_word()) *
+                           static_cast<TwoWords>(rhs_word());
             PutTwoRegisters(res, recv);
             break;
         }
 
         case DIV: {
-            Divide(lhs_64(), static_cast<uint64_t>(rhs_32()), recv);
+            Divide(lhs_two_words(), static_cast<TwoWords>(rhs_word()), recv);
             break;
         }
 
         case SHL: {
-            registers_[recv] <<= rhs_32();
+            registers_[recv] <<= rhs_word();
             break;
         }
 
         case SHR: {
-            registers_[recv] >>= rhs_32();
+            registers_[recv] >>= rhs_word();
             break;
         }
 
         case AND: {
-            registers_[recv] &= rhs_32();
+            registers_[recv] &= rhs_word();
             break;
         }
 
         case OR: {
-            registers_[recv] |= rhs_32();
+            registers_[recv] |= rhs_word();
             break;
         }
 
         case XOR: {
-            registers_[recv] ^= rhs_32();
+            registers_[recv] ^= rhs_word();
             break;
         }
 
         case MOV: {
-            registers_[recv] = rhs_32();
+            registers_[recv] = rhs_word();
             break;
         }
 
@@ -472,8 +448,8 @@ bool Executor::ExecuteRRCommand(CommandCode command_code,
         }
 
         case DIVD: {
-            double lhs = lhs_dbl();
-            double rhs = rhs_dbl();
+            Double lhs = lhs_dbl();
+            Double rhs = rhs_dbl();
 
             if (rhs == 0) {
                 throw ExecutionError::DivisionByZero(lhs, rhs);
@@ -484,15 +460,15 @@ bool Executor::ExecuteRRCommand(CommandCode command_code,
         }
 
         case ITOD: {
-            PutTwoRegisters(ToUll(static_cast<double>(rhs_32())), recv);
+            PutTwoRegisters(ToUll(static_cast<Double>(rhs_word())), recv);
             break;
         }
 
         case DTOI: {
-            double dbl = rhs_dbl();
-            auto res   = static_cast<uint64_t>(floor(dbl));
+            Double dbl = rhs_dbl();
+            auto res  = static_cast<TwoWords>(floor(dbl));
 
-            if (res >= static_cast<uint64_t>(kMaxWord)) {
+            if (res >= static_cast<TwoWords>(kMaxWord)) {
                 throw ExecutionError::DtoiOverflow(dbl);
             }
 
@@ -501,12 +477,12 @@ bool Executor::ExecuteRRCommand(CommandCode command_code,
         }
 
         case CALL: {
-            registers_[recv] = Call(rhs_32());
+            registers_[recv] = Call(rhs_word());
             break;
         }
 
         case CMP: {
-            WriteComparisonToFlags(lhs_32(), rhs_32());
+            WriteComparisonToFlags(lhs_word(), rhs_word());
             break;
         }
 
@@ -516,17 +492,17 @@ bool Executor::ExecuteRRCommand(CommandCode command_code,
         }
 
         case LOADR: {
-            registers_[recv] = memory_[rhs_32()];
+            registers_[recv] = memory_[rhs_word()];
             break;
         }
 
         case STORER: {
-            memory_[rhs_32()] = registers_[recv];
+            memory_[rhs_word()] = registers_[recv];
             break;
         }
 
         case LOADR2: {
-            Address address = rhs_32();
+            Address address = rhs_word();
 
             registers_[recv]     = memory_[address];
             registers_[recv + 1] = memory_[address + 1];
@@ -534,7 +510,7 @@ bool Executor::ExecuteRRCommand(CommandCode command_code,
         }
 
         case STORER2: {
-            Address address = rhs_32();
+            Address address = rhs_word();
 
             memory_[address]     = registers_[recv];
             memory_[address + 1] = registers_[recv + 1];
@@ -542,78 +518,76 @@ bool Executor::ExecuteRRCommand(CommandCode command_code,
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(RR, command_code);
+            throw InternalError::UnknownCommandForFormat(RR, code);
         }
     }
 
     return true;
 }
 
-bool Executor::ExecuteRICommand(CommandCode command_code,
-                                Register reg,
-                                int32_t immediate) {
-    switch (command_code) {
+bool Executor::ExecuteRICommand(CommandCode code, Register reg, Immediate imm) {
+    switch (code) {
         case HALT: {
-            registers_[reg] = immediate;
+            registers_[reg] = imm;
             return false;
         }
 
         case SYSCALL: {
-            if (!Syscall(reg, static_cast<SyscallCode>(immediate))) {
+            if (!Syscall(reg, static_cast<SyscallCode>(imm))) {
                 return false;
             }
             break;
         }
 
         case ADDI: {
-            registers_[reg] += immediate;
+            registers_[reg] += imm;
             break;
         }
 
         case SUBI: {
-            registers_[reg] -= immediate;
+            registers_[reg] -= imm;
             break;
         }
 
         case MULI: {
-            uint64_t res = static_cast<uint64_t>(registers_[reg]) * immediate;
+            auto res = static_cast<TwoWords>(registers_[reg]) * imm;
 
             PutTwoRegisters(res, reg);
             break;
         }
 
         case DIVI: {
-            Divide(GetTwoRegisters(reg), static_cast<uint64_t>(immediate), reg);
+            Divide(GetTwoRegisters(reg), static_cast<TwoWords>(imm), reg);
             break;
         }
 
         case LC: {
-            registers_[reg] = immediate;
+            registers_[reg] = imm;
             break;
         }
 
         case SHLI: {
-            registers_[reg] <<= immediate;
+            registers_[reg] <<= imm;
             break;
         }
 
         case SHRI: {
-            registers_[reg] >>= immediate;
+            registers_[reg] >>= imm;
             break;
         }
 
         case ANDI: {
-            registers_[reg] &= immediate;
+            registers_[reg] &= imm;
             break;
         }
 
         case ORI: {
-            registers_[reg] |= immediate;
+            registers_[reg] |= imm;
             break;
         }
 
         case XORI: {
-            registers_[reg] ^= immediate;
+            registers_[reg] ^= imm;
             break;
         }
 
@@ -623,30 +597,30 @@ bool Executor::ExecuteRICommand(CommandCode command_code,
         }
 
         case PUSH: {
-            Push(registers_[reg] + immediate);
+            Push(registers_[reg] + imm);
             break;
         }
 
         case POP: {
-            Pop(reg, immediate);
+            Pop(reg, imm);
             break;
         }
 
         case CMPI: {
-            WriteComparisonToFlags(registers_[reg], immediate);
+            WriteComparisonToFlags(registers_[reg], imm);
             break;
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(RI, command_code);
+            throw InternalError::UnknownCommandForFormat(RI, code);
         }
     }
 
     return true;
 }
 
-bool Executor::ExecuteJCommand(CommandCode command_code, Address addr) {
-    switch (command_code) {
+bool Executor::ExecuteJCommand(CommandCode code, Address addr) {
+    switch (code) {
         case CALLI: {
             Call(addr);
             break;
@@ -694,7 +668,7 @@ bool Executor::ExecuteJCommand(CommandCode command_code, Address addr) {
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(J, command_code);
+            throw InternalError::UnknownCommandForFormat(J, code);
         }
     }
 
@@ -704,40 +678,38 @@ bool Executor::ExecuteJCommand(CommandCode command_code, Address addr) {
 bool Executor::ExecuteCommand(Executor::Word command) {
     registers_[kInstructionRegister]++;
 
-    auto command_code = static_cast<CommandCode>(command >> cmd::kCodeShift);
-    if (!kCodeToFormat.contains(command_code)) {
-        throw ExecutionError::UnknownCommand(command_code);
+    auto code = static_cast<CommandCode>(command >> cmd::kCodeShift);
+    if (!kCodeToFormat.contains(code)) {
+        throw ExecutionError::UnknownCommand(code);
     }
 
-    switch (CommandFormat format = kCodeToFormat.at(command_code)) {
+    switch (CommandFormat format = kCodeToFormat.at(code)) {
         case RM: {
             Register reg = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
             Address addr = command & cmd::kAddressMask;
 
-            return ExecuteRMCommand(command_code, reg, addr);
+            return ExecuteRMCommand(code, reg, addr);
         }
 
         case RR: {
-            Register recv = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
-            Register src  = (command >> cmd::kSrcShift) & cmd::kRegisterMask;
-            int32_t modifier =
-                util::GetSigned(command & cmd::kModMask, cmd::kModSize);
+            Receiver recv = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
+            Source src    = (command >> cmd::kSrcShift) & cmd::kRegisterMask;
+            Modifier mod  = command & cmd::kModMask;
 
-            return ExecuteRRCommand(command_code, recv, src, modifier);
+            return ExecuteRRCommand(code, recv, src, mod);
         }
 
         case RI: {
-            Register reg = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
-            int32_t immediate =
-                util::GetSigned(command & cmd::kImmMask, cmd::kImmSize);
+            Register reg  = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
+            Immediate imm = command & cmd::kImmMask;
 
-            return ExecuteRICommand(command_code, reg, immediate);
+            return ExecuteRICommand(code, reg, imm);
         }
 
         case J: {
-            Word addr = command & cmd::kAddressMask;
+            Address addr = command & cmd::kAddressMask;
 
-            return ExecuteJCommand(command_code, addr);
+            return ExecuteJCommand(code, addr);
         }
 
         default: {
@@ -762,7 +734,7 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
     }
 
     // check that the exec size is not too small to contain a valid header
-    std::streamsize exec_size = binary.tellg();
+    auto exec_size = static_cast<size_t>(binary.tellg());
     if (exec_size < exec::kHeaderSize) {
         throw ExecFileError::TooSmallForHeader(exec_size);
     }
@@ -770,7 +742,7 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
     // reset input position indicator
     binary.seekg(0);
 
-    auto read_ui = [&binary]() -> uint32_t {
+    auto read_ui = [&binary]() -> Word {
         Word word{};
         binary.read(reinterpret_cast<char*>(&word), 4);
         return word;
@@ -787,9 +759,9 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
     }
 
     // read the code, constants and data segments sizes (in bytes)
-    uint32_t code_size   = read_ui();
-    uint32_t consts_size = read_ui();
-    uint32_t data_size   = read_ui();
+    size_t code_size   = read_ui();
+    size_t consts_size = read_ui();
+    size_t data_size   = read_ui();
 
     // check that the exec file size equals the size specified by the header
     if (exec_size != exec::kHeaderSize + code_size + consts_size + data_size) {
@@ -810,10 +782,10 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
 
     // the code_size is denoted in bytes, so we need to divide
     // it by 4 to get the number of machine words
-    uint32_t n_commands = code_size / kWordSize;
+    size_t n_commands = code_size / kWordSize;
 
     // copy the code to virtual memory
-    for (uint32_t i = 0; i < n_commands; ++i) {
+    for (size_t i = 0; i < n_commands; ++i) {
         memory_[i] = read_ui();
     }
 

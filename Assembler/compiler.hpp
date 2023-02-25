@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cctype>
 #include <iomanip>
 #include <istream>
 #include <iterator>
@@ -20,8 +21,6 @@
 
 namespace karma {
 
-namespace util = detail::util;
-
 using namespace detail::specs;
 
 class Compiler {
@@ -31,13 +30,35 @@ class Compiler {
     using Address     = detail::specs::Address;
 
    private:
-    struct InternalError : std::runtime_error {
-       private:
-        explicit InternalError(const std::string& message, size_t line)
-            : std::runtime_error("internal compiler error at line " +
-                                 std::to_string(line) + ":" + message) {}
+    struct Error : std::runtime_error {
+       protected:
+        explicit Error(const std::string& message)
+            : std::runtime_error(message) {}
 
        public:
+        Error(const Error&)            = default;
+        Error& operator=(const Error&) = default;
+        Error(Error&&)                 = default;
+        Error& operator=(Error&&)      = default;
+        ~Error() override              = default;
+    };
+
+    struct InternalError : Error {
+       private:
+        friend void Compile(std::istream&, std::ostream&);
+
+       private:
+        explicit InternalError(const std::string& message, size_t line)
+            : Error("internal compiler error at line " + std::to_string(line) +
+                    ":" + message) {}
+
+       public:
+        InternalError(const InternalError&)            = default;
+        InternalError& operator=(const InternalError&) = default;
+        InternalError(InternalError&&)                 = default;
+        InternalError& operator=(InternalError&&)      = default;
+        ~InternalError() override                      = default;
+
         static InternalError UnknownCommandCode(CommandCode command_code,
                                                 size_t line) {
             std::ostringstream ss;
@@ -53,13 +74,19 @@ class Compiler {
         }
     };
 
-    struct CompileError : std::runtime_error {
+    struct CompileError : Error {
        private:
         explicit CompileError(const std::string& message, size_t line)
-            : std::runtime_error("compile error at line " +
-                                 std::to_string(line) + ":" + message) {}
+            : Error("compile error at line " + std::to_string(line) + ":" +
+                    message) {}
 
        public:
+        CompileError(const CompileError&)            = default;
+        CompileError& operator=(const CompileError&) = default;
+        CompileError(CompileError&&)                 = default;
+        CompileError& operator=(CompileError&&)      = default;
+        ~CompileError() override                     = default;
+
         // command
 
         static CompileError UnknownCommand(const std::string& command,
@@ -242,63 +269,16 @@ class Compiler {
 
    private:
     // TODO: doc comment (include about throws)
-    static void CheckLabel(const std::string& label, size_t line) {
-        if (label.empty()) {
-            throw CompileError::EmptyLabel(line);
-        }
-
-        if (std::isdigit(label[0]) != 0) {
-            throw CompileError::LabelStartsWithDigit(label, line);
-        }
-
-        for (char symbol : label) {
-            if (std::islower(symbol) == 0 && std::isdigit(symbol) == 0) {
-                throw CompileError::InvalidLabelCharacter(symbol, label, line);
-            }
-        }
-    }
+    // TODO: maybe move to detail::spec? this __is__ a part
+    //       of the language specificstion
+    static void CheckLabel(const std::string& label, size_t line);
 
     // TODO: doc comment
     // throws on any error
     //
     // returns numeric address value if parsed,
     // else should be considered a label
-    static std::optional<Address> ParseAddress(const std::string& word,
-                                               size_t n_line) {
-        try {
-            size_t pos{};
-            int32_t operand = std::stoi(word, &pos, 0);
-
-            if (pos != word.size()) {
-                // assume the programmer meant it as a label,
-                // but a label cannot start with a digit
-                throw CompileError::LabelStartsWithDigit(word, n_line);
-            }
-
-            if (operand < 0) {
-                throw CompileError::AddressNegative(word, n_line);
-            }
-
-            // the address value could've fit to 32 bits,
-            // but still be bigger than memory size,
-            // in that case std::stoi does not throw
-            // const std::out_of_range, but we should
-            // still throw a compilation error
-            if (static_cast<size_t>(operand) > kMemorySize) {
-                throw CompileError::AddressOutOfMemory(word, n_line);
-            }
-
-            return static_cast<Address>(operand);
-        } catch (const std::invalid_argument&) {
-            // assume it's a label
-
-            // throws a compile error if the label is invalid
-            CheckLabel(word, n_line);
-            return std::nullopt;
-        } catch (const std::out_of_range&) {
-            throw CompileError::AddressOutOfMemory(word, n_line);
-        }
-    }
+    static std::optional<Address> ParseAddress(const std::string&, size_t);
 
     // TODO: doc comment
     // throws on any error
@@ -306,45 +286,49 @@ class Compiler {
     // returns numeric value if parsed
     static int32_t ParseImmediateOperand(uint32_t bit_size,
                                          const std::string& word,
-                                         size_t n_line) {
-        const int32_t min = -static_cast<int32_t>(1u << (bit_size - 1));
-        const int32_t max = static_cast<int32_t>(1u << (bit_size - 1)) - 1;
+                                         size_t n_line);
 
-        try {
-            size_t pos{};
-            int32_t operand = std::stoi(word, &pos, 0);
+    /*
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     */
 
-            if (pos != word.size()) {
-                throw CompileError::ImmediateNotANumber(word, n_line);
-            }
-
-            if (operand < min) {
-                throw CompileError::ImmediateLessThanMin(min, word, n_line);
-            }
-
-            if (operand > max) {
-                throw CompileError::ImmediateMoreThanMax(max, word, n_line);
-            }
-
-            return operand;
-        } catch (const std::invalid_argument&) {
-            throw CompileError::ImmediateNotANumber(word, n_line);
-        } catch (const std::out_of_range&) {
-            throw CompileError::ImmediateOutOfRange(word, n_line);
-        }
-    }
-
-    static void CompileImpl(std::istream& code) {
+    void CompileImpl(std::istream& code) {
         // TODO: major decomposition
 
         // TODO: think on checking that a label cannot occur after all code
-
-        // label -> command_number
-        std::unordered_map<std::string, Address> label_definitions;
-
-        // label -> line_number, command_number
-        std::unordered_map<std::string, std::vector<std::pair<size_t, size_t>>>
-            label_usages;
 
         std::vector<uint32_t> compiled;
 
@@ -367,7 +351,7 @@ class Compiler {
                 // throws a compile error if the label is invalid
                 CheckLabel(word, n_line);
 
-                label_definitions[word] = n_command;
+                label_definitions_[word] = n_command;
 
                 if (!(ss >> word)) {
                     continue;
@@ -404,7 +388,7 @@ class Compiler {
 
                     std::optional<Address> address = ParseAddress(word, n_line);
                     if (address == std::nullopt) {
-                        label_usages[word].emplace_back(n_line, n_command);
+                        label_usages_[word].emplace_back(n_line, n_command);
 
                         // will be set later during labels substitution
                         address = 0;
@@ -483,7 +467,7 @@ class Compiler {
 
                     std::optional<Address> address = ParseAddress(word, n_line);
                     if (address == std::nullopt) {
-                        label_usages[word].emplace_back(n_line, n_command);
+                        label_usages_[word].emplace_back(n_line, n_command);
 
                         // will be set later during labels substitution
                         address = 0;
@@ -507,15 +491,15 @@ class Compiler {
             ++n_command;
         }
 
-        for (const auto& [label, usages] : label_usages) {
-            if (!label_definitions.contains(label)) {
+        for (const auto& [label, usages] : label_usages_) {
+            if (!label_definitions_.contains(label)) {
                 // use usages[0], because it is the first occurrence
                 // of the label (we store label usages while parsing
                 // the file line by line)
                 throw CompileError::UndefinedLabel(label, usages[0].first);
             }
 
-            Address address = label_definitions.at(label);
+            Address address = label_definitions_.at(label);
             for (auto [_, n_cmd] : usages) {
                 compiled[n_cmd] |= address;
             }
@@ -523,11 +507,13 @@ class Compiler {
     }
 
    public:
-    void Compile(std::istream& code, std::ostream& bin);
+    void Compile(std::istream&, std::ostream&);
 
    private:
-    std::vector<std::vector<std::string>> words_;
+    std::unordered_map<std::string, Address> label_definitions_;
 
-    std::unordered_map<std::string, Address> marks_;
+    // label -> line_number, command_number
+    std::unordered_map<std::string, std::vector<std::pair<size_t, size_t>>>
+        label_usages_;
 };
 }  // namespace karma
