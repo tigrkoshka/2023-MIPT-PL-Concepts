@@ -7,6 +7,12 @@
 \usepackage{array}
 \usepackage{amsfonts}
 \usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{arydshln}
+\usepackage{multirow}
+
+\usepackage{layout}
 
 \hypersetup{colorlinks=true, linkcolor=magenta}
 
@@ -18,26 +24,31 @@
 \author{Tigran Koshkelian}
 \date{ }
 
+\usepackage{titling}
+\renewcommand\maketitlehooka{\null\mbox{}\vfill}
+
 %--------------------Make all page a usable space
 \titlespacing*{\section}{0pt}{0pt}{0pt}
 \titlespacing*{\subsection}{0pt}{0pt}{0pt}
-\setlength{\oddsidemargin}{0.2in}
-\setlength{\evensidemargin}{0.2in}
+\setlength{\oddsidemargin}{-0.6in}
+\setlength{\evensidemargin}{-0.6in}
+\setlength{\marginparwidth}{0in}
 \setlength{\topmargin}{-.4in}
 \setlength{\headsep}{-.5in}
-\setlength{\textwidth}{6.5in}
-\setlength{\textheight}{10.2in}
+\setlength{\textwidth}{7.7in}
+\setlength{\textheight}{10in}
 %--------------------
 
 \begin{document}
-
-    \maketitle
-
+\begin{titlingpage}
+	\maketitle
     {
         \hypersetup{hidelinks}
         \tableofcontents
     }
-
+    \vfill\null
+\end{titlingpage}
+    
     \newpage
 
     \input{architecture}
@@ -51,5 +62,4 @@
 
     \input{samples}
     \newpage
-
 \end{document}

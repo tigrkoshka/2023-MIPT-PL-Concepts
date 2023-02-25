@@ -2,14 +2,14 @@
 
 namespace karma::detail::specs {
 
-const utils::Map<CommandFormat, std::string> kFormatToString = {
+const std::unordered_map<CommandFormat, std::string> kFormatToString = {
     {RM, "RM"},
     {RR, "RR"},
     {RI, "RI"},
     {J,  "J" },
 };
 
-const utils::Map<CommandCode, CommandFormat> kCodeToFormat = {
+const std::unordered_map<CommandCode, CommandFormat> kCodeToFormat = {
     {HALT,    RI},
     {SYSCALL, RI},
     {ADD,     RR},
@@ -64,7 +64,7 @@ const utils::Map<CommandCode, CommandFormat> kCodeToFormat = {
     {STORER2, RR},
 };
 
-const utils::Map<std::string, CommandCode> kCommandToCode = {
+const std::unordered_map<std::string, CommandCode> kCommandToCode = {
     {"halt",    HALT   },
     {"syscall", SYSCALL},
     {"add",     ADD    },
@@ -119,7 +119,26 @@ const utils::Map<std::string, CommandCode> kCommandToCode = {
     {"storer2", STORER2},
 };
 
-const utils::Map<CommandCode, std::string> kCodeToCommand =
-    utils::RevertMap(kCommandToCode);
+const std::unordered_map<CommandCode, std::string> kCodeToCommand =
+    util::RevertMap(kCommandToCode);
+
+const std::unordered_map<std::string, Register> kRegisterToNum = {
+    {"r0", R0},
+    {"r1", R1},
+    {"r2", R2},
+    {"r3", R3},
+    {"r4", R4},
+    {"r5", R5},
+    {"r6", R6},
+    {"r7", R7},
+    {"r8", R8},
+    {"r9", R9},
+    {"r10", R10},
+    {"r11", R11},
+    {"r12", R12},
+    {"r13", R13},
+    {"r14", R14},
+    {"r15", R15},
+};
 
 }  // namespace karma::detail::specs

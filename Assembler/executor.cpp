@@ -1,33 +1,86 @@
 #include "executor.hpp"
 
+#include <cmath>
+#include <concepts>
+#include <cstdint>
 #include <fstream>
+#include <iomanip>
+#include <ios>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
 
 namespace karma {
 
+namespace util = detail::util;
+
 using namespace detail::specs;  // NOLINT(google-build-using-namespace)
-using detail::utils::GetSignedInt;
 
 ////////////////////////////////////////////////////////////////////////////////
-///                                Errors                                    ///
+///                                  Errors                                  ///
 ////////////////////////////////////////////////////////////////////////////////
 
-struct Executor::ExecutionError : std::runtime_error {
-   private:
-    explicit ExecutionError(const std::string& message)
+struct Executor::Error : std::runtime_error {
+   protected:
+    explicit Error(const std::string& message)
         : std::runtime_error(message) {}
 
    public:
-    static ExecutionError UnknownCommandFormat(CommandFormat format) {
+    Error(const Error&)            = default;
+    Error& operator=(const Error&) = default;
+    Error(Error&&)                 = default;
+    Error& operator=(Error&&)      = default;
+    ~Error() override              = default;
+};
+
+struct Executor::InternalError : Error {
+   private:
+    friend void Executor::Execute(const std::string& exec_path);
+
+   private:
+    explicit InternalError(const std::string& message)
+        : Error("internal executor error: " + message) {}
+
+   public:
+    InternalError(const InternalError&)            = default;
+    InternalError& operator=(const InternalError&) = default;
+    InternalError(InternalError&&)                 = default;
+    InternalError& operator=(InternalError&&)      = default;
+    ~InternalError() override                      = default;
+
+   public:
+    static InternalError UnknownCommandFormat(CommandFormat format) {
         std::ostringstream ss;
         ss << "unknown command format " << format;
-        return ExecutionError{ss.str()};
+        return InternalError{ss.str()};
     }
 
-    static ExecutionError UnknownCommand(CommandFormat format,
-                                         CommandCode code) {
+    static InternalError UnknownCommandForFormat(CommandFormat format,
+                                                 CommandCode code) {
         std::ostringstream ss;
-        ss << "unknown command code " << code << " for command format \""
-           << kFormatToString.at(format) << "\"";
+        ss << "unknown command code " << code << " for command format "
+           << std::quoted(kFormatToString.at(format));
+        return InternalError{ss.str()};
+    }
+};
+
+struct Executor::ExecutionError : Error {
+   private:
+    explicit ExecutionError(const std::string& message)
+        : Error("execution error" + message) {}
+
+   public:
+    ExecutionError(const ExecutionError&)            = default;
+    ExecutionError& operator=(const ExecutionError&) = default;
+    ExecutionError(ExecutionError&&)                 = default;
+    ExecutionError& operator=(ExecutionError&&)      = default;
+    ~ExecutionError() override                       = default;
+
+   public:
+    static ExecutionError UnknownCommand(CommandCode code) {
+        std::ostringstream ss;
+        ss << "unknown command code " << code;
         return ExecutionError{ss.str()};
     }
 
@@ -76,12 +129,26 @@ struct Executor::ExecutionError : std::runtime_error {
            << ", which is an invalid char, because it is greater than 255";
         return ExecutionError{ss.str()};
     }
+
+    static ExecutionError AddressOutsideOfMemory(Address address) {
+        std::ostringstream ss;
+        ss << "address " << std::hex << address
+           << " is outside of memory (size " << kMemorySize << ")";
+        return ExecutionError{ss.str()};
+    }
 };
 
-struct Executor::ExecFileError : std::runtime_error {
+struct Executor::ExecFileError : Error {
    private:
     explicit ExecFileError(const std::string& message)
-        : std::runtime_error(message) {}
+        : Error("exec format error: " + message) {}
+
+   public:
+    ExecFileError(const ExecFileError&)            = default;
+    ExecFileError& operator=(const ExecFileError&) = default;
+    ExecFileError(ExecFileError&&)                 = default;
+    ExecFileError& operator=(ExecFileError&&)      = default;
+    ~ExecFileError() override                      = default;
 
    public:
     static ExecFileError FailedToOpen() {
@@ -90,7 +157,7 @@ struct Executor::ExecFileError : std::runtime_error {
         return ExecFileError{ss.str()};
     }
 
-    static ExecFileError ExecTooSmallForHeader(std::streamsize size) {
+    static ExecFileError TooSmallForHeader(std::streamsize size) {
         std::ostringstream ss;
         ss << "exec size is " << size << ", which is less than "
            << exec::kHeaderSize << " bytes required for the header";
@@ -99,9 +166,9 @@ struct Executor::ExecFileError : std::runtime_error {
 
     static ExecFileError InvalidIntroString(const std::string& intro) {
         std::ostringstream ss;
-        ss << "expected the welcoming \"" << exec::kIntroString
-           << "\" string (and a trailing \\0) as the first " << exec::kIntroSize
-           << " bytes, instead got: \"" << intro << "\"";
+        ss << "expected the welcoming " << std::quoted(exec::kIntroString)
+           << " string (and a trailing \\0) as the first " << exec::kIntroSize
+           << " bytes, instead got: " << std::quoted(intro);
         return ExecFileError{ss.str()};
     }
 
@@ -122,7 +189,7 @@ struct Executor::ExecFileError : std::runtime_error {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-///                                 Utils                                    ///
+///                                   Utils                                  ///
 ////////////////////////////////////////////////////////////////////////////////
 
 double Executor::ToDbl(uint64_t ull) {
@@ -143,8 +210,7 @@ void Executor::PutTwoRegisters(uint64_t value, Register lower) {
     registers_[lower + 1] = static_cast<Word>(value >> kWordSize);
 }
 
-template <typename T>
-    requires std::totally_ordered<T>
+template <std::totally_ordered T>
 void Executor::WriteComparisonToFlags(T lhs, T rhs) {
     auto cmp_res = lhs <=> rhs;
 
@@ -160,14 +226,14 @@ void Executor::WriteComparisonToFlags(T lhs, T rhs) {
     }
 }
 
-void Executor::Jump(Condition condition, Address dst) {
-    if ((flags_ & condition) != 0) {
+void Executor::Jump(Flag flag, Address dst) {
+    if ((flags_ & flag) != 0) {
         registers_[kInstructionRegister] = dst;
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///                            Separate commands                             ///
+///                             Separate commands                            ///
 ////////////////////////////////////////////////////////////////////////////////
 
 void Executor::Divide(uint64_t lhs, uint64_t rhs, Register recv) {
@@ -199,7 +265,7 @@ bool Executor::Syscall(Register reg, SyscallCode code) {
         }
 
         case SCANDOUBLE: {
-            double val = 0;
+            double val{};
             std::cin >> val;
 
             PutTwoRegisters(ToUll(val), reg);
@@ -207,7 +273,7 @@ bool Executor::Syscall(Register reg, SyscallCode code) {
         }
 
         case PRINTINT: {
-            std::cout << GetSignedInt(registers_[reg], kWordSize);
+            std::cout << util::GetSigned(registers_[reg], kWordSize);
             break;
         }
 
@@ -217,7 +283,7 @@ bool Executor::Syscall(Register reg, SyscallCode code) {
         }
 
         case GETCHAR: {
-            uint8_t val = 0;
+            unsigned char val{};
             std::cin >> val;
 
             registers_[reg] = static_cast<Word>(val);
@@ -229,7 +295,7 @@ bool Executor::Syscall(Register reg, SyscallCode code) {
                 throw ExecutionError::InvalidPutCharValue(registers_[reg]);
             }
 
-            std::cout << static_cast<uint8_t>(registers_[reg]);
+            std::cout << static_cast<unsigned char>(registers_[reg]);
             break;
         }
 
@@ -259,37 +325,37 @@ Executor::Word Executor::Call(Address callee) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///                             Execute command                              ///
+///                              Execute command                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
 bool Executor::ExecuteRMCommand(CommandCode command_code,
                                 Register reg,
-                                Address addr) {
+                                Address address) {
     switch (command_code) {
         case LOAD: {
-            registers_[reg] = memory_[addr];
+            registers_[reg] = memory_[address];
             break;
         }
 
         case STORE: {
-            memory_[addr] = registers_[reg];
+            memory_[address] = registers_[reg];
             break;
         }
 
         case LOAD2: {
-            registers_[reg]     = memory_[addr];
-            registers_[reg + 1] = memory_[addr + 1];
+            registers_[reg]     = memory_[address];
+            registers_[reg + 1] = memory_[address + 1];
             break;
         }
 
         case STORE2: {
-            memory_[addr]     = registers_[reg];
-            memory_[addr + 1] = registers_[reg + 1];
+            memory_[address]     = registers_[reg];
+            memory_[address + 1] = registers_[reg + 1];
             break;
         }
 
         default: {
-            throw ExecutionError::UnknownCommand(RM, command_code);
+            throw InternalError::UnknownCommandForFormat(RM, command_code);
         }
     }
 
@@ -299,7 +365,7 @@ bool Executor::ExecuteRMCommand(CommandCode command_code,
 bool Executor::ExecuteRRCommand(CommandCode command_code,
                                 Register recv,
                                 Register src,
-                                Word modifier) {
+                                int32_t modifier) {
     auto lhs_32 = [this, recv]() -> Word {
         return registers_[recv];
     };
@@ -476,7 +542,7 @@ bool Executor::ExecuteRRCommand(CommandCode command_code,
         }
 
         default: {
-            throw ExecutionError::UnknownCommand(RR, command_code);
+            throw InternalError::UnknownCommandForFormat(RR, command_code);
         }
     }
 
@@ -485,7 +551,7 @@ bool Executor::ExecuteRRCommand(CommandCode command_code,
 
 bool Executor::ExecuteRICommand(CommandCode command_code,
                                 Register reg,
-                                Word immediate) {
+                                int32_t immediate) {
     switch (command_code) {
         case HALT: {
             registers_[reg] = immediate;
@@ -572,7 +638,7 @@ bool Executor::ExecuteRICommand(CommandCode command_code,
         }
 
         default: {
-            throw ExecutionError::UnknownCommand(RI, command_code);
+            throw InternalError::UnknownCommandForFormat(RI, command_code);
         }
     }
 
@@ -628,7 +694,7 @@ bool Executor::ExecuteJCommand(CommandCode command_code, Address addr) {
         }
 
         default: {
-            throw ExecutionError::UnknownCommand(J, command_code);
+            throw InternalError::UnknownCommandForFormat(J, command_code);
         }
     }
 
@@ -636,41 +702,46 @@ bool Executor::ExecuteJCommand(CommandCode command_code, Address addr) {
 }
 
 bool Executor::ExecuteCommand(Executor::Word command) {
-    auto command_code = static_cast<CommandCode>(command >> kCommandCodeShift);
-
     registers_[kInstructionRegister]++;
+
+    auto command_code = static_cast<CommandCode>(command >> cmd::kCodeShift);
+    if (!kCodeToFormat.contains(command_code)) {
+        throw ExecutionError::UnknownCommand(command_code);
+    }
 
     switch (CommandFormat format = kCodeToFormat.at(command_code)) {
         case RM: {
-            Register reg = (command >> kRecvShift) & kRegisterMask;
-            Address addr = command & kAddressMask;
+            Register reg = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
+            Address addr = command & cmd::kAddressMask;
 
             return ExecuteRMCommand(command_code, reg, addr);
         }
 
         case RR: {
-            Register recv = (command >> kRecvShift) & kRegisterMask;
-            Register src  = (command >> kSrcShift) & kRegisterMask;
-            Word modifier = GetSignedInt(command & kModMask, kModSize);
+            Register recv = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
+            Register src  = (command >> cmd::kSrcShift) & cmd::kRegisterMask;
+            int32_t modifier =
+                util::GetSigned(command & cmd::kModMask, cmd::kModSize);
 
             return ExecuteRRCommand(command_code, recv, src, modifier);
         }
 
         case RI: {
-            Register reg   = (command >> kRecvShift) & kRegisterMask;
-            Word immediate = GetSignedInt(command & kImmMask, kImmSize);
+            Register reg = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
+            int32_t immediate =
+                util::GetSigned(command & cmd::kImmMask, cmd::kImmSize);
 
             return ExecuteRICommand(command_code, reg, immediate);
         }
 
         case J: {
-            Word addr = command & kAddressMask;
+            Word addr = command & cmd::kAddressMask;
 
             return ExecuteJCommand(command_code, addr);
         }
 
         default: {
-            throw ExecutionError::UnknownCommandFormat(format);
+            throw InternalError::UnknownCommandFormat(format);
         }
     }
 }
@@ -693,14 +764,14 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
     // check that the exec size is not too small to contain a valid header
     std::streamsize exec_size = binary.tellg();
     if (exec_size < exec::kHeaderSize) {
-        throw ExecFileError::ExecTooSmallForHeader(exec_size);
+        throw ExecFileError::TooSmallForHeader(exec_size);
     }
 
     // reset input position indicator
     binary.seekg(0);
 
     auto read_ui = [&binary]() -> uint32_t {
-        Word word = 0;
+        Word word{};
         binary.read(reinterpret_cast<char*>(&word), 4);
         return word;
     };
@@ -751,28 +822,19 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
     while (registers_[kInstructionRegister] < n_commands &&
            ExecuteCommand(memory_[registers_[kInstructionRegister]])) {
     }
-
-    // TODO: if wrong exec size -- throw ExecFormatError
 }
 
 void Executor::Execute(const std::string& exec_path) {
     try {
         ExecuteImpl(exec_path);
-    } catch (const ExecutionError& e) {
-        std::cout << "Execution error in binary \"" << exec_path
-                  << "\": " << e.what() << std::endl;
-    } catch (const ExecFileError& e) {
-        std::cout << "Exec format error in binary \"" << exec_path
-                  << "\": " << e.what() << std::endl;
-    } catch (const std::overflow_error& e) {
-        std::cout << "Overflow while executing binary \"" << exec_path
-                  << "\": " << e.what() << std::endl;
+    } catch (const Error& e) {
+        std::cout << exec_path << ": " << e.what() << std::endl;
     } catch (const std::exception& e) {
-        std::cout << "Exception while executing binary \"" << exec_path
-                  << "\": " << e.what() << std::endl;
+        std::cout << exec_path << ": " << InternalError(e.what()).what()
+                  << std::endl;
     } catch (...) {
-        std::cout << "Unexpected exception while executing binary \""
-                  << exec_path << "\"" << std::endl;
+        std::cout << exec_path << ": "
+                  << InternalError("unexpected exception").what() << std::endl;
     }
 }
 

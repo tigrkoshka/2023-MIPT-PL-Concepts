@@ -48,6 +48,8 @@ HeaderFilterRegex: '\.hpp$'
 WarningsAsErrors: '*'
 
 CheckOptions:
+  - key: misc-const-correctness.AnalyzeValues
+    value: 0
   - key: readability-identifier-naming.NamespaceCase
     value: lower_case
   - key: readability-identifier-naming.ClassCase
@@ -91,6 +93,6 @@ CheckOptions:
   - key: readability-identifier-length.IgnoredVariableNames
     value: ^ss$
   - key: readability-simplify-boolean-expr.ChainedConditionalReturn
-    value: '1'
+    value: 1
   - key: readability-simplify-boolean-expr.ChainedConditionalAssignment
-    value: '1'
+    value: 1
