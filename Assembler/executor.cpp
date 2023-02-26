@@ -1,18 +1,30 @@
 #include "executor.hpp"
 
-#include <cmath>
-#include <concepts>
-#include <fstream>
-#include <iomanip>
-#include <ios>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-#include <type_traits>
+#include <cmath>        // for floor
+#include <exception>    // for exception
+#include <fstream>      // for ifstream
+#include <iomanip>      // for quoted
+#include <iostream>     // for cout
+#include <sstream>      // for ostringstream
+#include <stdexcept>    // for runtime_error
+#include <string>       // for string
+#include <type_traits>  // for make_signed_t
+
+#include "specs/architecture.hpp"
+#include "specs/exec.hpp"
+#include "specs/flags.hpp"
 
 namespace karma {
 
-using namespace detail::specs;  // NOLINT(google-build-using-namespace)
+namespace flags = detail::specs::flags;
+namespace arch  = detail::specs::arch;
+namespace types = arch::types;
+
+namespace cmd     = detail::specs::cmd;
+namespace args    = cmd::args;
+namespace syscall = cmd::syscall;
+
+namespace exec = detail::specs::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                  Errors                                  ///
@@ -47,17 +59,17 @@ struct Executor::InternalError : Error {
     ~InternalError() override                      = default;
 
    public:
-    static InternalError UnknownCommandFormat(CommandFormat format) {
+    static InternalError UnknownCommandFormat(cmd::Format format) {
         std::ostringstream ss;
         ss << "unknown command format " << format;
         return InternalError{ss.str()};
     }
 
-    static InternalError UnknownCommandForFormat(CommandFormat format,
-                                                 CommandCode code) {
+    static InternalError UnknownCommandForFormat(cmd::Format format,
+                                                 cmd::Code code) {
         std::ostringstream ss;
         ss << "unknown command code " << code << " for command format "
-           << std::quoted(kFormatToString.at(format));
+           << std::quoted(cmd::kFormatToString.at(format));
         return InternalError{ss.str()};
     }
 };
@@ -75,20 +87,21 @@ struct Executor::ExecutionError : Error {
     ~ExecutionError() override                       = default;
 
    public:
-    static ExecutionError UnknownCommand(CommandCode code) {
+    static ExecutionError UnknownCommand(cmd::Code code) {
         std::ostringstream ss;
         ss << "unknown command code " << code;
         return ExecutionError{ss.str()};
     }
 
-    static ExecutionError UnknownSyscallCode(SyscallCode code) {
+    static ExecutionError UnknownSyscallCode(syscall::Code code) {
         std::ostringstream ss;
         ss << "unknown syscall code" << code;
         return ExecutionError{ss.str()};
     }
 
     template <typename T>
-        requires std::is_same_v<T, TwoWords> || std::is_same_v<T, Double>
+        requires std::is_same_v<T, types::TwoWords> ||
+                 std::is_same_v<T, types::Double>
     static ExecutionError DivisionByZero(T dividend, T divisor) {
         std::ostringstream ss;
         ss << "a division by zero occurred when dividing " << dividend << " by "
@@ -96,32 +109,33 @@ struct Executor::ExecutionError : Error {
         return ExecutionError{ss.str()};
     }
 
-    static ExecutionError QuotientOverflow(TwoWords dividend,
-                                           TwoWords divisor) {
+    static ExecutionError QuotientOverflow(types::TwoWords dividend,
+                                           types::TwoWords divisor) {
         std::ostringstream ss;
         ss << "a quotient overflow occurred when dividing " << dividend
            << " by " << divisor;
         return ExecutionError{ss.str()};
     }
 
-    static ExecutionError DtoiOverflow(Double value) {
+    static ExecutionError DtoiOverflow(types::Double value) {
         std::ostringstream ss;
         ss << "a word overflow occurred when casting " << value
            << " to integer";
         return ExecutionError{ss.str()};
     }
 
-    static ExecutionError InvalidPutCharValue(Immediate value) {
+    static ExecutionError InvalidPutCharValue(args::Immediate value) {
         std::ostringstream ss;
         ss << "the value in the register for the PUTCHAR syscall is " << value
            << ", which is an invalid char, because it is greater than 255";
         return ExecutionError{ss.str()};
     }
 
-    static ExecutionError AddressOutsideOfMemory(Address address) {
+    // TODO: use this
+    static ExecutionError AddressOutsideOfMemory(args::Address address) {
         std::ostringstream ss;
         ss << "address " << std::hex << address
-           << " is outside of memory (size " << kMemorySize << ")";
+           << " is outside of memory (size " << arch::kMemorySize << ")";
         return ExecutionError{ss.str()};
     }
 };
@@ -129,7 +143,7 @@ struct Executor::ExecutionError : Error {
 struct Executor::ExecFileError : Error {
    private:
     explicit ExecFileError(const std::string& message)
-        : Error("exec format error: " + message) {}
+        : Error("exec file error: " + message) {}
 
    public:
     ExecFileError(const ExecFileError&)            = default;
@@ -152,14 +166,6 @@ struct Executor::ExecFileError : Error {
         return ExecFileError{ss.str()};
     }
 
-    static ExecFileError InvalidIntroString(const std::string& intro) {
-        std::ostringstream ss;
-        ss << "expected the welcoming " << std::quoted(exec::kIntroString)
-           << " string (and a trailing \\0) as the first " << exec::kIntroSize
-           << " bytes, instead got: " << std::quoted(intro);
-        return ExecFileError{ss.str()};
-    }
-
     static ExecFileError InvalidExecSize(size_t exec_size,
                                          size_t code_size,
                                          size_t consts_size,
@@ -174,28 +180,44 @@ struct Executor::ExecFileError : Error {
            << ") specified in the header";
         return ExecFileError{ss.str()};
     }
+
+    static ExecFileError InvalidIntroString(const std::string& intro) {
+        std::ostringstream ss;
+        ss << "expected the welcoming " << std::quoted(exec::kIntroString)
+           << " string (and a trailing \\0) as the first " << exec::kIntroSize
+           << " bytes, instead got: " << std::quoted(intro);
+        return ExecFileError{ss.str()};
+    }
+
+    static ExecFileError InvalidProcessorID(types::Word processor_id) {
+        std::ostringstream ss;
+        ss << "exec file is built for processor with ID " << processor_id
+           << ", current processor ID: " << exec::kProcessorID;
+        return ExecFileError{ss.str()};
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Utils                                  ///
 ////////////////////////////////////////////////////////////////////////////////
 
-Double Executor::ToDbl(TwoWords ull) {
-    return *reinterpret_cast<Double*>(&ull);
+types::Double Executor::ToDbl(types::TwoWords ull) {
+    return *reinterpret_cast<types::Double*>(&ull);
 }
 
-TwoWords Executor::ToUll(Double dbl) {
-    return *reinterpret_cast<TwoWords*>(&dbl);
+types::TwoWords Executor::ToUll(types::Double dbl) {
+    return *reinterpret_cast<types::TwoWords*>(&dbl);
 }
 
-TwoWords Executor::GetTwoRegisters(Source lower) const {
-    return (static_cast<TwoWords>(registers_[lower + 1]) << kWordSize) +
-           static_cast<TwoWords>(registers_[lower]);
+types::TwoWords Executor::GetTwoRegisters(args::Source lower) const {
+    return (static_cast<types::TwoWords>(registers_[lower + 1])
+            << types::kWordSize) +
+           static_cast<types::TwoWords>(registers_[lower]);
 }
 
-void Executor::PutTwoRegisters(TwoWords value, Receiver lower) {
-    registers_[lower]     = static_cast<Word>(value);
-    registers_[lower + 1] = static_cast<Word>(value >> kWordSize);
+void Executor::PutTwoRegisters(types::TwoWords value, args::Receiver lower) {
+    registers_[lower]     = static_cast<types::Word>(value);
+    registers_[lower + 1] = static_cast<types::Word>(value >> types::kWordSize);
 }
 
 template <std::totally_ordered T>
@@ -203,20 +225,20 @@ void Executor::WriteComparisonToFlags(T lhs, T rhs) {
     auto cmp_res = lhs <=> rhs;
 
     if (cmp_res == 0) {
-        flags_ = kEqual;
+        flags_ = flags::kEqual;
     } else if (cmp_res > 0) {
-        flags_ = kGreater;
+        flags_ = flags::kGreater;
     } else {
         // condition "cmp_res < 0" is true
         // because lhs and rhs are comparable
         // because of the template type constraint
-        flags_ = kLess;
+        flags_ = flags::kLess;
     }
 }
 
-void Executor::Jump(Flag flag, Address dst) {
+void Executor::Jump(flags::Flag flag, args::Address dst) {
     if ((flags_ & flag) != 0) {
-        registers_[kInstructionRegister] = dst;
+        registers_[arch::kInstructionRegister] = dst;
     }
 }
 
@@ -224,69 +246,72 @@ void Executor::Jump(Flag flag, Address dst) {
 ///                             Separate commands                            ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Executor::Divide(TwoWords lhs, TwoWords rhs, Receiver recv) {
+void Executor::Divide(types::TwoWords lhs,
+                      types::TwoWords rhs,
+                      args::Receiver recv) {
     if (rhs == 0) {
         throw ExecutionError::DivisionByZero(lhs, rhs);
     }
 
-    TwoWords quotient = lhs / rhs;
+    types::TwoWords quotient = lhs / rhs;
 
-    if (quotient > static_cast<TwoWords>(kMaxWord)) {
+    if (quotient > static_cast<types::TwoWords>(types::kMaxWord)) {
         throw ExecutionError::QuotientOverflow(lhs, rhs);
     }
 
-    TwoWords remainder = lhs % rhs;
+    types::TwoWords remainder = lhs % rhs;
 
-    registers_[recv]     = static_cast<Word>(quotient);
-    registers_[recv + 1] = static_cast<Word>(remainder);
+    registers_[recv]     = static_cast<types::Word>(quotient);
+    registers_[recv + 1] = static_cast<types::Word>(remainder);
 }
 
-bool Executor::Syscall(Register reg, SyscallCode code) {
+bool Executor::Syscall(args::Register reg, syscall::Code code) {
     switch (code) {
-        case EXIT: {
+        case syscall::EXIT: {
             return false;
         }
 
-        case SCANINT: {
-            std::make_signed_t<Word> val{};
+        case syscall::SCANINT: {
+            std::make_signed_t<types::Word> val{};
             std::cin >> val;
 
-            registers_[reg] = static_cast<Word>(val);
+            registers_[reg] = static_cast<types::Word>(val);
             break;
         }
 
-        case SCANDOUBLE: {
-            Double val{};
+        case syscall::SCANDOUBLE: {
+            types::Double val{};
             std::cin >> val;
 
             PutTwoRegisters(ToUll(val), reg);
             break;
         }
 
-        case PRINTINT: {
-            std::cout << static_cast<std::make_signed_t<Word>>(registers_[reg]);
+        case syscall::PRINTINT: {
+            std::cout << static_cast<std::make_signed_t<types::Word>>(
+                registers_[reg]);
             break;
         }
 
-        case PRINTDOUBLE: {
+        case syscall::PRINTDOUBLE: {
             std::cout << ToDbl(GetTwoRegisters(reg));
             break;
         }
 
-        case GETCHAR: {
-            Char val{};
+        case syscall::GETCHAR: {
+            types::Char val{};
             std::cin >> val;
 
-            registers_[reg] = static_cast<Word>(val);
+            registers_[reg] = static_cast<types::Word>(val);
             break;
         }
 
-        case PUTCHAR: {
-            if (registers_[reg] > kMaxChar) {
+        case syscall::PUTCHAR: {
+            if (registers_[reg] > types::kMaxChar) {
                 throw ExecutionError::InvalidPutCharValue(registers_[reg]);
             }
 
-            std::cout << static_cast<Char>(registers_[reg]);
+            std::cout << static_cast<types::Char>(registers_[reg]);
             break;
         }
 
@@ -298,19 +323,19 @@ bool Executor::Syscall(Register reg, SyscallCode code) {
     return true;
 }
 
-void Executor::Push(Word value) {
-    memory_[registers_[kStackRegister]--] = value;
+void Executor::Push(types::Word value) {
+    memory_[registers_[arch::kStackRegister]--] = value;
 }
 
-void Executor::Pop(Receiver recv, Modifier mod) {
-    registers_[recv] = memory_[++registers_[kStackRegister]] + mod;
+void Executor::Pop(args::Receiver recv, args::Modifier mod) {
+    registers_[recv] = memory_[++registers_[arch::kStackRegister]] + mod;
 }
 
-Executor::Address Executor::Call(Address callee) {
-    Address ret = registers_[kInstructionRegister];
+arch::Address Executor::Call(args::Address callee) {
+    arch::Address ret = registers_[arch::kInstructionRegister];
 
-    Push(registers_[kInstructionRegister]);
-    registers_[kInstructionRegister] = callee;
+    Push(registers_[arch::kInstructionRegister]);
+    registers_[arch::kInstructionRegister] = callee;
 
     return ret;
 }
@@ -319,137 +344,141 @@ Executor::Address Executor::Call(Address callee) {
 ///                              Execute command                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-bool Executor::ExecuteRMCommand(CommandCode code, Register reg, Address addr) {
+bool Executor::ExecuteRMCommand(cmd::Code code,
+                                args::Register reg,
+                                args::Address addr) {
     switch (code) {
-        case LOAD: {
+        case cmd::LOAD: {
             registers_[reg] = memory_[addr];
             break;
         }
 
-        case STORE: {
+        case cmd::STORE: {
             memory_[addr] = registers_[reg];
             break;
         }
 
-        case LOAD2: {
+        case cmd::LOAD2: {
             registers_[reg]     = memory_[addr];
             registers_[reg + 1] = memory_[addr + 1];
             break;
         }
 
-        case STORE2: {
+        case cmd::STORE2: {
             memory_[addr]     = registers_[reg];
             memory_[addr + 1] = registers_[reg + 1];
             break;
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(RM, code);
+            throw InternalError::UnknownCommandForFormat(cmd::format::RM, code);
         }
     }
 
     return true;
 }
 
-bool Executor::ExecuteRRCommand(CommandCode code,
-                                Receiver recv,
-                                Source src,
-                                Modifier mod) {
-    auto lhs_word = [this, recv]() -> Word {
+bool Executor::ExecuteRRCommand(cmd::Code code,
+                                args::Receiver recv,
+                                args::Source src,
+                                args::Modifier mod) {
+    auto lhs_word = [this, recv]() -> types::Word {
         return registers_[recv];
     };
 
-    auto lhs_two_words = [this, recv]() -> TwoWords {
+    auto lhs_two_words = [this, recv]() -> types::TwoWords {
         return GetTwoRegisters(recv);
     };
 
-    auto lhs_dbl = [&lhs_two_words]() -> Double {
+    auto lhs_dbl = [&lhs_two_words]() -> types::Double {
         return ToDbl(lhs_two_words());
     };
 
-    auto rhs_word = [this, src, mod]() -> Word {
+    auto rhs_word = [this, src, mod]() -> types::Word {
         return registers_[src] + mod;
     };
 
-    auto rhs_two_words = [this, src, mod]() -> TwoWords {
-        return GetTwoRegisters(src) + static_cast<TwoWords>(mod);
+    auto rhs_two_words = [this, src, mod]() -> types::TwoWords {
+        return GetTwoRegisters(src) + static_cast<types::TwoWords>(mod);
     };
 
-    auto rhs_dbl = [&rhs_two_words]() -> Double {
+    auto rhs_dbl = [&rhs_two_words]() -> types::Double {
         return ToDbl(rhs_two_words());
     };
 
     switch (code) {
-        case ADD: {
+        case cmd::ADD: {
             registers_[recv] += rhs_word();
             break;
         }
 
-        case SUB: {
+        case cmd::SUB: {
             registers_[recv] -= rhs_word();
             break;
         }
 
-        case MUL: {
-            TwoWords res = static_cast<TwoWords>(lhs_word()) *
-                           static_cast<TwoWords>(rhs_word());
+        case cmd::MUL: {
+            types::TwoWords res = static_cast<types::TwoWords>(lhs_word()) *
+                                  static_cast<types::TwoWords>(rhs_word());
             PutTwoRegisters(res, recv);
             break;
         }
 
-        case DIV: {
-            Divide(lhs_two_words(), static_cast<TwoWords>(rhs_word()), recv);
+        case cmd::DIV: {
+            Divide(lhs_two_words(),
+                   static_cast<types::TwoWords>(rhs_word()),
+                   recv);
             break;
         }
 
-        case SHL: {
+        case cmd::SHL: {
             registers_[recv] <<= rhs_word();
             break;
         }
 
-        case SHR: {
+        case cmd::SHR: {
             registers_[recv] >>= rhs_word();
             break;
         }
 
-        case AND: {
+        case cmd::AND: {
             registers_[recv] &= rhs_word();
             break;
         }
 
-        case OR: {
+        case cmd::OR: {
             registers_[recv] |= rhs_word();
             break;
         }
 
-        case XOR: {
+        case cmd::XOR: {
             registers_[recv] ^= rhs_word();
             break;
         }
 
-        case MOV: {
+        case cmd::MOV: {
             registers_[recv] = rhs_word();
             break;
         }
 
-        case ADDD: {
+        case cmd::ADDD: {
             PutTwoRegisters(ToUll(lhs_dbl() + rhs_dbl()), recv);
             break;
         }
 
-        case SUBD: {
+        case cmd::SUBD: {
             PutTwoRegisters(ToUll(lhs_dbl() - rhs_dbl()), recv);
             break;
         }
 
-        case MULD: {
+        case cmd::MULD: {
             PutTwoRegisters(ToUll(lhs_dbl() * rhs_dbl()), recv);
             break;
         }
 
-        case DIVD: {
-            Double lhs = lhs_dbl();
-            Double rhs = rhs_dbl();
+        case cmd::DIVD: {
+            types::Double lhs = lhs_dbl();
+            types::Double rhs = rhs_dbl();
 
             if (rhs == 0) {
                 throw ExecutionError::DivisionByZero(lhs, rhs);
@@ -459,58 +488,59 @@ bool Executor::ExecuteRRCommand(CommandCode code,
             break;
         }
 
-        case ITOD: {
-            PutTwoRegisters(ToUll(static_cast<Double>(rhs_word())), recv);
+        case cmd::ITOD: {
+            PutTwoRegisters(ToUll(static_cast<types::Double>(rhs_word())),
+                            recv);
             break;
         }
 
-        case DTOI: {
-            Double dbl = rhs_dbl();
-            auto res  = static_cast<TwoWords>(floor(dbl));
+        case cmd::DTOI: {
+            types::Double dbl = rhs_dbl();
+            auto res          = static_cast<types::TwoWords>(floor(dbl));
 
-            if (res >= static_cast<TwoWords>(kMaxWord)) {
+            if (res >= static_cast<types::TwoWords>(types::kMaxWord)) {
                 throw ExecutionError::DtoiOverflow(dbl);
             }
 
-            registers_[recv] = static_cast<Word>(res);
+            registers_[recv] = static_cast<types::Word>(res);
             break;
         }
 
-        case CALL: {
+        case cmd::CALL: {
             registers_[recv] = Call(rhs_word());
             break;
         }
 
-        case CMP: {
+        case cmd::CMP: {
             WriteComparisonToFlags(lhs_word(), rhs_word());
             break;
         }
 
-        case CMPD: {
+        case cmd::CMPD: {
             WriteComparisonToFlags(lhs_dbl(), rhs_dbl());
             break;
         }
 
-        case LOADR: {
+        case cmd::LOADR: {
             registers_[recv] = memory_[rhs_word()];
             break;
         }
 
-        case STORER: {
+        case cmd::STORER: {
             memory_[rhs_word()] = registers_[recv];
             break;
         }
 
-        case LOADR2: {
-            Address address = rhs_word();
+        case cmd::LOADR2: {
+            args::Address address = rhs_word();
 
             registers_[recv]     = memory_[address];
             registers_[recv + 1] = memory_[address + 1];
             break;
         }
 
-        case STORER2: {
-            Address address = rhs_word();
+        case cmd::STORER2: {
+            args::Address address = rhs_word();
 
             memory_[address]     = registers_[recv];
             memory_[address + 1] = registers_[recv + 1];
@@ -518,196 +548,204 @@ bool Executor::ExecuteRRCommand(CommandCode code,
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(RR, code);
+            throw InternalError::UnknownCommandForFormat(cmd::format::RR, code);
         }
     }
 
     return true;
 }
 
-bool Executor::ExecuteRICommand(CommandCode code, Register reg, Immediate imm) {
+bool Executor::ExecuteRICommand(cmd::Code code,
+                                args::Register reg,
+                                args::Immediate imm) {
     switch (code) {
-        case HALT: {
+        case cmd::HALT: {
             registers_[reg] = imm;
             return false;
         }
 
-        case SYSCALL: {
-            if (!Syscall(reg, static_cast<SyscallCode>(imm))) {
+        case cmd::SYSCALL: {
+            if (!Syscall(reg, static_cast<syscall::Code>(imm))) {
                 return false;
             }
             break;
         }
 
-        case ADDI: {
+        case cmd::ADDI: {
             registers_[reg] += imm;
             break;
         }
 
-        case SUBI: {
+        case cmd::SUBI: {
             registers_[reg] -= imm;
             break;
         }
 
-        case MULI: {
-            auto res = static_cast<TwoWords>(registers_[reg]) * imm;
+        case cmd::MULI: {
+            auto res = static_cast<types::TwoWords>(registers_[reg]) * imm;
 
             PutTwoRegisters(res, reg);
             break;
         }
 
-        case DIVI: {
-            Divide(GetTwoRegisters(reg), static_cast<TwoWords>(imm), reg);
+        case cmd::DIVI: {
+            Divide(GetTwoRegisters(reg),
+                   static_cast<types::TwoWords>(imm),
+                   reg);
             break;
         }
 
-        case LC: {
+        case cmd::LC: {
             registers_[reg] = imm;
             break;
         }
 
-        case SHLI: {
+        case cmd::SHLI: {
             registers_[reg] <<= imm;
             break;
         }
 
-        case SHRI: {
+        case cmd::SHRI: {
             registers_[reg] >>= imm;
             break;
         }
 
-        case ANDI: {
+        case cmd::ANDI: {
             registers_[reg] &= imm;
             break;
         }
 
-        case ORI: {
+        case cmd::ORI: {
             registers_[reg] |= imm;
             break;
         }
 
-        case XORI: {
+        case cmd::XORI: {
             registers_[reg] ^= imm;
             break;
         }
 
-        case NOT: {
+        case cmd::NOT: {
             registers_[reg] = ~registers_[reg];
             break;
         }
 
-        case PUSH: {
+        case cmd::PUSH: {
             Push(registers_[reg] + imm);
             break;
         }
 
-        case POP: {
+        case cmd::POP: {
             Pop(reg, imm);
             break;
         }
 
-        case CMPI: {
+        case cmd::CMPI: {
             WriteComparisonToFlags(registers_[reg], imm);
             break;
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(RI, code);
+            throw InternalError::UnknownCommandForFormat(cmd::format::RI, code);
         }
     }
 
     return true;
 }
 
-bool Executor::ExecuteJCommand(CommandCode code, Address addr) {
+bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
     switch (code) {
-        case CALLI: {
+        case cmd::CALLI: {
             Call(addr);
             break;
         }
 
-        case RET: {
-            registers_[kStackRegister] += addr;
-            Pop(kInstructionRegister, 0);
+        case cmd::RET: {
+            registers_[arch::kStackRegister] += addr;
+            Pop(arch::kInstructionRegister, 0);
             break;
         }
 
-        case JMP: {
-            registers_[kInstructionRegister] = addr;
+        case cmd::JMP: {
+            registers_[arch::kInstructionRegister] = addr;
             break;
         }
 
-        case JEQ: {
-            Jump(EQUAL, addr);
+        case cmd::JEQ: {
+            Jump(flags::EQUAL, addr);
             break;
         }
 
-        case JNE: {
-            Jump(NOT_EQUAL, addr);
+        case cmd::JNE: {
+            Jump(flags::NOT_EQUAL, addr);
             break;
         }
 
-        case JG: {
-            Jump(GREATER, addr);
+        case cmd::JG: {
+            Jump(flags::GREATER, addr);
             break;
         }
 
-        case JL: {
-            Jump(LESS, addr);
+        case cmd::JL: {
+            Jump(flags::LESS, addr);
             break;
         }
 
-        case JGE: {
-            Jump(GREATER_OR_EQUAL, addr);
+        case cmd::JGE: {
+            Jump(flags::GREATER_OR_EQUAL, addr);
             break;
         }
 
-        case JLE: {
-            Jump(LESS_OR_EQUAL, addr);
+        case cmd::JLE: {
+            Jump(flags::LESS_OR_EQUAL, addr);
             break;
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(J, code);
+            throw InternalError::UnknownCommandForFormat(cmd::format::J, code);
         }
     }
 
     return true;
 }
 
-bool Executor::ExecuteCommand(Executor::Word command) {
-    registers_[kInstructionRegister]++;
+bool Executor::ExecuteCommand(cmd::CommandBin command) {
+    registers_[arch::kInstructionRegister]++;
 
-    auto code = static_cast<CommandCode>(command >> cmd::kCodeShift);
-    if (!kCodeToFormat.contains(code)) {
+    auto code = static_cast<cmd::Code>(command >> cmd::format::kCodeShift);
+    if (!cmd::kCodeToFormat.contains(code)) {
         throw ExecutionError::UnknownCommand(code);
     }
 
-    switch (CommandFormat format = kCodeToFormat.at(code)) {
-        case RM: {
-            Register reg = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
-            Address addr = command & cmd::kAddressMask;
+    switch (cmd::Format format = cmd::kCodeToFormat.at(code)) {
+        case cmd::format::RM: {
+            args::Register reg = (command >> cmd::format::kRecvShift) &
+                                 cmd::format::kRegisterMask;
+            args::Address addr = command & cmd::format::kAddressMask;
 
             return ExecuteRMCommand(code, reg, addr);
         }
 
-        case RR: {
-            Receiver recv = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
-            Source src    = (command >> cmd::kSrcShift) & cmd::kRegisterMask;
-            Modifier mod  = command & cmd::kModMask;
+        case cmd::format::RR: {
+            args::Receiver recv = (command >> cmd::format::kRecvShift) &
+                                  cmd::format::kRegisterMask;
+            args::Source src = (command >> cmd::format::kSrcShift) &
+                               cmd::format::kRegisterMask;
+            args::Modifier mod = command & cmd::format::kModMask;
 
             return ExecuteRRCommand(code, recv, src, mod);
         }
 
-        case RI: {
-            Register reg  = (command >> cmd::kRecvShift) & cmd::kRegisterMask;
-            Immediate imm = command & cmd::kImmMask;
+        case cmd::format::RI: {
+            args::Register reg = (command >> cmd::format::kRecvShift) &
+                                 cmd::format::kRegisterMask;
+            args::Immediate imm = command & cmd::format::kImmMask;
 
             return ExecuteRICommand(code, reg, imm);
         }
 
-        case J: {
-            Address addr = command & cmd::kAddressMask;
+        case cmd::format::J: {
+            args::Address addr = command & cmd::format::kAddressMask;
 
             return ExecuteJCommand(code, addr);
         }
@@ -742,8 +780,8 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
     // reset input position indicator
     binary.seekg(0);
 
-    auto read_ui = [&binary]() -> Word {
-        Word word{};
+    auto read_word = [&binary]() -> types::Word {
+        types::Word word{};
         binary.read(reinterpret_cast<char*>(&word), 4);
         return word;
     };
@@ -759,9 +797,9 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
     }
 
     // read the code, constants and data segments sizes (in bytes)
-    size_t code_size   = read_ui();
-    size_t consts_size = read_ui();
-    size_t data_size   = read_ui();
+    size_t code_size   = read_word();
+    size_t consts_size = read_word();
+    size_t data_size   = read_word();
 
     // check that the exec file size equals the size specified by the header
     if (exec_size != exec::kHeaderSize + code_size + consts_size + data_size) {
@@ -772,27 +810,33 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
     }
 
     // read the address of the first instruction
-    registers_[kInstructionRegister] = read_ui();
+    registers_[arch::kInstructionRegister] = read_word();
 
     // read the initial stack pointer value
-    registers_[kStackRegister] = read_ui();
+    registers_[arch::kStackRegister] = read_word();
+
+    // read the target processor ID
+    types::Word processor_id = read_word();
+    if (processor_id != exec::kProcessorID) {
+        throw ExecFileError::InvalidProcessorID(processor_id);
+    }
 
     // jump to the code segment
     binary.seekg(exec::kCodeSegmentPos);
 
     // the code_size is denoted in bytes, so we need to divide
     // it by 4 to get the number of machine words
-    size_t n_commands = code_size / kWordSize;
+    size_t n_commands = code_size / types::kWordSize;
 
     // copy the code to virtual memory
     for (size_t i = 0; i < n_commands; ++i) {
-        memory_[i] = read_ui();
+        memory_[i] = read_word();
     }
 
     // execute while we are inside the code segment
     // and no command has returned an exit signal
-    while (registers_[kInstructionRegister] < n_commands &&
-           ExecuteCommand(memory_[registers_[kInstructionRegister]])) {
+    while (registers_[arch::kInstructionRegister] < n_commands &&
+           ExecuteCommand(memory_[registers_[arch::kInstructionRegister]])) {
     }
 }
 

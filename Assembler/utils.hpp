@@ -1,12 +1,9 @@
 #pragma once
 
-#include <concepts>
-#include <cstdint>
-#include <sstream>
-#include <string>
-#include <type_traits>
-#include <unordered_map>
-#include <vector>
+#include <concepts>       // for convertible_to
+#include <cstddef>        // for size_t
+#include <functional>     // for hash
+#include <unordered_map>  // for unordered_map
 
 namespace karma::detail::util {
 

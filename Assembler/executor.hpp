@@ -1,30 +1,16 @@
 #pragma once
 
-#include <concepts>
-#include <string>
-#include <vector>
+#include <concepts>  // for totally_ordered
+#include <string>    // for string
+#include <vector>    // for vector
 
-#include "specs.hpp"
+#include "specs/architecture.hpp"
+#include "specs/commands.hpp"
+#include "specs/flags.hpp"
 
 namespace karma {
 
 class Executor {
-   private:
-    using Word          = detail::specs::Word;
-    using TwoWords      = detail::specs::TwoWords;
-    using Double        = detail::specs::Double;
-    using CommandCode   = detail::specs::CommandCode;
-    using CommandFormat = detail::specs::CommandFormat;
-    using SyscallCode   = detail::specs::SyscallCode;
-    using Flag          = detail::specs::Flag;
-    using CommandBin    = detail::specs::CommandBin;
-    using Register      = detail::specs::Register;
-    using Receiver      = detail::specs::Receiver;
-    using Source        = detail::specs::Source;
-    using Address       = detail::specs::Address;
-    using Modifier      = detail::specs::Modifier;
-    using Immediate     = detail::specs::Immediate;
-
    public:
     struct Error;
     struct InternalError;
@@ -32,27 +18,50 @@ class Executor {
     struct ExecFileError;
 
    private:
-    static Double ToDbl(TwoWords);
-    static TwoWords ToUll(Double);
+    static detail::specs::arch::Double ToDbl(detail::specs::arch::TwoWords);
+    static detail::specs::arch::TwoWords ToUll(detail::specs::arch::Double);
 
-    [[nodiscard]] TwoWords GetTwoRegisters(Source) const;
-    void PutTwoRegisters(TwoWords, Receiver);
+    [[nodiscard]] detail::specs::arch::TwoWords GetTwoRegisters(
+        detail::specs::cmd::args::Source) const;
+    void PutTwoRegisters(detail::specs::arch::TwoWords,
+                         detail::specs::cmd::args::Receiver);
 
     template <std::totally_ordered T>
     void WriteComparisonToFlags(T, T);
-    void Jump(Flag, Address);
 
-    void Divide(TwoWords, TwoWords, Receiver);
-    bool Syscall(Register, SyscallCode);
-    void Push(Word);
-    void Pop(Receiver, Modifier);
-    Address Call(Address);
+    void Jump(detail::specs::flags::Flag, detail::specs::cmd::args::Address);
 
-    bool ExecuteRMCommand(CommandCode, Register, Address);
-    bool ExecuteRRCommand(CommandCode, Receiver, Source, Modifier);
-    bool ExecuteRICommand(CommandCode, Register, Immediate);
-    bool ExecuteJCommand(CommandCode, Address);
-    bool ExecuteCommand(CommandBin);
+    void Divide(detail::specs::arch::TwoWords,
+                detail::specs::arch::TwoWords,
+                detail::specs::cmd::args::Receiver);
+
+    bool Syscall(detail::specs::cmd::args::Register,
+                 detail::specs::cmd::syscall::Code);
+
+    void Push(detail::specs::arch::Word);
+
+    void Pop(detail::specs::cmd::args::Receiver,
+             detail::specs::cmd::args::Modifier);
+
+    detail::specs::cmd::args::Address Call(detail::specs::cmd::args::Address);
+
+    bool ExecuteRMCommand(detail::specs::cmd::Code,
+                          detail::specs::cmd::args::Register,
+                          detail::specs::cmd::args::Address);
+
+    bool ExecuteRRCommand(detail::specs::cmd::Code,
+                          detail::specs::cmd::args::Receiver,
+                          detail::specs::cmd::args::Source,
+                          detail::specs::cmd::args::Modifier);
+
+    bool ExecuteRICommand(detail::specs::cmd::Code,
+                          detail::specs::cmd::args::Register,
+                          detail::specs::cmd::args::Immediate);
+
+    bool ExecuteJCommand(detail::specs::cmd::Code,
+                         detail::specs::cmd::args::Address);
+
+    bool ExecuteCommand(detail::specs::cmd::CommandBin);
 
     void ExecuteImpl(const std::string& exec_path);
 
@@ -60,9 +69,15 @@ class Executor {
     void Execute(const std::string& exec_path);
 
    private:
-    std::vector<Word> memory_{detail::specs::kMemorySize};
-    std::vector<Word> registers_{detail::specs::kNRegisters};
-    Word flags_{0};
+    std::vector<detail::specs::arch::Word> memory_{
+        detail::specs::arch::kMemorySize,
+    };
+
+    std::vector<detail::specs::arch::Register> registers_{
+        detail::specs::arch::kNRegisters,
+    };
+
+    detail::specs::arch::Word flags_{0};
 };
 
 }  // namespace karma

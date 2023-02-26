@@ -30,18 +30,7 @@ Checks: >
   -modernize-use-trailing-return-type,
   -readability-redundant-access-specifiers,
 
-#  cppcoreguidelines-avoid-goto,
-#  cppcoreguidelines-pro-type-const-cast,
-#  google-build-using-namespace,
-#  google-explicit-constructor,
-#  google-runtime-int,
-#  modernize-use-nullptr,
-#  readability-braces-around-statements,
-#  readability-container-size-empty,
-#  readability-redundant-control-flow,
-#  readability-identifier-naming,
-#  readability-simplify-boolean-expr,
-#  readability-implicit-bool-conversion
+  -cppcoreguidelines-avoid-non-const-global-variables,
 
 HeaderFilterRegex: '\.hpp$'
 
