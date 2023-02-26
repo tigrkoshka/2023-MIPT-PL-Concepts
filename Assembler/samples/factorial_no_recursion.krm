@@ -1,25 +1,25 @@
 fact:               ; a non-recursive function calculating the factorial of its argument
-  loadr r0, r14, 1  ; load the first (and only) argument to r0
-  mov r2, r0, 0     ; copy the argument to r2
-  lc r0, 1          ; initialise the result with 1
+  loadr r0 r14 1    ; load the first (and only) argument to r0
+  mov r2 r0 0       ; copy the argument to r2
+  lc r0 1           ; initialise the result with 1
 
 loop:               ; a while loop
-  cmpi r2, 1        ; compare r2 to 1
+  cmpi r2 1         ; compare r2 to 1
   jle out           ; if the next factor is less or equal to 1, break the cycle
-  mul r0, r2, 0     ; multiply the current result by the next factor
-  subi r2, 1        ; decrement r2 by 1
+  mul r0 r2 0       ; multiply the current result by the next factor
+  subi r2 1         ; decrement r2 by 1
   jmp loop          ; continue the loop
 
 out:                ; out of the while loop
   ret 1             ; return from function and remove the argument from the stack
 
 main:
-  syscall r0, 100   ; read an integer from stdin to r0
-  push r0, 0        ; put r0+0 to the stack as the fact argument
+  syscall r0 100    ; read an integer from stdin to r0
+  push r0 0         ; put r0+0 to the stack as the fact argument
   calli fact        ; call fact, the function will put the result to r0
-  syscall r0, 102   ; print r0 to stdout
-  lc r0, 10         ; store the constant 10 ('\n') to r0
-  syscall r0, 105   ; print '\n' from r0 to stdout
-  lc r0, 0          ; clear r0
-  syscall r0, 0     ; exit the program with code 0
-  end main          ; start execution from label main
+  syscall r0 102    ; print r0 to stdout
+  lc r0 10          ; store the constant 10 ('\n') to r0
+  syscall r0 105    ; print '\n' from r0 to stdout
+  lc r0 0           ; clear r0
+  syscall r0 0      ; exit the program with code 0
+end main            ; start execution from label main

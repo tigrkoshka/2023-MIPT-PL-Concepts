@@ -78,6 +78,7 @@ class Compiler {
 
    public:
     static void Compile(std::istream& code, const std::string& exec_path);
+    static void Compile(const std::string& src, const std::string& dst = "");
 };
 
 struct Compiler::Error : std::runtime_error {
@@ -116,6 +117,8 @@ struct Compiler::InternalError : Error {
     InternalError(InternalError&&)                 = default;
     InternalError& operator=(InternalError&&)      = default;
     ~InternalError() override                      = default;
+
+    static InternalError FailedToOpen(const std::string& path);
 
     static InternalError FormatNotFound(detail::specs::cmd::Code command_code,
                                         size_t line);

@@ -1,13 +1,15 @@
 #include "compiler.hpp"
 
-#include <algorithm>  // for min
-#include <cctype>     // for isalnum, isdigit
-#include <cstddef>    // for size_t
-#include <exception>  // for exception
-#include <iomanip>    // for quoted
-#include <iostream>   // for cout
-#include <stdexcept>  // for runtime_error
-#include <utility>    // for move
+#include <algorithm>   // for min
+#include <cctype>      // for isalnum, isdigit
+#include <cstddef>     // for size_t
+#include <exception>   // for exception
+#include <filesystem>  // for path
+#include <fstream>     // for ifstream
+#include <iomanip>     // for quoted
+#include <iostream>    // for cout, ios
+#include <stdexcept>   // for runtime_error
+#include <utility>     // for move
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
@@ -31,6 +33,12 @@ namespace exec = detail::specs::exec;
 ////////////////////////////////////////////////////////////////////////////////
 
 using InternalError = Compiler::InternalError;
+
+InternalError InternalError::FailedToOpen(const std::string& path) {
+    std::ostringstream ss;
+    ss << "failed to open " << std::quoted(path);
+    return InternalError{ss.str()};
+}
 
 InternalError InternalError::FormatNotFound(cmd::Code command_code,
                                             size_t line) {
@@ -684,6 +692,26 @@ void Compiler::Impl::Compile(std::istream& code, const std::string& exec_path) {
 void Compiler::Compile(std::istream& code, const std::string& exec_path) {
     Impl impl;
     impl.Compile(code, exec_path);
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void Compiler::Compile(const std::string& src, const std::string& dst) {
+    std::ifstream code(src);
+    if (code.fail()) {
+        throw InternalError::FailedToOpen(src);
+    }
+
+    std::string real_dst = dst;
+    if (real_dst.empty()) {
+        std::filesystem::path src_path(src);
+
+        std::filesystem::path dst_path = src_path.parent_path();
+        dst_path /= src_path.stem();
+
+        real_dst = dst_path.string();
+    }
+
+    Compile(code, real_dst);
 }
 
 }  // namespace karma

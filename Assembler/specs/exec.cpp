@@ -64,11 +64,20 @@ ExecFileError ExecFileError::InvalidExecSize(size_t exec_size,
     return ExecFileError{ss.str()};
 }
 
+ExecFileError ExecFileError::NoTrailingZeroInIntro() {
+    std::ostringstream ss;
+    ss << "expected the welcoming " << std::quoted(exec::kIntroString)
+       << R"( string (and a trailing ('\0') as the first )" << exec::kIntroSize
+       << R"( bytes, but the first 16 bytes do not end with a '\0')";
+    return ExecFileError{ss.str()};
+}
+
 ExecFileError ExecFileError::InvalidIntroString(const std::string& intro) {
     std::ostringstream ss;
     ss << "expected the welcoming " << std::quoted(exec::kIntroString)
-       << " string (and a trailing \\0) as the first " << exec::kIntroSize
-       << " bytes, instead got: " << std::quoted(intro);
+       << R"( string and a trailing '\0' as the first )" << exec::kIntroSize
+       << " bytes, instead got: " << std::quoted(intro)
+       << R"(" (with a trailing '\0'))";
     return ExecFileError{ss.str()};
 }
 
@@ -167,6 +176,11 @@ Data Read(const std::string& exec_path) {
     binary.read(intro.data(), static_cast<std::streamsize>(exec::kIntroSize));
 
     // check that the introductory string is valid
+    if (intro.back() != '\0') {
+        throw ExecFileError::NoTrailingZeroInIntro();
+    }
+
+    intro.resize(intro.size() - 1);
     if (intro != exec::kIntroString) {
         throw ExecFileError::InvalidIntroString(intro);
     }
