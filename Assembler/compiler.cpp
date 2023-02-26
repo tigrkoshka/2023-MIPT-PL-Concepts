@@ -7,7 +7,6 @@
 #include <iomanip>    // for quoted
 #include <iostream>   // for cout
 #include <stdexcept>  // for runtime_error
-#include <string>     // for string
 #include <utility>    // for move
 
 #include "specs/architecture.hpp"

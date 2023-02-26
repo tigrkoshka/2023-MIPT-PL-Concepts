@@ -3,7 +3,7 @@
 #include <cstddef>  // for size_t
 #include <fstream>  // for ofstream
 #include <iomanip>  // for quoted
-#include <iosfwd>   // for string
+#include <iosfwd>   // for string, ostringstream
 #include <vector>   // for vector
 
 #include "architecture.hpp"
