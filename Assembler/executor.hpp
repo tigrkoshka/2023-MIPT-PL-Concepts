@@ -61,7 +61,7 @@ class Executor {
     bool ExecuteJCommand(detail::specs::cmd::Code,
                          detail::specs::cmd::args::Address);
 
-    bool ExecuteCommand(detail::specs::cmd::CommandBin);
+    bool ExecuteCommand(detail::specs::cmd::Bin);
 
     void ExecuteImpl(const std::string& exec_path);
 

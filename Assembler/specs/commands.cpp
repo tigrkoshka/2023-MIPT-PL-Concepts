@@ -7,66 +7,146 @@
 
 namespace karma::detail::specs::cmd {
 
+const arch::Word kCodeShift    = 24u;
+const arch::Word kRegisterMask = 0xfu;
+const arch::Word kRecvShift    = 20u;
+const arch::Word kSrcShift     = 16u;
+const arch::Word kAddressMask  = 0xfffffu;
+const arch::Word kModMask      = 0xffffu;
+const arch::Word kImmMask      = 0xfffffu;
+
+Code GetCode(Bin command) {
+    return static_cast<cmd::Code>(command >> kCodeShift);
+}
+
+namespace parse {
+
+args::RMArgs RM(Bin command) {
+    args::Register reg = (command >> kRecvShift) & kRegisterMask;
+    args::Address addr = command & kAddressMask;
+
+    return {reg, addr};
+}
+
+args::RRArgs RR(Bin command) {
+    args::Receiver recv = (command >> kRecvShift) & kRegisterMask;
+    args::Source src    = (command >> kSrcShift) & kRegisterMask;
+    args::Modifier mod  = command & kModMask;
+
+    return {recv, src, mod};
+}
+
+args::RIArgs RI(Bin command) {
+    args::Register reg  = (command >> kRecvShift) & kRegisterMask;
+    args::Immediate imm = command & kImmMask;
+
+    return {reg, imm};
+}
+
+args::JArgs J(Bin command) {
+    args::Address addr = command & kAddressMask;
+
+    return {addr};
+}
+
+}  // namespace parse
+
+namespace build {
+
+Bin RM(Code code, args::RMArgs args) {
+    auto [reg, addr] = args;
+
+    return (code << kCodeShift) |  //
+           (reg << kRecvShift) |   //
+           addr;
+}
+
+Bin RR(Code code, args::RRArgs args) {
+    auto [recv, src, mod] = args;
+
+    return (code << kCodeShift) |  //
+           (recv << kRecvShift) |  //
+           (src << kSrcShift) |    //
+           mod;
+}
+
+Bin RI(Code code, args::RIArgs args) {
+    auto [recv, imm] = args;
+
+    return (code << kCodeShift) |  //
+           (recv << kRecvShift) |  //
+           imm;
+}
+
+Bin J(Code code, args::JArgs args) {
+    auto [addr] = args;
+
+    return (code << kCodeShift) |  //
+           addr;
+}
+
+}  // namespace build
+
 const std::unordered_map<Format, std::string> kFormatToString = {
-    {format::RM, "RM"},
-    {format::RR, "RR"},
-    {format::RI, "RI"},
-    {format::J,  "J" },
+    {RM, "RM"},
+    {RR, "RR"},
+    {RI, "RI"},
+    {J,  "J" },
 };
 
 const std::unordered_map<Code, Format> kCodeToFormat = {
-    {HALT,    format::RI},
-    {SYSCALL, format::RI},
-    {ADD,     format::RR},
-    {ADDI,    format::RI},
-    {SUB,     format::RR},
-    {SUBI,    format::RI},
-    {MUL,     format::RR},
-    {MULI,    format::RI},
-    {DIV,     format::RR},
-    {DIVI,    format::RI},
-    {LC,      format::RI},
-    {SHL,     format::RR},
-    {SHLI,    format::RI},
-    {SHR,     format::RR},
-    {SHRI,    format::RI},
-    {AND,     format::RR},
-    {ANDI,    format::RI},
-    {OR,      format::RR},
-    {ORI,     format::RI},
-    {XOR,     format::RR},
-    {XORI,    format::RI},
-    {NOT,     format::RI},
-    {MOV,     format::RR},
-    {ADDD,    format::RR},
-    {SUBD,    format::RR},
-    {MULD,    format::RR},
-    {DIVD,    format::RR},
-    {ITOD,    format::RR},
-    {DTOI,    format::RR},
-    {PUSH,    format::RI},
-    {POP,     format::RI},
-    {CALL,    format::RR},
-    {CALLI,   format::J },
-    {RET,     format::J },
-    {CMP,     format::RR},
-    {CMPI,    format::RI},
-    {CMPD,    format::RR},
-    {JMP,     format::J },
-    {JNE,     format::J },
-    {JEQ,     format::J },
-    {JLE,     format::J },
-    {JL,      format::J },
-    {JGE,     format::J },
-    {JG,      format::J },
-    {LOAD,    format::RM},
-    {STORE,   format::RM},
-    {LOAD2,   format::RM},
-    {STORE2,  format::RM},
-    {LOADR,   format::RR},
-    {STORER,  format::RR},
-    {LOADR2,  format::RR},
-    {STORER2, format::RR},
+    {HALT,    RI},
+    {SYSCALL, RI},
+    {ADD,     RR},
+    {ADDI,    RI},
+    {SUB,     RR},
+    {SUBI,    RI},
+    {MUL,     RR},
+    {MULI,    RI},
+    {DIV,     RR},
+    {DIVI,    RI},
+    {LC,      RI},
+    {SHL,     RR},
+    {SHLI,    RI},
+    {SHR,     RR},
+    {SHRI,    RI},
+    {AND,     RR},
+    {ANDI,    RI},
+    {OR,      RR},
+    {ORI,     RI},
+    {XOR,     RR},
+    {XORI,    RI},
+    {NOT,     RI},
+    {MOV,     RR},
+    {ADDD,    RR},
+    {SUBD,    RR},
+    {MULD,    RR},
+    {DIVD,    RR},
+    {ITOD,    RR},
+    {DTOI,    RR},
+    {PUSH,    RI},
+    {POP,     RI},
+    {CALL,    RR},
+    {CALLI,   J },
+    {RET,     J },
+    {CMP,     RR},
+    {CMPI,    RI},
+    {CMPD,    RR},
+    {JMP,     J },
+    {JNE,     J },
+    {JEQ,     J },
+    {JLE,     J },
+    {JL,      J },
+    {JGE,     J },
+    {JG,      J },
+    {LOAD,    RM},
+    {STORE,   RM},
+    {LOAD2,   RM},
+    {STORE2,  RM},
+    {LOADR,   RR},
+    {STORER,  RR},
+    {LOADR2,  RR},
+    {STORER2, RR},
 };
 
 const std::unordered_map<std::string, Code> kCommandToCode = {

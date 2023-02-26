@@ -4,7 +4,14 @@
 
 namespace karma::detail::specs::cmd {
 
-using CommandBin = arch::Word;
+using Bin = arch::Word;
+
+enum Format : arch::Word {
+    RM = 0,
+    RR = 1,
+    RI = 2,
+    J  = 3,
+};
 
 enum Code : arch::Word {
     HALT    = 0,
@@ -60,14 +67,10 @@ enum Code : arch::Word {
     STORER  = 70,
     STORER2 = 71,
 };
-Code GetCode(CommandBin);
 
-extern const std::unordered_map<std::string, Code> kCommandToCode;
-extern const std::unordered_map<Code, std::string> kCodeToCommand;
+using CodeFormat = std::tuple<Code, Format>;
 
-////////////////////////////////////////////////////////////////////////////////
-///                                System calls                              ///
-////////////////////////////////////////////////////////////////////////////////
+Code GetCode(Bin);
 
 namespace syscall {
 
@@ -83,10 +86,6 @@ enum Code : arch::Word {
 
 }  // namespace syscall
 
-////////////////////////////////////////////////////////////////////////////////
-///                                 Arguments                                ///
-////////////////////////////////////////////////////////////////////////////////
-
 namespace args {
 
 using Register  = arch::Register;
@@ -99,52 +98,34 @@ using Immediate = arch::Word;
 const arch::Word kModSize = 16u;
 const arch::Word kImmSize = 20u;
 
-using RMArgs     = std::tuple<arch::Register, Address>;
-using RRArgs     = std::tuple<Receiver, Source, Modifier>;
-using RIArgs     = std::tuple<arch::Register, Immediate>;
-using JArgs      = std::tuple<Address>;
-
-args::RMArgs ParseRMArgs(CommandBin);
-args::RRArgs ParseRRArgs(CommandBin);
-args::RIArgs ParseRIArgs(CommandBin);
-args::JArgs ParseJArgs(CommandBin);
-
-CommandBin BuildRMBin(Code, RMArgs);
-CommandBin BuildRRBin(Code, RRArgs);
-CommandBin BuildRIBin(Code, RIArgs);
-CommandBin BuildJBin(Code, JArgs);
+using RMArgs = std::tuple<arch::Register, Address>;
+using RRArgs = std::tuple<Receiver, Source, Modifier>;
+using RIArgs = std::tuple<arch::Register, Immediate>;
+using JArgs  = std::tuple<Address>;
 
 }  // namespace args
 
-////////////////////////////////////////////////////////////////////////////////
-///                                Bin format                                ///
-////////////////////////////////////////////////////////////////////////////////
+namespace parse {
 
-namespace format {
+args::RMArgs RM(Bin);
+args::RRArgs RR(Bin);
+args::RIArgs RI(Bin);
+args::JArgs J(Bin);
 
-enum CommandFormat : arch::Word {
-    RM = 0,
-    RR = 1,
-    RI = 2,
-    J  = 3,
-};
+}  // namespace parse
 
-const arch::Word kCodeShift    = 24u;
-const arch::Word kRegisterMask = 0xfu;
-const arch::Word kRecvShift    = 20u;
-const arch::Word kSrcShift     = 16u;
-const arch::Word kAddressMask  = 0xfffffu;
-const arch::Word kModSize      = 16u;
-const arch::Word kModMask      = 0xffffu;
-const arch::Word kImmSize      = 20u;
-const arch::Word kImmMask      = 0xfffffu;
+namespace build {
 
-}  // namespace format
+Bin RM(Code, args::RMArgs);
+Bin RR(Code, args::RRArgs);
+Bin RI(Code, args::RIArgs);
+Bin J(Code, args::JArgs);
 
-using Format = format::CommandFormat;
+}  // namespace build
 
 extern const std::unordered_map<Format, std::string> kFormatToString;
 extern const std::unordered_map<Code, Format> kCodeToFormat;
-using CodeFormat = std::tuple<Code, Format>;
+extern const std::unordered_map<std::string, Code> kCommandToCode;
+extern const std::unordered_map<Code, std::string> kCodeToCommand;
 
 }  // namespace karma::detail::specs::cmd

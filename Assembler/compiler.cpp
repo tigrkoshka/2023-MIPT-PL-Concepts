@@ -608,32 +608,23 @@ void Compiler::ProcessCurrLine() {
 
     auto [code, format] = GetCommand();
     switch (format) {
-        case cmd::format::RM: {
-            auto [reg, addr] = GetRMOperands();
-            compiled_.push_back((code << cmd::format::kCodeShift) |
-                                (reg << cmd::format::kRecvShift) | addr);
+        case cmd::RM: {
+            compiled_.push_back(cmd::build::RM(code, GetRMOperands()));
             break;
         }
 
-        case cmd::format::RR: {
-            auto [recv, src, mod] = GetRROperands();
-            compiled_.push_back((code << cmd::format::kCodeShift) |
-                                (recv << cmd::format::kRecvShift) |
-                                (src << cmd::format::kSrcShift) | mod);
+        case cmd::RR: {
+            compiled_.push_back(cmd::build::RR(code, GetRROperands()));
             break;
         }
 
-        case cmd::format::RI: {
-            auto [recv, imm] = GetRIOperands();
-            compiled_.push_back((code << cmd::format::kCodeShift) |
-                                (recv << cmd::format::kRecvShift) | imm);
+        case cmd::RI: {
+            compiled_.push_back(cmd::build::RI(code, GetRIOperands()));
             break;
         }
 
-        case cmd::format::J: {
-            auto [addr] = GetJOperands();
-            compiled_.push_back((code << cmd::format::kCodeShift) | addr);
-
+        case cmd::J: {
+            compiled_.push_back(cmd::build::J(code, GetJOperands()));
             break;
         }
 

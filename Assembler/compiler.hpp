@@ -19,9 +19,6 @@ class Compiler {
     struct CompileError;
 
    private:
-    // TODO: labels must be separated by a command, this is not valid:
-    //       label1: label2: ori r1 123
-
     bool TryProcessEntrypoint();
     void CheckLabel() const;
     bool TryProcessLabel();

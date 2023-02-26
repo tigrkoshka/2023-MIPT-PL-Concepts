@@ -371,7 +371,7 @@ bool Executor::ExecuteRMCommand(cmd::Code code,
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(cmd::format::RM, code);
+            throw InternalError::UnknownCommandForFormat(cmd::RM, code);
         }
     }
 
@@ -548,7 +548,7 @@ bool Executor::ExecuteRRCommand(cmd::Code code,
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(cmd::format::RR, code);
+            throw InternalError::UnknownCommandForFormat(cmd::RR, code);
         }
     }
 
@@ -646,7 +646,7 @@ bool Executor::ExecuteRICommand(cmd::Code code,
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(cmd::format::RI, code);
+            throw InternalError::UnknownCommandForFormat(cmd::RI, code);
         }
     }
 
@@ -702,51 +702,39 @@ bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(cmd::format::J, code);
+            throw InternalError::UnknownCommandForFormat(cmd::J, code);
         }
     }
 
     return true;
 }
 
-bool Executor::ExecuteCommand(cmd::CommandBin command) {
+bool Executor::ExecuteCommand(cmd::Bin command) {
     registers_[arch::kInstructionRegister]++;
 
-    auto code = static_cast<cmd::Code>(command >> cmd::format::kCodeShift);
+    auto code = cmd::GetCode(command);
     if (!cmd::kCodeToFormat.contains(code)) {
         throw ExecutionError::UnknownCommand(code);
     }
 
     switch (cmd::Format format = cmd::kCodeToFormat.at(code)) {
-        case cmd::format::RM: {
-            args::Register reg = (command >> cmd::format::kRecvShift) &
-                                 cmd::format::kRegisterMask;
-            args::Address addr = command & cmd::format::kAddressMask;
-
+        case cmd::RM: {
+            auto [reg, addr] = cmd::parse::RM(command);
             return ExecuteRMCommand(code, reg, addr);
         }
 
-        case cmd::format::RR: {
-            args::Receiver recv = (command >> cmd::format::kRecvShift) &
-                                  cmd::format::kRegisterMask;
-            args::Source src = (command >> cmd::format::kSrcShift) &
-                               cmd::format::kRegisterMask;
-            args::Modifier mod = command & cmd::format::kModMask;
-
+        case cmd::RR: {
+            auto [recv, src, mod] = cmd::parse::RR(command);
             return ExecuteRRCommand(code, recv, src, mod);
         }
 
-        case cmd::format::RI: {
-            args::Register reg = (command >> cmd::format::kRecvShift) &
-                                 cmd::format::kRegisterMask;
-            args::Immediate imm = command & cmd::format::kImmMask;
-
+        case cmd::RI: {
+            auto [reg, imm] = cmd::parse::RI(command);
             return ExecuteRICommand(code, reg, imm);
         }
 
-        case cmd::format::J: {
-            args::Address addr = command & cmd::format::kAddressMask;
-
+        case cmd::J: {
+            auto [addr] = cmd::parse::J(command);
             return ExecuteJCommand(code, addr);
         }
 
