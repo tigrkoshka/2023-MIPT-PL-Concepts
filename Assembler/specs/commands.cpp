@@ -149,7 +149,7 @@ const std::unordered_map<Code, Format> kCodeToFormat = {
     {STORER2, RR},
 };
 
-const std::unordered_map<std::string, Code> kCommandToCode = {
+const std::unordered_map<std::string, Code> kNameToCode = {
     {"halt",    HALT   },
     {"syscall", SYSCALL},
     {"add",     ADD    },
@@ -204,7 +204,7 @@ const std::unordered_map<std::string, Code> kCommandToCode = {
     {"storer2", STORER2},
 };
 
-const std::unordered_map<Code, std::string> kCodeToCommand =
-    util::RevertMap(kCommandToCode);
+const std::unordered_map<Code, std::string> kCodeToName =
+    util::RevertMap(kNameToCode);
 
 }  // namespace karma::detail::specs::cmd

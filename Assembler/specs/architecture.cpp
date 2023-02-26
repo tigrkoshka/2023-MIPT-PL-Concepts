@@ -7,7 +7,7 @@
 
 namespace karma::detail::specs::arch {
 
-const std::unordered_map<std::string, Register> kRegisterToNum = {
+const std::unordered_map<std::string, Register> kRegisterNameToNum = {
     {"r0",  R0 },
     {"r1",  R1 },
     {"r2",  R2 },
@@ -26,7 +26,7 @@ const std::unordered_map<std::string, Register> kRegisterToNum = {
     {"r15", R15},
 };
 
-const std::unordered_map<Register, std::string> kRegisterToString =
-    util::RevertMap(kRegisterToNum);
+const std::unordered_map<Register, std::string> kRegisterNumToName =
+    util::RevertMap(kRegisterNameToNum);
 
 }  // namespace karma::detail::specs::arch

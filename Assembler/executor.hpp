@@ -1,8 +1,9 @@
 #pragma once
 
-#include <concepts>  // for totally_ordered
-#include <string>    // for string
-#include <vector>    // for vector
+#include <concepts>   // for totally_ordered
+#include <stdexcept>  // for runtime_error
+#include <string>     // for string
+#include <vector>     // for vector
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
@@ -15,7 +16,6 @@ class Executor {
     struct Error;
     struct InternalError;
     struct ExecutionError;
-    struct ExecFileError;
 
    private:
     static detail::specs::arch::Double ToDbl(detail::specs::arch::TwoWords);
@@ -78,6 +78,76 @@ class Executor {
     };
 
     detail::specs::arch::Word flags_{0};
+};
+
+struct Executor::Error : std::runtime_error {
+   protected:
+    explicit Error(const std::string& message)
+        : std::runtime_error(message) {}
+
+   public:
+    Error(const Error&)            = default;
+    Error& operator=(const Error&) = default;
+    Error(Error&&)                 = default;
+    Error& operator=(Error&&)      = default;
+    ~Error() override              = default;
+};
+
+struct Executor::InternalError : Error {
+   private:
+    friend void Executor::Execute(const std::string& exec_path);
+
+   private:
+    explicit InternalError(const std::string& message)
+        : Error("internal executor error: " + message) {}
+
+   public:
+    InternalError(const InternalError&)            = default;
+    InternalError& operator=(const InternalError&) = default;
+    InternalError(InternalError&&)                 = default;
+    InternalError& operator=(InternalError&&)      = default;
+    ~InternalError() override                      = default;
+
+   public:
+    static InternalError UnknownCommandFormat(detail::specs::cmd::Format);
+
+    static InternalError UnknownCommandForFormat(detail::specs::cmd::Format,
+                                                 detail::specs::cmd::Code);
+};
+
+struct Executor::ExecutionError : Error {
+   private:
+    explicit ExecutionError(const std::string& message)
+        : Error("execution error" + message) {}
+
+   public:
+    ExecutionError(const ExecutionError&)            = default;
+    ExecutionError& operator=(const ExecutionError&) = default;
+    ExecutionError(ExecutionError&&)                 = default;
+    ExecutionError& operator=(ExecutionError&&)      = default;
+    ~ExecutionError() override                       = default;
+
+   public:
+    static ExecutionError UnknownCommand(detail::specs::cmd::Code);
+
+    static ExecutionError UnknownSyscallCode(detail::specs::cmd::syscall::Code);
+
+    template <typename T>
+        requires std::is_same_v<T, detail::specs::arch::types::TwoWords> ||
+                 std::is_same_v<T, detail::specs::arch::types::Double>
+    static ExecutionError DivisionByZero(T dividend, T divisor);
+
+    static ExecutionError QuotientOverflow(
+        detail::specs::arch::types::TwoWords dividend,
+        detail::specs::arch::types::TwoWords divisor);
+
+    static ExecutionError DtoiOverflow(detail::specs::arch::types::Double);
+
+    static ExecutionError InvalidPutCharValue(
+        detail::specs::cmd::args::Immediate);
+
+    static ExecutionError AddressOutsideOfMemory(
+        detail::specs::cmd::args::Address);
 };
 
 }  // namespace karma

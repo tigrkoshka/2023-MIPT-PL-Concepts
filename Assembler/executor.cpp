@@ -1,12 +1,11 @@
 #include "executor.hpp"
 
+#include <algorithm>    // for copy
 #include <cmath>        // for floor
 #include <exception>    // for exception
-#include <fstream>      // for ifstream
 #include <iomanip>      // for quoted
 #include <iostream>     // for cout
 #include <sstream>      // for ostringstream
-#include <stdexcept>    // for runtime_error
 #include <string>       // for string
 #include <type_traits>  // for make_signed_t
 
@@ -27,175 +26,80 @@ namespace syscall = cmd::syscall;
 namespace exec = detail::specs::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
-///                                  Errors                                  ///
+///                              Internal errors                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-struct Executor::Error : std::runtime_error {
-   protected:
-    explicit Error(const std::string& message)
-        : std::runtime_error(message) {}
+using InternalError = Executor::InternalError;
 
-   public:
-    Error(const Error&)            = default;
-    Error& operator=(const Error&) = default;
-    Error(Error&&)                 = default;
-    Error& operator=(Error&&)      = default;
-    ~Error() override              = default;
-};
+InternalError InternalError::UnknownCommandFormat(cmd::Format format) {
+    std::ostringstream ss;
+    ss << "unknown command format " << format;
+    return InternalError{ss.str()};
+}
 
-struct Executor::InternalError : Error {
-   private:
-    friend void Executor::Execute(const std::string& exec_path);
+InternalError InternalError::UnknownCommandForFormat(cmd::Format format,
+                                                     cmd::Code code) {
+    std::ostringstream ss;
+    ss << "unknown command code " << code << " for command format "
+       << std::quoted(cmd::kFormatToString.at(format));
+    return InternalError{ss.str()};
+}
 
-   private:
-    explicit InternalError(const std::string& message)
-        : Error("internal executor error: " + message) {}
+////////////////////////////////////////////////////////////////////////////////
+///                             Execution errors                             ///
+////////////////////////////////////////////////////////////////////////////////
 
-   public:
-    InternalError(const InternalError&)            = default;
-    InternalError& operator=(const InternalError&) = default;
-    InternalError(InternalError&&)                 = default;
-    InternalError& operator=(InternalError&&)      = default;
-    ~InternalError() override                      = default;
+using ExecutionError = Executor::ExecutionError;
 
-   public:
-    static InternalError UnknownCommandFormat(cmd::Format format) {
-        std::ostringstream ss;
-        ss << "unknown command format " << format;
-        return InternalError{ss.str()};
-    }
+ExecutionError ExecutionError::UnknownCommand(cmd::Code code) {
+    std::ostringstream ss;
+    ss << "unknown command code " << code;
+    return ExecutionError{ss.str()};
+}
 
-    static InternalError UnknownCommandForFormat(cmd::Format format,
-                                                 cmd::Code code) {
-        std::ostringstream ss;
-        ss << "unknown command code " << code << " for command format "
-           << std::quoted(cmd::kFormatToString.at(format));
-        return InternalError{ss.str()};
-    }
-};
+ExecutionError ExecutionError::UnknownSyscallCode(syscall::Code code) {
+    std::ostringstream ss;
+    ss << "unknown syscall code" << code;
+    return ExecutionError{ss.str()};
+}
 
-struct Executor::ExecutionError : Error {
-   private:
-    explicit ExecutionError(const std::string& message)
-        : Error("execution error" + message) {}
+template <typename T>
+    requires std::is_same_v<T, types::TwoWords> ||
+             std::is_same_v<T, types::Double>
+ExecutionError ExecutionError::DivisionByZero(T dividend, T divisor) {
+    std::ostringstream ss;
+    ss << "a division by zero occurred when dividing " << dividend << " by "
+       << divisor;
+    return ExecutionError{ss.str()};
+}
 
-   public:
-    ExecutionError(const ExecutionError&)            = default;
-    ExecutionError& operator=(const ExecutionError&) = default;
-    ExecutionError(ExecutionError&&)                 = default;
-    ExecutionError& operator=(ExecutionError&&)      = default;
-    ~ExecutionError() override                       = default;
+ExecutionError ExecutionError::QuotientOverflow(types::TwoWords dividend,
+                                                types::TwoWords divisor) {
+    std::ostringstream ss;
+    ss << "a quotient overflow occurred when dividing " << dividend << " by "
+       << divisor;
+    return ExecutionError{ss.str()};
+}
 
-   public:
-    static ExecutionError UnknownCommand(cmd::Code code) {
-        std::ostringstream ss;
-        ss << "unknown command code " << code;
-        return ExecutionError{ss.str()};
-    }
+ExecutionError ExecutionError::DtoiOverflow(types::Double value) {
+    std::ostringstream ss;
+    ss << "a word overflow occurred when casting " << value << " to integer";
+    return ExecutionError{ss.str()};
+}
 
-    static ExecutionError UnknownSyscallCode(syscall::Code code) {
-        std::ostringstream ss;
-        ss << "unknown syscall code" << code;
-        return ExecutionError{ss.str()};
-    }
+ExecutionError ExecutionError::InvalidPutCharValue(args::Immediate value) {
+    std::ostringstream ss;
+    ss << "the value in the register for the PUTCHAR syscall is " << value
+       << ", which is an invalid char, because it is greater than 255";
+    return ExecutionError{ss.str()};
+}
 
-    template <typename T>
-        requires std::is_same_v<T, types::TwoWords> ||
-                 std::is_same_v<T, types::Double>
-    static ExecutionError DivisionByZero(T dividend, T divisor) {
-        std::ostringstream ss;
-        ss << "a division by zero occurred when dividing " << dividend << " by "
-           << divisor;
-        return ExecutionError{ss.str()};
-    }
-
-    static ExecutionError QuotientOverflow(types::TwoWords dividend,
-                                           types::TwoWords divisor) {
-        std::ostringstream ss;
-        ss << "a quotient overflow occurred when dividing " << dividend
-           << " by " << divisor;
-        return ExecutionError{ss.str()};
-    }
-
-    static ExecutionError DtoiOverflow(types::Double value) {
-        std::ostringstream ss;
-        ss << "a word overflow occurred when casting " << value
-           << " to integer";
-        return ExecutionError{ss.str()};
-    }
-
-    static ExecutionError InvalidPutCharValue(args::Immediate value) {
-        std::ostringstream ss;
-        ss << "the value in the register for the PUTCHAR syscall is " << value
-           << ", which is an invalid char, because it is greater than 255";
-        return ExecutionError{ss.str()};
-    }
-
-    // TODO: use this
-    static ExecutionError AddressOutsideOfMemory(args::Address address) {
-        std::ostringstream ss;
-        ss << "address " << std::hex << address
-           << " is outside of memory (size " << arch::kMemorySize << ")";
-        return ExecutionError{ss.str()};
-    }
-};
-
-struct Executor::ExecFileError : Error {
-   private:
-    explicit ExecFileError(const std::string& message)
-        : Error("exec file error: " + message) {}
-
-   public:
-    ExecFileError(const ExecFileError&)            = default;
-    ExecFileError& operator=(const ExecFileError&) = default;
-    ExecFileError(ExecFileError&&)                 = default;
-    ExecFileError& operator=(ExecFileError&&)      = default;
-    ~ExecFileError() override                      = default;
-
-   public:
-    static ExecFileError FailedToOpen() {
-        std::ostringstream ss;
-        ss << "failed to open exec file, please check that the path is correct";
-        return ExecFileError{ss.str()};
-    }
-
-    static ExecFileError TooSmallForHeader(size_t size) {
-        std::ostringstream ss;
-        ss << "exec size is " << size << ", which is less than "
-           << exec::kHeaderSize << " bytes required for the header";
-        return ExecFileError{ss.str()};
-    }
-
-    static ExecFileError InvalidExecSize(size_t exec_size,
-                                         size_t code_size,
-                                         size_t consts_size,
-                                         size_t data_size) {
-        std::ostringstream ss;
-        ss << "the exec file size (" << exec_size << ") does not equal "
-           << exec::kHeaderSize + code_size + consts_size + data_size
-           << ", which is the sum of the header size (" << exec::kHeaderSize
-           << ") and the total of the sizes of the code segment (" << code_size
-           << "), the constants segment (" << consts_size
-           << ") and the data segment (" << data_size
-           << ") specified in the header";
-        return ExecFileError{ss.str()};
-    }
-
-    static ExecFileError InvalidIntroString(const std::string& intro) {
-        std::ostringstream ss;
-        ss << "expected the welcoming " << std::quoted(exec::kIntroString)
-           << " string (and a trailing \\0) as the first " << exec::kIntroSize
-           << " bytes, instead got: " << std::quoted(intro);
-        return ExecFileError{ss.str()};
-    }
-
-    static ExecFileError InvalidProcessorID(types::Word processor_id) {
-        std::ostringstream ss;
-        ss << "exec file is built for processor with ID " << processor_id
-           << ", current processor ID: " << exec::kProcessorID;
-        return ExecFileError{ss.str()};
-    }
-};
+ExecutionError ExecutionError::AddressOutsideOfMemory(args::Address address) {
+    std::ostringstream ss;
+    ss << "address " << std::hex << address << " is outside of memory (size "
+       << arch::kMemorySize << ")";
+    return ExecutionError{ss.str()};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Utils                                  ///
@@ -749,81 +653,14 @@ bool Executor::ExecuteCommand(cmd::Bin command) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void Executor::ExecuteImpl(const std::string& exec_path) {
-    // set the input position indicator to the end (using std::ios::ate)
-    // after opening the file to get the size of the exec file,
-    // which is used later to verify that the exec is not malformed
-    std::ifstream binary(exec_path, std::ios::binary | std::ios::ate);
+    exec::Data data = exec::Read(exec_path);
 
-    // check that the file was found
-    if (binary.fail()) {
-        throw ExecFileError::FailedToOpen();
-    }
+    registers_[arch::kInstructionRegister] = data.entrypoint;
+    registers_[arch::kStackRegister]       = data.initial_stack;
 
-    // check that the exec size is not too small to contain a valid header
-    auto exec_size = static_cast<size_t>(binary.tellg());
-    if (exec_size < exec::kHeaderSize) {
-        throw ExecFileError::TooSmallForHeader(exec_size);
-    }
+    std::copy(data.code.begin(), data.code.end(), memory_.begin());
 
-    // reset input position indicator
-    binary.seekg(0);
-
-    auto read_word = [&binary]() -> types::Word {
-        types::Word word{};
-        binary.read(reinterpret_cast<char*>(&word), 4);
-        return word;
-    };
-
-    // read the first 16 bytes, which should represent
-    // the introductory string (including the final '\0')
-    std::string intro(exec::kIntroSize, '\0');
-    binary.read(intro.data(), static_cast<std::streamsize>(exec::kIntroSize));
-
-    // check that the introductory string is valid
-    if (intro != exec::kIntroString) {
-        throw ExecFileError::InvalidIntroString(intro);
-    }
-
-    // read the code, constants and data segments sizes (in bytes)
-    size_t code_size   = read_word();
-    size_t consts_size = read_word();
-    size_t data_size   = read_word();
-
-    // check that the exec file size equals the size specified by the header
-    if (exec_size != exec::kHeaderSize + code_size + consts_size + data_size) {
-        throw ExecFileError::InvalidExecSize(exec_size,
-                                             code_size,
-                                             consts_size,
-                                             data_size);
-    }
-
-    // read the address of the first instruction
-    registers_[arch::kInstructionRegister] = read_word();
-
-    // read the initial stack pointer value
-    registers_[arch::kStackRegister] = read_word();
-
-    // read the target processor ID
-    types::Word processor_id = read_word();
-    if (processor_id != exec::kProcessorID) {
-        throw ExecFileError::InvalidProcessorID(processor_id);
-    }
-
-    // jump to the code segment
-    binary.seekg(exec::kCodeSegmentPos);
-
-    // the code_size is denoted in bytes, so we need to divide
-    // it by 4 to get the number of machine words
-    size_t n_commands = code_size / types::kWordSize;
-
-    // copy the code to virtual memory
-    for (size_t i = 0; i < n_commands; ++i) {
-        memory_[i] = read_word();
-    }
-
-    // execute while we are inside the code segment
-    // and no command has returned an exit signal
-    while (registers_[arch::kInstructionRegister] < n_commands &&
+    while (registers_[arch::kInstructionRegister] < data.code.size() &&
            ExecuteCommand(memory_[registers_[arch::kInstructionRegister]])) {
     }
 }
@@ -832,13 +669,14 @@ void Executor::Execute(const std::string& exec_path) {
     try {
         ExecuteImpl(exec_path);
     } catch (const Error& e) {
-        std::cout << exec_path << ": " << e.what() << std::endl;
+        std::cout << "executing " << exec_path << ": " << e.what() << std::endl;
+    } catch (const exec::Error& e) {
+        std::cout << "executing " << exec_path << ": " << e.what() << std::endl;
     } catch (const std::exception& e) {
-        std::cout << exec_path << ": " << InternalError(e.what()).what()
-                  << std::endl;
+        std::cout << "executing " << exec_path
+                  << ": unexpected exception: " << e.what() << std::endl;
     } catch (...) {
-        std::cout << exec_path << ": "
-                  << InternalError("unexpected exception").what() << std::endl;
+        std::cout << "executing " << exec_path << ": unexpected exception";
     }
 }
 

@@ -53,8 +53,8 @@ static const Register kCallFrameRegister   = R13;
 static const Register kStackRegister       = R14;
 static const Register kInstructionRegister = R15;
 
-extern const std::unordered_map<std::string, Register> kRegisterToNum;
-extern const std::unordered_map<Register, std::string> kRegisterToString;
+extern const std::unordered_map<std::string, Register> kRegisterNameToNum;
+extern const std::unordered_map<Register, std::string> kRegisterNumToName;
 
 static const size_t kNRegisters = 16ull;
 

@@ -125,7 +125,7 @@ Bin J(Code, args::JArgs);
 
 extern const std::unordered_map<Format, std::string> kFormatToString;
 extern const std::unordered_map<Code, Format> kCodeToFormat;
-extern const std::unordered_map<std::string, Code> kCommandToCode;
-extern const std::unordered_map<Code, std::string> kCodeToCommand;
+extern const std::unordered_map<std::string, Code> kNameToCode;
+extern const std::unordered_map<Code, std::string> kCodeToName;
 
 }  // namespace karma::detail::specs::cmd

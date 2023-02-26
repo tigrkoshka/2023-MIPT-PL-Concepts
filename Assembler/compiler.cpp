@@ -4,11 +4,11 @@
 #include <cctype>     // for isalnum, isdigit
 #include <cstddef>    // for size_t
 #include <exception>  // for exception
-#include <fstream>    // for ofstream
 #include <iomanip>    // for quoted
 #include <iostream>   // for cout
 #include <stdexcept>  // for runtime_error
 #include <string>     // for string
+#include <utility>    // for move
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
@@ -28,322 +28,277 @@ namespace types = arch::types;
 namespace exec = detail::specs::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
-///                                  Errors                                  ///
+///                              Internal errors                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-struct Compiler::Error : std::runtime_error {
-   private:
-    friend void Compiler::CompileImpl(std::istream& code,
-                                      const std::string& exec_path);
+using InternalError = Compiler::InternalError;
 
-   protected:
-    explicit Error(const std::string& message)
-        : std::runtime_error(message) {}
-
-   public:
-    Error(const Error&)            = default;
-    Error& operator=(const Error&) = default;
-    Error(Error&&)                 = default;
-    Error& operator=(Error&&)      = default;
-    ~Error() override              = default;
-};
-
-struct Compiler::InternalError : Error {
-   private:
-    friend void Compiler::Compile(std::istream& code,
-                                  const std::string& exec_path);
-
-   private:
-    explicit InternalError(const std::string& message)
-        : Error("internal compiler error: " + message) {}
-
-    InternalError(const std::string& message, size_t line)
-        : Error("internal compiler error at line " + std::to_string(line) +
-                ": " + message) {}
-
-   public:
-    InternalError(const InternalError&)            = default;
-    InternalError& operator=(const InternalError&) = default;
-    InternalError(InternalError&&)                 = default;
-    InternalError& operator=(InternalError&&)      = default;
-    ~InternalError() override                      = default;
-
-    static InternalError UnknownCommandCode(cmd::Code command_code,
+InternalError InternalError::FormatNotFound(cmd::Code command_code,
                                             size_t line) {
-        std::ostringstream ss;
-        ss << "unknown command code " << command_code;
-        return InternalError{ss.str(), line};
-    }
+    std::ostringstream ss;
+    ss << "did not find format for command with code " << command_code;
+    return InternalError{ss.str(), line};
+}
 
-    static InternalError UnknownCommandFormat(cmd::Format format, size_t line) {
-        std::ostringstream ss;
-        ss << "unknown command format " << format;
-        return InternalError{ss.str(), line};
-    }
-
-    static InternalError EmptyWord(size_t line) {
-        return InternalError{"the current word is empty", line};
-    }
-};
-
-struct Compiler::CompileError : Error {
-   private:
-    explicit CompileError(const std::string& message)
-        : Error("compile error: " + message) {}
-
-    explicit CompileError(const std::string& message, size_t line)
-        : Error("compile error at line " + std::to_string(line) + ": " +
-                message) {}
-
-   public:
-    CompileError(const CompileError&)            = default;
-    CompileError& operator=(const CompileError&) = default;
-    CompileError(CompileError&&)                 = default;
-    CompileError& operator=(CompileError&&)      = default;
-    ~CompileError() override                     = default;
-
-    // command
-
-    static CompileError UnknownCommand(const std::string& command,
-                                       size_t line) {
-        std::ostringstream ss;
-        ss << "unknown command " << std::quoted(command);
-        return CompileError{ss.str(), line};
-    }
-
-    // entrypoint
-
-    static CompileError NoEntrypoint() {
-        return CompileError("did not encounter an entrypoint");
-    }
-
-    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-    static CompileError SecondEntrypoint(size_t line, size_t entrypoint_line) {
-        std::ostringstream ss;
-        ss << "encountered second entrypoint (previous one on line "
-           << entrypoint_line << ")";
-        return CompileError{ss.str(), line};
-    }
-
-    static CompileError EntrypointWithoutAddress(size_t line) {
-        return CompileError{"entrypoint address not specified", line};
-    }
-
-    // labels
-
-    static CompileError EmptyLabel(size_t line) {
-        return CompileError("label name must not be empty", line);
-    }
-
-    static CompileError LabelBeforeEntrypoint(size_t end_line,
-                                              const std::string& latest_label,
-                                              size_t latest_label_line) {
-        std::ostringstream ss;
-        ss << "label " << std::quoted(latest_label) << " is placed before the "
-           << std::quoted(syntax::kEntrypointDirective)
-           << " directive (at line " << end_line
-           << "), but a label can only appear before a command";
-        return CompileError{ss.str(), latest_label_line};
-    }
-
-    static CompileError ConsecutiveLabels(const std::string& label,
-                                          size_t line,
-                                          const std::string& latest_label,
-                                          size_t latest_label_line) {
-        std::ostringstream ss;
-        ss << "label " << std::quoted(label)
-           << " is not separated from the previous one ("
-           << std::quoted(latest_label) << " in line " << latest_label_line
-           << ") by at least one command";
-        return CompileError{ss.str(), line};
-    }
-
-    static CompileError FileEndsWithLabel(const std::string& label,
-                                          size_t line) {
-        std::ostringstream ss;
-        ss << "label " << std::quoted(label)
-           << " is the last non-comment word in file";
-        return CompileError{ss.str(), line};
-    }
-
-    static CompileError LabelStartsWithDigit(const std::string& label,
-                                             size_t line) {
-        std::ostringstream ss;
-        ss << "label " << std::quoted(label) << " starts with a digit";
-        return CompileError{ss.str(), line};
-    }
-
-    static CompileError InvalidLabelCharacter(char invalid,
-                                              const std::string& label,
-                                              size_t line) {
-        std::ostringstream ss;
-        ss << "label " << std::quoted(label)
-           << " contains an invalid character: \'" << invalid
-           << "\' (only latin letters and digits are allowed)";
-        return CompileError{ss.str(), line};
-    }
-
-    static CompileError UndefinedLabel(const std::string& label, size_t line) {
-        std::ostringstream ss;
-        ss << "label " << std::quoted(label) << " is not defined";
-        return CompileError{ss.str(), line};
-    }
-
-    // register
-
-    static CompileError UnknownRegister(const std::string& reg, size_t line) {
-        std::ostringstream ss;
-        ss << "unknown register " << std::quoted(reg);
-        return CompileError{ss.str(), line};
-    }
-
-    // address
-
-    static CompileError AddressNegative(const std::string& address,
-                                        size_t line) {
-        std::ostringstream ss;
-        ss << "the address operand " << std::quoted(address, ')')
-           << " must not be negative";
-        return CompileError{ss.str(), line};
-    }
-
-    static CompileError AddressOutOfMemory(const std::string& address,
-                                           size_t line) {
-        std::ostringstream ss;
-        ss << "the address operand " << std::quoted(address, ')')
-           << " exceeds the memory size";
-        return CompileError{ss.str(), line};
-    }
-
-    // immediate
-
-    static CompileError ImmediateNotANumber(const std::string& immediate,
-                                            size_t line) {
-        std::ostringstream ss;
-        ss << "the immediate operand is not a number: "
-           << std::quoted(immediate);
-        return CompileError{ss.str(), line};
-    }
-
-    static CompileError ImmediateLessThanMin(int32_t min,
-                                             const std::string& immediate,
-                                             size_t line) {
-        std::ostringstream ss;
-        ss << "the immediate operand is less than the allowed minimum (" << min
-           << "): " << immediate;
-        return CompileError{ss.str(), line};
-    }
-
-    static CompileError ImmediateMoreThanMax(int32_t max,
-                                             const std::string& immediate,
-                                             size_t line) {
-        std::ostringstream ss;
-        ss << "the immediate operand is less than the allowed maximum (" << max
-           << "): " << immediate;
-        return CompileError{ss.str(), line};
-    }
-
-    static CompileError ImmediateOutOfRange(const std::string& immediate,
-                                            size_t line) {
-        std::ostringstream ss;
-        ss << "the immediate operand is out of range " << immediate;
-        return CompileError{ss.str(), line};
-    }
-
-    // RM
-
-    static CompileError RMCommandNoRegister(size_t line) {
-        return CompileError{
-            "register not specified for RM format command",
-            line,
-        };
-    }
-
-    static CompileError RMCommandNoAddress(size_t line) {
-        return CompileError{
-            "memory address not specified for RM format command",
-            line,
-        };
-    }
-
-    // RR
-
-    static CompileError RRCommandNoReceiver(size_t line) {
-        return CompileError{
-            "receiver register not specified for RR format command",
-            line,
-        };
-    }
-
-    static CompileError RRCommandNoSource(size_t line) {
-        return CompileError{
-            "source register not specified for RR format command",
-            line,
-        };
-    }
-
-    static CompileError RRCommandNoModifier(size_t line) {
-        return CompileError{
-            "source modifier operand not specified for RR format command, "
-            "specify 0 for no modification",
-            line,
-        };
-    }
-
-    // RI
-
-    static CompileError RICommandNoRegister(size_t line) {
-        return CompileError{
-            "register not specified for RI format command",
-            line,
-        };
-    }
-
-    static CompileError RICommandNoImmediate(size_t line) {
-        return CompileError{
-            "immediate operand not specified for RI format command",
-            line,
-        };
-    }
-
-    // J
-
-    static CompileError JCommandNoAddress(size_t line) {
-        return CompileError{
-            "memory address not specified for J format command",
-            line,
-        };
-    }
-
-    // Extra words
-
-    static CompileError ExtraWordsAfterEntrypoint(const std::string& extra,
+InternalError InternalError::UnknownCommandFormat(cmd::Format format,
                                                   size_t line) {
-        std::ostringstream ss;
-        ss << "the line starts with a valid "
-           << std::quoted(syntax::kEntrypointDirective)
-           << " directive, but has unexpected words at the end (starting from "
-           << std::quoted(extra) << ")";
-        return CompileError{ss.str(), line};
-    }
+    std::ostringstream ss;
+    ss << "unknown command format " << format;
+    return InternalError{ss.str(), line};
+}
 
-    static CompileError ExtraWords(cmd::Format format,
-                                   const std::string& extra,
-                                   size_t line) {
-        std::ostringstream ss;
-        ss << "the line starts with a valid command (format "
-           << cmd::kFormatToString.at(format)
-           << "), but has unexpected words at the end (starting from "
-           << std::quoted(extra) << ")";
-        return CompileError{ss.str(), line};
-    }
-};
+InternalError InternalError::EmptyWord(size_t line) {
+    return InternalError{"the current word is empty", line};
+}
+
+////////////////////////////////////////////////////////////////////////////////
+///                            Compilation errors                            ///
+////////////////////////////////////////////////////////////////////////////////
+
+using CompileError = Compiler::CompileError;
+
+// command
+
+CompileError CompileError::UnknownCommand(const std::string& command,
+                                          size_t line) {
+    std::ostringstream ss;
+    ss << "unknown command " << std::quoted(command);
+    return CompileError{ss.str(), line};
+}
+
+// entrypoint
+
+CompileError CompileError::NoEntrypoint() {
+    return CompileError("did not encounter an entrypoint");
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+CompileError CompileError::SecondEntrypoint(size_t line,
+                                            size_t entrypoint_line) {
+    std::ostringstream ss;
+    ss << "encountered second entrypoint (previous one on line "
+       << entrypoint_line << ")";
+    return CompileError{ss.str(), line};
+}
+
+CompileError CompileError::EntrypointWithoutAddress(size_t line) {
+    return CompileError{"entrypoint address not specified", line};
+}
+
+// labels
+
+CompileError CompileError::EmptyLabel(size_t line) {
+    return CompileError("label name must not be empty", line);
+}
+
+CompileError CompileError::LabelBeforeEntrypoint(
+    size_t end_line,
+    const std::string& latest_label,
+    size_t latest_label_line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(latest_label) << " is placed before the "
+       << std::quoted(syntax::kEntrypointDirective) << " directive (at line "
+       << end_line << "), but a label can only appear before a command";
+    return CompileError{ss.str(), latest_label_line};
+}
+
+CompileError CompileError::ConsecutiveLabels(const std::string& label,
+                                             size_t line,
+                                             const std::string& latest_label,
+                                             size_t latest_label_line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label)
+       << " is not separated from the previous one ("
+       << std::quoted(latest_label) << " in line " << latest_label_line
+       << ") by at least one command";
+    return CompileError{ss.str(), line};
+}
+
+CompileError CompileError::FileEndsWithLabel(const std::string& label,
+                                             size_t line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label)
+       << " is the last non-comment word in file";
+    return CompileError{ss.str(), line};
+}
+
+CompileError CompileError::LabelStartsWithDigit(const std::string& label,
+                                                size_t line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label) << " starts with a digit";
+    return CompileError{ss.str(), line};
+}
+
+CompileError CompileError::InvalidLabelCharacter(char invalid,
+                                                 const std::string& label,
+                                                 size_t line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label) << " contains an invalid character: \'"
+       << invalid << "\' (only latin letters and digits are allowed)";
+    return CompileError{ss.str(), line};
+}
+
+CompileError CompileError::UndefinedLabel(const std::string& label,
+                                          size_t line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label) << " is not defined";
+    return CompileError{ss.str(), line};
+}
+
+// register
+
+CompileError CompileError::UnknownRegister(const std::string& reg,
+                                           size_t line) {
+    std::ostringstream ss;
+    ss << "unknown register " << std::quoted(reg);
+    return CompileError{ss.str(), line};
+}
+
+// address
+
+CompileError CompileError::AddressNegative(const std::string& address,
+                                           size_t line) {
+    std::ostringstream ss;
+    ss << "the address operand " << std::quoted(address, ')')
+       << " must not be negative";
+    return CompileError{ss.str(), line};
+}
+
+CompileError CompileError::AddressOutOfMemory(const std::string& address,
+                                              size_t line) {
+    std::ostringstream ss;
+    ss << "the address operand " << std::quoted(address, ')')
+       << " exceeds the memory size";
+    return CompileError{ss.str(), line};
+}
+
+// immediate
+
+CompileError CompileError::ImmediateNotANumber(const std::string& immediate,
+                                               size_t line) {
+    std::ostringstream ss;
+    ss << "the immediate operand is not a number: " << std::quoted(immediate);
+    return CompileError{ss.str(), line};
+}
+
+CompileError CompileError::ImmediateLessThanMin(int32_t min,
+                                                const std::string& immediate,
+                                                size_t line) {
+    std::ostringstream ss;
+    ss << "the immediate operand is less than the allowed minimum (" << min
+       << "): " << immediate;
+    return CompileError{ss.str(), line};
+}
+
+CompileError CompileError::ImmediateMoreThanMax(int32_t max,
+                                                const std::string& immediate,
+                                                size_t line) {
+    std::ostringstream ss;
+    ss << "the immediate operand is less than the allowed maximum (" << max
+       << "): " << immediate;
+    return CompileError{ss.str(), line};
+}
+
+CompileError CompileError::ImmediateOutOfRange(const std::string& immediate,
+                                               size_t line) {
+    std::ostringstream ss;
+    ss << "the immediate operand is out of range " << immediate;
+    return CompileError{ss.str(), line};
+}
+
+// RM
+
+CompileError CompileError::RMCommandNoRegister(size_t line) {
+    return CompileError{
+        "register not specified for RM format command",
+        line,
+    };
+}
+
+CompileError CompileError::RMCommandNoAddress(size_t line) {
+    return CompileError{
+        "memory address not specified for RM format command",
+        line,
+    };
+}
+
+// RR
+
+CompileError CompileError::RRCommandNoReceiver(size_t line) {
+    return CompileError{
+        "receiver register not specified for RR format command",
+        line,
+    };
+}
+
+CompileError CompileError::RRCommandNoSource(size_t line) {
+    return CompileError{
+        "source register not specified for RR format command",
+        line,
+    };
+}
+
+CompileError CompileError::RRCommandNoModifier(size_t line) {
+    return CompileError{
+        "source modifier operand not specified for RR format command, "
+        "specify 0 for no modification",
+        line,
+    };
+}
+
+// RI
+
+CompileError CompileError::RICommandNoRegister(size_t line) {
+    return CompileError{
+        "register not specified for RI format command",
+        line,
+    };
+}
+
+CompileError CompileError::RICommandNoImmediate(size_t line) {
+    return CompileError{
+        "immediate operand not specified for RI format command",
+        line,
+    };
+}
+
+// J
+
+CompileError CompileError::JCommandNoAddress(size_t line) {
+    return CompileError{
+        "memory address not specified for J format command",
+        line,
+    };
+}
+
+// Extra words
+
+CompileError CompileError::ExtraWordsAfterEntrypoint(const std::string& extra,
+                                                     size_t line) {
+    std::ostringstream ss;
+    ss << "the line starts with a valid "
+       << std::quoted(syntax::kEntrypointDirective)
+       << " directive, but has unexpected words at the end (starting from "
+       << std::quoted(extra) << ")";
+    return CompileError{ss.str(), line};
+}
+
+CompileError CompileError::ExtraWords(cmd::Format format,
+                                      const std::string& extra,
+                                      size_t line) {
+    std::ostringstream ss;
+    ss << "the line starts with a valid command (format "
+       << cmd::kFormatToString.at(format)
+       << "), but has unexpected words at the end (starting from "
+       << std::quoted(extra) << ")";
+    return CompileError{ss.str(), line};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                               Word parsing                               ///
 ////////////////////////////////////////////////////////////////////////////////
 
-bool Compiler::TryProcessEntrypoint() {
+bool Compiler::Impl::TryProcessEntrypoint() {
     if (curr_word_ != syntax::kEntrypointDirective) {
         return false;
     }
@@ -374,7 +329,7 @@ bool Compiler::TryProcessEntrypoint() {
     return true;
 }
 
-void Compiler::CheckLabel() const {
+void Compiler::Impl::CheckLabel() const {
     if (curr_word_.empty()) {
         throw CompileError::EmptyLabel(line_number_);
     }
@@ -392,7 +347,7 @@ void Compiler::CheckLabel() const {
     }
 }
 
-bool Compiler::TryProcessLabel() {
+bool Compiler::Impl::TryProcessLabel() {
     if (curr_word_.back() != syntax::kLabelEnd) {
         return false;
     }
@@ -416,15 +371,15 @@ bool Compiler::TryProcessLabel() {
     return true;
 }
 
-cmd::CodeFormat Compiler::GetCommand() {
-    if (!cmd::kCommandToCode.contains(curr_word_)) {
+cmd::CodeFormat Compiler::Impl::GetCommand() {
+    if (!cmd::kNameToCode.contains(curr_word_)) {
         throw CompileError::UnknownCommand(curr_word_, line_number_);
     }
 
-    cmd::Code code = cmd::kCommandToCode.at(curr_word_);
+    cmd::Code code = cmd::kNameToCode.at(curr_word_);
 
     if (!cmd::kCodeToFormat.contains(code)) {
-        throw InternalError::UnknownCommandCode(code, line_number_);
+        throw InternalError::FormatNotFound(code, line_number_);
     }
 
     cmd::Format format = cmd::kCodeToFormat.at(code);
@@ -434,19 +389,19 @@ cmd::CodeFormat Compiler::GetCommand() {
     return {code, format};
 }
 
-args::Register Compiler::GetRegister() const {
+args::Register Compiler::Impl::GetRegister() const {
     if (curr_word_.empty()) {
         throw InternalError::EmptyWord(line_number_);
     }
 
-    if (!arch::kRegisterToNum.contains(curr_word_)) {
+    if (!arch::kRegisterNameToNum.contains(curr_word_)) {
         throw CompileError::UnknownRegister(curr_word_, line_number_);
     }
 
-    return arch::kRegisterToNum.at(curr_word_);
+    return arch::kRegisterNameToNum.at(curr_word_);
 }
 
-args::Immediate Compiler::GetImmediate(size_t bit_size) const {
+args::Immediate Compiler::Impl::GetImmediate(size_t bit_size) const {
     if (curr_word_.empty()) {
         throw InternalError::EmptyWord(line_number_);
     }
@@ -474,7 +429,9 @@ args::Immediate Compiler::GetImmediate(size_t bit_size) const {
                                                      line_number_);
         }
 
-        return *reinterpret_cast<uint32_t*>(&operand);
+        // two's complement is used for negative values per C++ standard
+        // see: https://urlis.net/kh43f3cf
+        return static_cast<uint32_t>(operand);
     } catch (const std::invalid_argument&) {
         throw CompileError::ImmediateNotANumber(curr_word_, line_number_);
     } catch (const std::out_of_range&) {
@@ -482,7 +439,7 @@ args::Immediate Compiler::GetImmediate(size_t bit_size) const {
     }
 }
 
-args::Address Compiler::GetAddress(bool is_entrypoint) {
+args::Address Compiler::Impl::GetAddress(bool is_entry) {
     if (curr_word_.empty()) {
         throw InternalError::EmptyWord(line_number_);
     }
@@ -519,7 +476,7 @@ args::Address Compiler::GetAddress(bool is_entrypoint) {
         // so we assume it's a label
         CheckLabel();
 
-        if (is_entrypoint) {
+        if (is_entry) {
             entrypoint_label_ = curr_word_;
         } else {
             label_usages_[curr_word_].emplace_back(line_number_,
@@ -535,7 +492,7 @@ args::Address Compiler::GetAddress(bool is_entrypoint) {
 ///                               Line parsing                               ///
 ////////////////////////////////////////////////////////////////////////////////
 
-args::RMArgs Compiler::GetRMOperands() {
+args::RMArgs Compiler::Impl::GetRMOperands() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::RMCommandNoRegister(line_number_);
     }
@@ -549,7 +506,7 @@ args::RMArgs Compiler::GetRMOperands() {
     return {reg, GetAddress()};
 }
 
-args::RRArgs Compiler::GetRROperands() {
+args::RRArgs Compiler::Impl::GetRROperands() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::RRCommandNoReceiver(line_number_);
     }
@@ -569,7 +526,7 @@ args::RRArgs Compiler::GetRROperands() {
     return {recv, src, GetImmediate(args::kModSize)};
 }
 
-args::RIArgs Compiler::GetRIOperands() {
+args::RIArgs Compiler::Impl::GetRIOperands() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::RICommandNoRegister(line_number_);
     }
@@ -583,7 +540,7 @@ args::RIArgs Compiler::GetRIOperands() {
     return {reg, GetImmediate(args::kImmSize)};
 }
 
-args::JArgs Compiler::GetJOperands() {
+args::JArgs Compiler::Impl::GetJOperands() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::JCommandNoAddress(line_number_);
     }
@@ -591,7 +548,7 @@ args::JArgs Compiler::GetJOperands() {
     return GetAddress();
 }
 
-void Compiler::ProcessCurrLine() {
+void Compiler::Impl::ProcessCurrLine() {
     if (!(curr_line_ >> curr_word_)) {
         return;
     }
@@ -642,7 +599,7 @@ void Compiler::ProcessCurrLine() {
 ///                            Labels substitution                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Compiler::FillLabels() {
+void Compiler::Impl::FillLabels() {
     for (const auto& [label, usages] : label_usages_) {
         if (!label_definitions_.contains(label)) {
             // use usages[0], because it is the first occurrence
@@ -673,7 +630,7 @@ void Compiler::FillLabels() {
 ///                                  Compile                                 ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Compiler::DoCompile(std::istream& code) {
+void Compiler::Impl::DoCompile(std::istream& code) {
     for (std::string line; std::getline(code, line); ++line_number_) {
         // ignore comments
         line.resize(std::min(line.find(syntax::kCommentSep), line.size()));
@@ -694,61 +651,38 @@ void Compiler::DoCompile(std::istream& code) {
     FillLabels();
 }
 
-void Compiler::CompileImpl(std::istream& code, const std::string& exec_path) {
+void Compiler::Impl::CompileImpl(std::istream& code,
+                                 const std::string& exec_path) {
     DoCompile(code);
 
-    std::ofstream binary(exec_path, std::ios::binary | std::ios::trunc);
-
-    // check that the file was found
-    if (binary.fail()) {
-        throw Error("failed to open exec file for writing");
-    }
-
-    auto write_word = [&binary](types::Word word) {
-        binary.write(reinterpret_cast<char*>(&word), 4);
+    exec::Data data{
+        .entrypoint    = entrypoint_,
+        .initial_stack = static_cast<types::Word>(arch::kMemorySize - 1),
+        .code          = compiled_,
+        // TODO: constants, data
     };
 
-    // intro string
-    binary << "ThisIsKarmaExec" << '\0';
-
-    // code size (in bytes)
-    write_word(static_cast<types::Word>(compiled_.size()) *
-               static_cast<types::Word>(types::kWordSize));
-
-    // const size (in bytes)
-    write_word(0);
-
-    // data size (in bytes)
-    write_word(0);
-
-    // entrypoint address
-    write_word(entrypoint_);
-
-    // initial stack pointer
-    write_word(static_cast<types::Word>(arch::kMemorySize - 1));
-
-    // target processor ID
-    write_word(exec::kProcessorID);
-
-    // empty
-    binary << std::string(exec::kCodeSegmentPos - exec::kMetaInfoEndPos, '0');
-
-    // code
-    for (auto command : compiled_) {
-        write_word(command);
-    }
+    exec::Write(data, exec_path);
 }
 
-void Compiler::Compile(std::istream& code, const std::string& exec_path) {
+void Compiler::Impl::Compile(std::istream& code, const std::string& exec_path) {
     try {
         CompileImpl(code, exec_path);
     } catch (const Error& e) {
         std::cout << e.what() << std::endl;
+    } catch (const exec::Error& e) {
+        std::cout << e.what() << std::endl;
     } catch (const std::exception& e) {
-        std::cout << InternalError(e.what()).what() << std::endl;
+        std::cout << "compiler: unexpected exception: " << e.what()
+                  << std::endl;
     } catch (...) {
-        std::cout << InternalError("unexpected exception").what() << std::endl;
+        std::cout << "compiler: unexpected exception" << std::endl;
     }
+}
+
+void Compiler::Compile(std::istream& code, const std::string& exec_path) {
+    Impl impl;
+    impl.Compile(code, exec_path);
 }
 
 }  // namespace karma

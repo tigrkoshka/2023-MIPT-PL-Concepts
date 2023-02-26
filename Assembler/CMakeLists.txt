@@ -20,6 +20,7 @@ add_executable(
         main.cpp
         compiler.cpp
         executor.cpp
+        disassembler.cpp
         utils.cpp
         specs/architecture.cpp
         specs/commands.cpp
