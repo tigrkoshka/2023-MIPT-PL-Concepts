@@ -659,7 +659,9 @@ void Compiler::Impl::CompileImpl(std::istream& code,
         .entrypoint    = entrypoint_,
         .initial_stack = static_cast<types::Word>(arch::kMemorySize - 1),
         .code          = compiled_,
-        // TODO: constants, data
+        // TODO: constants and data
+        .constants = std::vector<arch::Word>(),
+        .data      = std::vector<arch::Word>(),
     };
 
     exec::Write(data, exec_path);

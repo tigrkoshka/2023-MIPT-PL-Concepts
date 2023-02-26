@@ -1,13 +1,10 @@
 #include "exec.hpp"
 
-#include <cstddef>    // for size_t
-#include <exception>  // for exception
-#include <fstream>    // for ofstream
-#include <iomanip>    // for quoted
-#include <iostream>   // for cout
-#include <sstream>    // for ostringstream
-#include <stdexcept>  // for runtime_error
-#include <vector>     // for vector
+#include <cstddef>  // for size_t
+#include <fstream>  // for ofstream
+#include <iomanip>  // for quoted
+#include <iosfwd>   // for string
+#include <vector>   // for vector
 
 #include "architecture.hpp"
 #include "commands.hpp"
@@ -86,7 +83,7 @@ ExecFileError ExecFileError::InvalidProcessorID(types::Word processor_id) {
 ///                                   Write                                  ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void WriteImpl(const Data& data, const std::string& exec_path) {
+void Write(const Data& data, const std::string& exec_path) {
     std::ofstream binary(exec_path, std::ios::binary | std::ios::trunc);
 
     // check that the file was found
@@ -134,26 +131,11 @@ void WriteImpl(const Data& data, const std::string& exec_path) {
     }
 }
 
-void Write(const Data& data, const std::string& exec_path) {
-    try {
-        return WriteImpl(data, exec_path);
-    } catch (const Error& e) {
-        std::cout << "writing to " << exec_path << ": " << e.what()
-                  << std::endl;
-    } catch (const std::exception& e) {
-        std::cout << "writing to " << exec_path
-                  << ": unexpected exception: " << e.what() << std::endl;
-    } catch (...) {
-        std::cout << "writing to " << exec_path << ": unexpected exception"
-                  << std::endl;
-    }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Read                                   ///
 ////////////////////////////////////////////////////////////////////////////////
 
-Data ReadImpl(const std::string& exec_path) {
+Data Read(const std::string& exec_path) {
     // set the input position indicator to the end (using std::ios::ate)
     // after opening the file to get the size of the exec file,
     // which is used later to verify that the exec is not malformed
@@ -242,20 +224,6 @@ Data ReadImpl(const std::string& exec_path) {
     read_segment(data_size, data.data);
 
     return data;
-}
-
-Data Read(const std::string& exec_path) {
-    try {
-        return ReadImpl(exec_path);
-    } catch (const Error& e) {
-        std::cout << "reading " << exec_path << ": " << e.what() << std::endl;
-    } catch (const std::exception& e) {
-        std::cout << "reading " << exec_path
-                  << ": unexpected exception: " << e.what() << std::endl;
-    } catch (...) {
-        std::cout << "reading " << exec_path << ": unexpected exception"
-                  << std::endl;
-    }
 }
 
 }  // namespace karma::detail::specs::exec
