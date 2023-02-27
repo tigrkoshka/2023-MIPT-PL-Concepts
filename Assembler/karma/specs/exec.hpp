@@ -23,27 +23,12 @@ struct Error : std::runtime_error {
    protected:
     explicit Error(const std::string& message)
         : std::runtime_error(message) {}
-
-   public:
-    Error(const Error&)            = default;
-    Error& operator=(const Error&) = default;
-    Error(Error&&)                 = default;
-    Error& operator=(Error&&)      = default;
-    ~Error() override              = default;
 };
 
 struct ExecFileError : Error {
    private:
     explicit ExecFileError(const std::string& message)
         : Error("exec file error: " + message) {}
-
-   public:
-    ExecFileError(const ExecFileError&)            = default;
-    ExecFileError& operator=(const ExecFileError&) = default;
-    ExecFileError(ExecFileError&&)                 = default;
-    ExecFileError& operator=(ExecFileError&&)      = default;
-    ~ExecFileError() override                      = default;
-
    public:
     static ExecFileError FailedToOpen();
 

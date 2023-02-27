@@ -99,13 +99,6 @@ struct Compiler::Error : std::runtime_error {
    protected:
     explicit Error(const std::string& message)
         : std::runtime_error(message) {}
-
-   public:
-    Error(const Error&)            = default;
-    Error& operator=(const Error&) = default;
-    Error(Error&&)                 = default;
-    Error& operator=(Error&&)      = default;
-    ~Error() override              = default;
 };
 
 struct Compiler::InternalError : Error {
@@ -122,12 +115,6 @@ struct Compiler::InternalError : Error {
                 ": " + message) {}
 
    public:
-    InternalError(const InternalError&)            = default;
-    InternalError& operator=(const InternalError&) = default;
-    InternalError(InternalError&&)                 = default;
-    InternalError& operator=(InternalError&&)      = default;
-    ~InternalError() override                      = default;
-
     static InternalError FailedToOpen(const std::string& path);
 
     static InternalError FormatNotFound(detail::specs::cmd::Code command_code,
@@ -149,12 +136,6 @@ struct Compiler::CompileError : Error {
                 message) {}
 
    public:
-    CompileError(const CompileError&)            = default;
-    CompileError& operator=(const CompileError&) = default;
-    CompileError(CompileError&&)                 = default;
-    CompileError& operator=(CompileError&&)      = default;
-    ~CompileError() override                     = default;
-
     // command
 
     static CompileError UnknownCommand(const std::string& command, size_t line);

@@ -85,13 +85,6 @@ struct Executor::Error : std::runtime_error {
    protected:
     explicit Error(const std::string& message)
         : std::runtime_error(message) {}
-
-   public:
-    Error(const Error&)            = default;
-    Error& operator=(const Error&) = default;
-    Error(Error&&)                 = default;
-    Error& operator=(Error&&)      = default;
-    ~Error() override              = default;
 };
 
 struct Executor::InternalError : Error {
@@ -101,13 +94,6 @@ struct Executor::InternalError : Error {
    private:
     explicit InternalError(const std::string& message)
         : Error("internal executor error: " + message) {}
-
-   public:
-    InternalError(const InternalError&)            = default;
-    InternalError& operator=(const InternalError&) = default;
-    InternalError(InternalError&&)                 = default;
-    InternalError& operator=(InternalError&&)      = default;
-    ~InternalError() override                      = default;
 
    public:
     static InternalError UnknownCommandFormat(detail::specs::cmd::Format);
@@ -120,13 +106,6 @@ struct Executor::ExecutionError : Error {
    private:
     explicit ExecutionError(const std::string& message)
         : Error("execution error" + message) {}
-
-   public:
-    ExecutionError(const ExecutionError&)            = default;
-    ExecutionError& operator=(const ExecutionError&) = default;
-    ExecutionError(ExecutionError&&)                 = default;
-    ExecutionError& operator=(ExecutionError&&)      = default;
-    ~ExecutionError() override                       = default;
 
    public:
     static ExecutionError UnknownCommand(detail::specs::cmd::Code);
