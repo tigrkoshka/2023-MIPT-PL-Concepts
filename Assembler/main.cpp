@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "karma/compiler.hpp"
 #include "karma/disassembler.hpp"
 #include "karma/executor.hpp"
