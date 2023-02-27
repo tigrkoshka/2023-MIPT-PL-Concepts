@@ -22,9 +22,20 @@ class Disassembler {
     static void DisassembleImpl(const std::string& exec_path,
                                 std::ostream& out);
 
+    static void DisassembleImpl(const std::string& exec_path,
+                                const std::string& dst);
+
    public:
+    static void MustDisassemble(const std::string& exec_path,
+                                std::ostream& out);
+
+    static void Disassemble(const std::string& exec_path, std::ostream& out);
+
+    static void MustDisassemble(const std::string& exec_path,
+                                const std::string& dst = "");
+
     static void Disassemble(const std::string& exec_path,
-                            std::ostream& out = std::cout);
+                            const std::string& dst = "");
 };
 
 struct Disassembler::Error : std::runtime_error {
@@ -51,6 +62,8 @@ struct Disassembler::InternalError : Error {
     InternalError(InternalError&&)                 = default;
     InternalError& operator=(InternalError&&)      = default;
     ~InternalError() override                      = default;
+
+    static InternalError FailedToOpen(const std::string& path);
 
     static InternalError CommandNameNotFound(detail::specs::cmd::Code);
 

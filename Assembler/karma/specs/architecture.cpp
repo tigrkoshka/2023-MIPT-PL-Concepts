@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "../utils.hpp"
+#include "../../utils/utils.hpp"
 
 namespace karma::detail::specs::arch {
 

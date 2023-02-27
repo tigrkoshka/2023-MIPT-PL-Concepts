@@ -4,6 +4,7 @@
 #include <fstream>  // for ofstream
 #include <iomanip>  // for quoted
 #include <iosfwd>   // for string, ostringstream
+#include <sstream>  // for ostringstream
 #include <vector>   // for vector
 
 #include "architecture.hpp"
@@ -19,16 +20,9 @@ namespace types = arch::types;
 
 const std::string kIntroString = "ThisIsKarmaExec";
 const size_t kIntroSize        = kIntroString.size() + 1;
-const size_t kCodeSizePos      = 16ull;
-const size_t kConstantsSizePos = 20ull;
-const size_t kDataSizePos      = 24ull;
-const size_t kEntrypointPos    = 28ull;
-const size_t kStackInitPos     = 32ull;
-const size_t kProcessorIDPos   = 36ull;
 const size_t kMetaInfoEndPos   = 40ull;
-
-const size_t kHeaderSize     = 512ll;
-const size_t kCodeSegmentPos = kHeaderSize;
+const size_t kHeaderSize       = 512ll;
+const size_t kCodeSegmentPos   = kHeaderSize;
 
 static const arch::types::Word kProcessorID = 239ull;
 
@@ -64,11 +58,11 @@ ExecFileError ExecFileError::InvalidExecSize(size_t exec_size,
     return ExecFileError{ss.str()};
 }
 
-ExecFileError ExecFileError::NoTrailingZeroInIntro() {
+ExecFileError ExecFileError::NoTrailingZeroInIntro(const std::string& intro) {
     std::ostringstream ss;
     ss << "expected the welcoming " << std::quoted(exec::kIntroString)
-       << R"( string (and a trailing ('\0') as the first )" << exec::kIntroSize
-       << R"( bytes, but the first 16 bytes do not end with a '\0')";
+       << R"( string (and a trailing '\0') as the first )" << exec::kIntroSize
+       << R"( bytes, but the first 16 bytes do not end with a '\0': )" << intro;
     return ExecFileError{ss.str()};
 }
 
@@ -177,7 +171,8 @@ Data Read(const std::string& exec_path) {
 
     // check that the introductory string is valid
     if (intro.back() != '\0') {
-        throw ExecFileError::NoTrailingZeroInIntro();
+        intro.resize(intro.size() - 1);
+        throw ExecFileError::NoTrailingZeroInIntro(intro);
     }
 
     intro.resize(intro.size() - 1);

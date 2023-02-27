@@ -38,4 +38,4 @@
 3. Rewrite all errors using `std::format` when GCC@13 is released
 
 4. Concept definition: see `TODO` comments in [.clang-format](.clang-format)
-   and [utils.hpp](utils.hpp)
+   and [utils.hpp](utils/utils.hpp)

@@ -565,8 +565,8 @@ bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
         }
 
         case cmd::RET: {
-            registers_[arch::kStackRegister] += addr;
             Pop(arch::kInstructionRegister, 0);
+            registers_[arch::kStackRegister] += addr;
             break;
         }
 
@@ -663,6 +663,10 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
     while (registers_[arch::kInstructionRegister] < data.code.size() &&
            ExecuteCommand(memory_[registers_[arch::kInstructionRegister]])) {
     }
+}
+
+void Executor::MustExecute(const std::string& exec_path) {
+    ExecuteImpl(exec_path);
 }
 
 void Executor::Execute(const std::string& exec_path) {

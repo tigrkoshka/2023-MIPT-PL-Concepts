@@ -43,11 +43,17 @@ class Compiler {
 
         void ProcessCurrLine();
         void FillLabels();
-        void DoCompile(std::istream& code);
+        void PrepareExecData(std::istream& code);
+
         void CompileImpl(std::istream& code, const std::string& exec_path);
+        void CompileImpl(const std::string& src, const std::string& dst);
 
        public:
+        void MustCompile(std::istream& code, const std::string& exec_path);
         void Compile(std::istream& code, const std::string& exec_path);
+
+        void MustCompile(const std::string& src, const std::string& dst);
+        void Compile(const std::string& src, const std::string& dst);
 
        private:
         size_t line_number_{0};
@@ -77,7 +83,11 @@ class Compiler {
     };
 
    public:
+    static void MustCompile(std::istream& code, const std::string& exec_path);
     static void Compile(std::istream& code, const std::string& exec_path);
+
+    static void MustCompile(const std::string& src,
+                            const std::string& dst = "");
     static void Compile(const std::string& src, const std::string& dst = "");
 };
 

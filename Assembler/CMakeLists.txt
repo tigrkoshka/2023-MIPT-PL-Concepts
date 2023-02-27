@@ -10,21 +10,19 @@ ${CMAKE_CXX_FLAGS} \
 -Wconversion \
 -Wsign-conversion \
 -Wfloat-conversion \
--Warith-conversion \
+-fsanitize=undefined \
 ")
-
-include_directories(/usr/local/opt/gcc@12/include/c++/12)
 
 add_executable(
         Assembler
         main.cpp
-        compiler.cpp
-        executor.cpp
-        disassembler.cpp
-        utils.cpp
-        specs/architecture.cpp
-        specs/commands.cpp
-        specs/exec.cpp
-        specs/flags.cpp
-        specs/syntax.cpp
+        karma/compiler.cpp
+        karma/executor.cpp
+        karma/disassembler.cpp
+        karma/specs/architecture.cpp
+        karma/specs/commands.cpp
+        karma/specs/exec.cpp
+        karma/specs/flags.cpp
+        karma/specs/syntax.cpp
+        utils/utils.cpp
 )

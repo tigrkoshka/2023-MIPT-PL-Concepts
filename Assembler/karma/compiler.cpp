@@ -568,27 +568,33 @@ void Compiler::Impl::ProcessCurrLine() {
         return;
     }
 
-    ++command_number_;
-
     auto [code, format] = GetCommand();
     switch (format) {
         case cmd::RM: {
-            compiled_.push_back(cmd::build::RM(code, GetRMOperands()));
+            auto ops = GetRMOperands();
+            auto bin = cmd::build::RM(code, ops);
+            compiled_.push_back(bin);
             break;
         }
 
         case cmd::RR: {
-            compiled_.push_back(cmd::build::RR(code, GetRROperands()));
+            auto ops = GetRROperands();
+            auto bin = cmd::build::RR(code, ops);
+            compiled_.push_back(bin);
             break;
         }
 
         case cmd::RI: {
-            compiled_.push_back(cmd::build::RI(code, GetRIOperands()));
+            auto ops = GetRIOperands();
+            auto bin = cmd::build::RI(code, ops);
+            compiled_.push_back(bin);
             break;
         }
 
         case cmd::J: {
-            compiled_.push_back(cmd::build::J(code, GetJOperands()));
+            auto ops = GetJOperands();
+            auto bin = cmd::build::J(code, ops);
+            compiled_.push_back(bin);
             break;
         }
 
@@ -600,6 +606,8 @@ void Compiler::Impl::ProcessCurrLine() {
     if (curr_line_ >> curr_word_) {
         CompileError::ExtraWords(format, curr_word_, line_number_);
     }
+
+    ++command_number_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -634,15 +642,15 @@ void Compiler::Impl::FillLabels() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///                                  Compile                                 ///
+///                                Prepare data                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Compiler::Impl::DoCompile(std::istream& code) {
+void Compiler::Impl::PrepareExecData(std::istream& code) {
     for (std::string line; std::getline(code, line); ++line_number_) {
         // ignore comments
         line.resize(std::min(line.find(syntax::kCommentSep), line.size()));
 
-        curr_line_ = std::istringstream(std::move(line));
+        curr_line_ = std::istringstream(line);
         ProcessCurrLine();
     }
 
@@ -658,9 +666,13 @@ void Compiler::Impl::DoCompile(std::istream& code) {
     FillLabels();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+///                           Compile from istream                           ///
+////////////////////////////////////////////////////////////////////////////////
+
 void Compiler::Impl::CompileImpl(std::istream& code,
                                  const std::string& exec_path) {
-    DoCompile(code);
+    PrepareExecData(code);
 
     exec::Data data{
         .entrypoint    = entrypoint_,
@@ -672,6 +684,11 @@ void Compiler::Impl::CompileImpl(std::istream& code,
     };
 
     exec::Write(data, exec_path);
+}
+
+void Compiler::Impl::MustCompile(std::istream& code,
+                                 const std::string& exec_path) {
+    CompileImpl(code, exec_path);
 }
 
 void Compiler::Impl::Compile(std::istream& code, const std::string& exec_path) {
@@ -689,13 +706,13 @@ void Compiler::Impl::Compile(std::istream& code, const std::string& exec_path) {
     }
 }
 
-void Compiler::Compile(std::istream& code, const std::string& exec_path) {
-    Impl impl;
-    impl.Compile(code, exec_path);
-}
+////////////////////////////////////////////////////////////////////////////////
+///                             Compile from file                            ///
+////////////////////////////////////////////////////////////////////////////////
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void Compiler::Compile(const std::string& src, const std::string& dst) {
+void Compiler::Impl::CompileImpl(const std::string& src,
+                                 const std::string& dst) {
     std::ifstream code(src);
     if (code.fail()) {
         throw InternalError::FailedToOpen(src);
@@ -711,7 +728,55 @@ void Compiler::Compile(const std::string& src, const std::string& dst) {
         real_dst = dst_path.string();
     }
 
-    Compile(code, real_dst);
+    CompileImpl(code, real_dst);
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void Compiler::Impl::MustCompile(const std::string& src,
+                                 const std::string& dst) {
+    CompileImpl(src, dst);
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void Compiler::Impl::Compile(const std::string& src, const std::string& dst) {
+    try {
+        CompileImpl(src, dst);
+    } catch (const Error& e) {
+        std::cout << e.what() << std::endl;
+    } catch (const exec::Error& e) {
+        std::cout << e.what() << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "compiler: unexpected exception: " << e.what()
+                  << std::endl;
+    } catch (...) {
+        std::cout << "compiler: unexpected exception" << std::endl;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+///                             Exported wrappers                            ///
+////////////////////////////////////////////////////////////////////////////////
+
+void Compiler::MustCompile(std::istream& code, const std::string& exec_path) {
+    Impl impl;
+    impl.MustCompile(code, exec_path);
+}
+
+void Compiler::Compile(std::istream& code, const std::string& exec_path) {
+    Impl impl;
+    impl.Compile(code, exec_path);
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void Compiler::MustCompile(const std::string& src, const std::string& dst) {
+    Impl impl;
+    impl.MustCompile(src, dst);
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void Compiler::Compile(const std::string& src, const std::string& dst) {
+    Impl impl;
+    impl.Compile(src, dst);
 }
 
 }  // namespace karma

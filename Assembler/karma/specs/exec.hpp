@@ -53,7 +53,7 @@ struct ExecFileError : Error {
                                          size_t consts_size,
                                          size_t data_size);
 
-    static ExecFileError NoTrailingZeroInIntro();
+    static ExecFileError NoTrailingZeroInIntro(const std::string& intro);
     static ExecFileError InvalidIntroString(const std::string& intro);
 
     static ExecFileError InvalidProcessorID(arch::types::Word processor_id);

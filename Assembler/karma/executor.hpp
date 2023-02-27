@@ -66,16 +66,17 @@ class Executor {
     void ExecuteImpl(const std::string& exec_path);
 
    public:
+    void MustExecute(const std::string& exec_path);
     void Execute(const std::string& exec_path);
 
-   private:
-    std::vector<detail::specs::arch::Word> memory_{
-        detail::specs::arch::kMemorySize,
-    };
+    Executor()
+        : memory_(detail::specs::arch::kMemorySize),
+          registers_(detail::specs::arch::kNRegisters) {}
 
-    std::vector<detail::specs::arch::Register> registers_{
-        detail::specs::arch::kNRegisters,
-    };
+   private:
+    std::vector<detail::specs::arch::Word> memory_;
+
+    std::vector<detail::specs::arch::Register> registers_;
 
     detail::specs::arch::Word flags_{0};
 };

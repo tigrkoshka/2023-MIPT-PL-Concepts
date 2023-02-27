@@ -1,6 +1,8 @@
 #include "disassembler.hpp"
 
 #include <exception>    // for exception
+#include <filesystem>   // for path
+#include <fstream>      // for ofstream
 #include <ostream>      // for ostream
 #include <sstream>      // for ostringstream
 #include <string>       // for string
@@ -24,6 +26,12 @@ namespace exec = detail::specs::exec;
 ////////////////////////////////////////////////////////////////////////////////
 
 using InternalError = Disassembler::InternalError;
+
+InternalError InternalError::FailedToOpen(const std::string& path) {
+    std::ostringstream ss;
+    ss << "failed to open " << std::quoted(path);
+    return InternalError{ss.str()};
+}
 
 InternalError InternalError::CommandNameNotFound(cmd::Code code) {
     std::ostringstream ss;
@@ -134,21 +142,78 @@ std::string Disassembler::GetCommandStringFromBin(cmd::Bin command) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///                          Disassembling exec file                         ///
+///                          Disassembling to stream                         ///
 ////////////////////////////////////////////////////////////////////////////////
 
 void Disassembler::DisassembleImpl(const std::string& exec_path,
                                    std::ostream& out) {
+    out << "main:\n";
+
     exec::Data data = exec::Read(exec_path);
     for (cmd::Bin command : data.code) {
-        out << GetCommandStringFromBin(command) << "\n";
+        out << "  " << GetCommandStringFromBin(command) << "\n";
     }
+
+    out << "end main\n";
+}
+
+void Disassembler::MustDisassemble(const std::string& exec_path,
+                                   std::ostream& out) {
+    DisassembleImpl(exec_path, out);
 }
 
 void Disassembler::Disassemble(const std::string& exec_path,
                                std::ostream& out) {
     try {
         DisassembleImpl(exec_path, out);
+    } catch (const Error& e) {
+        std::cout << e.what() << std::endl;
+    } catch (const exec::Error& e) {
+        std::cout << e.what() << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "disassembler: unexpected exception: " << e.what()
+                  << std::endl;
+    } catch (...) {
+        std::cout << "disassembler: unexpected exception" << std::endl;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+///                           Disassembling to file                          ///
+////////////////////////////////////////////////////////////////////////////////
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void Disassembler::DisassembleImpl(const std::string& exec_path,
+                                   const std::string& dst) {
+    std::string real_dst = dst;
+    if (real_dst.empty()) {
+        std::filesystem::path src_path(exec_path);
+
+        std::filesystem::path dst_path = src_path.parent_path();
+        dst_path /= src_path.stem();
+
+        real_dst = dst_path.string() + "_disassembled.krm";
+    }
+
+    std::ofstream out(real_dst);
+    if (out.fail()) {
+        throw InternalError::FailedToOpen(real_dst);
+    }
+
+    return DisassembleImpl(exec_path, out);
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void Disassembler::MustDisassemble(const std::string& exec_path,
+                                   const std::string& dst) {
+    return DisassembleImpl(exec_path, dst);
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void Disassembler::Disassemble(const std::string& exec_path,
+                               const std::string& dst) {
+    try {
+        DisassembleImpl(exec_path, dst);
     } catch (const Error& e) {
         std::cout << e.what() << std::endl;
     } catch (const exec::Error& e) {
