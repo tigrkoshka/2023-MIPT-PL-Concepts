@@ -10,6 +10,8 @@
 
 namespace karma::detail::specs::exec {
 
+const std::string kDefaultExtension = ".a";
+
 struct Data {
     specs::arch::Address entrypoint;
     specs::arch::Address initial_stack;

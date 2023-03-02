@@ -1,0 +1,32 @@
+\subsection{Calculate the square of a number with functions}
+
+\asmsample{
+
+    \St{sqr:}                  & ; a function calculating the square with one argument on the stack \\
+    \qquad \St{loadr r0 r14 1} & ; load the first (and only) argument to \St{r0}                    \\
+    \qquad \St{mov r2 r0 0}    & ; copy from \St{r0} to \St{r2}                                     \\
+    \qquad \St{mul r0 r2 0}    & ; a pair of registers \St{(r0,r1)} contains the square             \\
+    \qquad \St{ret 1}          & ; return from function and remove the argument from the stack      \\
+
+    &                                                                    \\
+
+    \St{intout:}               & ; a function printing its argument and `\textbackslash n'          \\
+    \qquad \St{load r0 r14 1}  & ; load the first (and only) argument to \St{r0}                    \\
+    \qquad \St{syscall r0 102} & ; print \St{r0} to \St{stdout}                                     \\
+    \qquad \St{lc r0 10}       & ; store the constant \St{10} (`\textbackslash n') to \St{r0}       \\
+    \qquad \St{syscall r0 105} & ; print `\textbackslash n' from \St{r0} to \St{stdout}             \\
+    \qquad \St{ret 1}          & ; return from function and remove the argument from the stack      \\
+
+    &                                                                    \\
+
+    \St{main:}                 &                                                                    \\
+    \qquad \St{syscall r0 100} & ; read an integer from \St{stdin} to \St{r0}                       \\
+    \qquad \St{push r0 0}      & ; put \St{r0+0} to the stack as the \St{sqr} argument              \\
+    \qquad \St{calli sqr}      & ; call \St{sqr}, the function will put the result to \St{r0}       \\
+    \qquad \St{push r0 0}      & ; prepare the result of \St{sqr} to be passed to \St{intout}       \\
+    \qquad \St{calli intout}   & ; call \St{intout} with the prepared argument                      \\
+    \qquad \St{lc r0 0}        & ; clear \St{r0}                                                    \\
+    \qquad \St{syscall r0 0}   & ; exit the program with code \St{0}                                \\
+    \qquad \St{end main}       & ; start execution from label main                                  \\
+
+}

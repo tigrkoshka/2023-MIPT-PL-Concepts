@@ -724,7 +724,7 @@ void Compiler::Impl::CompileImpl(const std::string& src,
         std::filesystem::path src_path(src);
 
         std::filesystem::path dst_path = src_path.parent_path();
-        dst_path /= src_path.stem();
+        dst_path /= src_path.stem().replace_extension(exec::kDefaultExtension);
 
         real_dst = dst_path.string();
     }

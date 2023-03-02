@@ -1,0 +1,5 @@
+# Compiled Karma executables
+*.a
+
+# Disassembled files
+*_disassembled.krm
