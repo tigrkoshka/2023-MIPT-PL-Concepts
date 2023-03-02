@@ -23,25 +23,29 @@ class Executor {
 
     [[nodiscard]] detail::specs::arch::TwoWords GetTwoRegisters(
         detail::specs::cmd::args::Source) const;
+
     void PutTwoRegisters(detail::specs::arch::TwoWords,
                          detail::specs::cmd::args::Receiver);
+
+    static void CheckBitwiseRHS(detail::specs::arch::types::Word,
+                                detail::specs::cmd::Code);
 
     template <std::totally_ordered T>
     void WriteComparisonToFlags(T, T);
 
     void Jump(detail::specs::flags::Flag, detail::specs::cmd::args::Address);
 
-    void Divide(detail::specs::arch::TwoWords,
-                detail::specs::arch::TwoWords,
+    void Divide(detail::specs::arch::types::TwoWords,
+                detail::specs::arch::types::TwoWords,
                 detail::specs::cmd::args::Receiver);
 
     bool Syscall(detail::specs::cmd::args::Register,
                  detail::specs::cmd::syscall::Code);
 
-    void Push(detail::specs::arch::Word);
+    void Push(detail::specs::arch::types::Word);
 
     void Pop(detail::specs::cmd::args::Receiver,
-             detail::specs::cmd::args::Modifier);
+             detail::specs::arch::types::Word);
 
     detail::specs::cmd::args::Address Call(detail::specs::cmd::args::Address);
 
@@ -74,11 +78,11 @@ class Executor {
           registers_(detail::specs::arch::kNRegisters) {}
 
    private:
-    std::vector<detail::specs::arch::Word> memory_;
+    std::vector<detail::specs::arch::types::Word> memory_;
 
     std::vector<detail::specs::arch::Register> registers_;
 
-    detail::specs::arch::Word flags_{0};
+    detail::specs::arch::types::Word flags_{0};
 };
 
 struct Executor::Error : std::runtime_error {
@@ -121,10 +125,12 @@ struct Executor::ExecutionError : Error {
         detail::specs::arch::types::TwoWords dividend,
         detail::specs::arch::types::TwoWords divisor);
 
+    static ExecutionError BitwiseRHSTooBig(detail::specs::arch::types::Word,
+                                           detail::specs::cmd::Code);
+
     static ExecutionError DtoiOverflow(detail::specs::arch::types::Double);
 
-    static ExecutionError InvalidPutCharValue(
-        detail::specs::cmd::args::Immediate);
+    static ExecutionError InvalidPutCharValue(detail::specs::arch::types::Word);
 
     static ExecutionError AddressOutsideOfMemory(
         detail::specs::cmd::args::Address);

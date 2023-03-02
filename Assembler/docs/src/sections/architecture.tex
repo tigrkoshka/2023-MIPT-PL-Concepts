@@ -1,14 +1,12 @@
 \section{Architecture}
 
-\St{Karma} is a computer with a Von Neumann architecture with an address space of $2^{20}$ words, 32 bits each.
-
-Each command takes up \textit{exactly one} word, 8 high bits of which specify the operation code and the use of the rest 24 bits is command-specific.
+\St{Karma} is a computer with a Von Neumann architecture with an address space of $2^{20}$ cells, one \textit{machine word} (32 bits) each.
 
 The processor has 16 one-word (32 bits each) registers \St{r0}-\St{r15}, as well as an additional \St{flags} register (also one-word).
-Their usage is described in \hyperlink{registers}{Table 1}.
+Their usage is described in Table 1:
 
-\hypertarget{registers}{}
-{
+    {
+    \vspace{-0.4cm}
     \renewcommand{\arraystretch}{1.4}
     \begin{table}[h!]
         \centering

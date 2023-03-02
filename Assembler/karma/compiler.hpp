@@ -36,10 +36,10 @@ class Compiler {
         detail::specs::cmd::args::Immediate GetImmediate(size_t bit_size) const;
         detail::specs::cmd::args::Address GetAddress(bool is_entry = false);
 
-        detail::specs::cmd::args::RMArgs GetRMOperands();
-        detail::specs::cmd::args::RRArgs GetRROperands();
-        detail::specs::cmd::args::RIArgs GetRIOperands();
-        detail::specs::cmd::args::JArgs GetJOperands();
+        detail::specs::cmd::args::RMArgs GetRMArgs();
+        detail::specs::cmd::args::RRArgs GetRRArgs();
+        detail::specs::cmd::args::RIArgs GetRIArgs();
+        detail::specs::cmd::args::JArgs GetJArgs();
 
         void ProcessCurrLine();
         void FillLabels();

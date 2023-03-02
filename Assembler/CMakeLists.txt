@@ -24,5 +24,5 @@ add_executable(
         karma/specs/exec.cpp
         karma/specs/flags.cpp
         karma/specs/syntax.cpp
-        utils/utils.cpp
+        karma/utils/utils.cpp
 )

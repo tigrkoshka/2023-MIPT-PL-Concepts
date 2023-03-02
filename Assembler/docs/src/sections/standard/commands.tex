@@ -1,0 +1,89 @@
+\subsection{Command set}
+
+\newcommand{\cmdtable}[2]{
+        {
+        \vspace{-0.7cm}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{table}[h!]
+            \centering
+            \caption{#1}
+            \vspace{2mm}
+            \centering
+            \begin{tabular}{|
+                    >{\centering\arraybackslash} m{1.0cm} |
+                    >{\centering\arraybackslash} m{1.8cm} |
+                    >{\centering\arraybackslash} m{1.3cm} |
+                    >{}                          m{3.8cm} |
+                    >{}                          m{4.8cm} |
+            }
+
+                \hline
+
+                Code & Name & Format & Syntax sample & Description \\
+
+                \hline
+
+                #2
+
+                \hline
+
+            \end{tabular}
+        \end{table}
+    }
+    \vspace{-0.5cm}
+}
+
+\newcommand{\RMcmd}[2]{
+    \St{
+        \makebox[0.85cm][l]{#1}
+        \makebox[0.45cm][l]{#2}
+    }
+}
+
+\newcommand{\RRcmd}[4]{
+    \St{
+        \makebox[0.85cm][l]{#1}
+        \makebox[0.45cm][l]{#2}
+        \makebox[0.45cm][l]{#3}
+        \makebox[0.20cm][l]{#4}
+    }
+}
+
+\newcommand{\RIcmd}[3]{
+    \St{
+        \makebox[0.85cm][l]{#1}
+        \makebox[0.45cm][l]{#2}
+        \makebox[0.45cm][l]{#3}
+    }
+}
+
+\newcommand{\Jcmd}[2]{
+    \St{
+        \makebox[0.85cm][l]{#1}
+        \makebox[0.45cm][l]{#2}
+    }
+}
+
+\input{sections/standard/commands/01_system}
+
+\newpage
+
+\input{sections/standard/commands/02_integer_arithmetic}
+
+\newpage
+
+\input{sections/standard/commands/03_bitwise}
+
+\input{sections/standard/commands/04_real_valued_arithmetics}
+
+\newpage
+
+\input{sections/standard/commands/05_stack}
+
+\newpage
+
+\input{sections/standard/commands/06_comparisons}
+
+\newpage
+
+\input{sections/standard/commands/07_memory}

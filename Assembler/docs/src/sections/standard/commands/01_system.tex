@@ -1,0 +1,56 @@
+\subsubsection{System commands}
+
+\cmdtable{System commands}{
+    0 & \St{halt} & \Ss{RI} &
+
+    \St{halt r1 0} & Stop processor \\
+
+    \hline
+
+    1 & \St{syscall} & \Ss{RI} &
+
+    \St{syscall r0 100} & System call \\
+}
+
+\paragraph{\St{halt}}\
+
+The \St{halt} command sends an interruption signal to the CPU, which halts it until the next external signal is received, after which the execution is continued. The immediate value operand is ignored.
+
+\vspace{-0.35cm}
+
+\paragraph{\St{syscall}}\
+
+The \St{syscall} command's immediate operand specifies the call code.
+The semantics of those codes is described in Table 4:
+
+    {
+    \vspace{-0.4cm}
+    \renewcommand{\arraystretch}{1.4}
+    \begin{table}[h!]
+        \centering
+        \caption{System call codes}
+        \vspace{2mm}
+        \begin{tabular}{|
+                >{\centering\arraybackslash} m{1.0cm} |
+                >{\centering\arraybackslash} m{2.3cm} |
+                >{}                          m{8cm}   |
+                >{}                          m{3cm}   |
+        }
+            \hline
+            Code & Name             & Description                                           & Register operand  \\
+            \hline
+            0    & \St{EXIT}        & Finish execution without error                        & ---               \\
+            100  & \St{SCANINT}     & Get an integer value from \St{stdin}                  & Receiver          \\
+            101  & \St{SCANDOUBLE}  & Get a floating-point value from \St{stdin}            & Low-bits receiver \\
+            102  & \St{PRINTINT}    & Output an integer value to \St{stdout}                & Source            \\
+            103  & \St{PRINTDOUBLE} & Output a floating-point value to \St{stdout}          & Low-bits source   \\
+            104  & \St{GETCHAR}     & Get a single \St{ASCII} character from \St{stdin}     & Receiver          \\
+            105  & \St{PUTCHAR}     & Output a single \St{ASCII} character from \St{stdout} & Source            \\
+            \hline
+        \end{tabular}
+    \end{table}
+}
+
+Specifying a value for the \St{syscall} immediate operand not listed in the table above leads to an error during compilation or execution (depending on whether such a value was originally specified in an assembler code or in a handcrafted executable file).
+
+If the source register for the \St{PUTCHAR} system call contains a value greater than 255 (that is, not representing an \St{ASCII} character), an execution error will occur.

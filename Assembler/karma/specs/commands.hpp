@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits> // for make_signed_t
+
 #include "architecture.hpp"
 
 namespace karma::detail::specs::cmd {
@@ -92,8 +94,8 @@ using Register  = arch::Register;
 using Receiver  = arch::Register;
 using Source    = arch::Register;
 using Address   = arch::Address;
-using Modifier  = arch::Word;
-using Immediate = arch::Word;
+using Modifier  = std::make_signed_t<arch::Word>;
+using Immediate = std::make_signed_t<arch::Word>;
 
 const arch::Word kModSize = 16u;
 const arch::Word kImmSize = 20u;

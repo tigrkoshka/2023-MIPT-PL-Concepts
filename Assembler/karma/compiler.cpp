@@ -1,15 +1,16 @@
 #include "compiler.hpp"
 
-#include <algorithm>   // for min
-#include <cctype>      // for isalnum, isdigit
-#include <cstddef>     // for size_t
-#include <exception>   // for exception
-#include <filesystem>  // for path
-#include <fstream>     // for ifstream
-#include <iomanip>     // for quoted
-#include <iostream>    // for cout, ios
-#include <stdexcept>   // for runtime_error
-#include <utility>     // for move
+#include <algorithm>    // for min
+#include <cctype>       // for isalnum, isdigit
+#include <cstddef>      // for size_t
+#include <exception>    // for exception
+#include <filesystem>   // for path
+#include <fstream>      // for ifstream
+#include <iomanip>      // for quoted
+#include <iostream>     // for cout, ios
+#include <stdexcept>    // for runtime_error
+#include <type_traits>  // for make_unsigned_t
+#include <utility>      // for move
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
@@ -413,12 +414,18 @@ args::Immediate Compiler::Impl::GetImmediate(size_t bit_size) const {
         throw InternalError::EmptyWord(line_number_);
     }
 
-    const int32_t min = -static_cast<int32_t>(1u << (bit_size - 1));
-    const int32_t max = static_cast<int32_t>(1u << (bit_size - 1)) - 1;
+    using Int  = args::Immediate;
+    using Uint = std::make_unsigned_t<Int>;
+
+    const auto min_modulo = static_cast<Uint>(1)
+                            << static_cast<Uint>(bit_size - 1ull);
+
+    const auto min = -static_cast<Int>(min_modulo);
+    const auto max = static_cast<Int>(min_modulo - static_cast<Uint>(1));
 
     try {
         size_t pos{};
-        int32_t operand = std::stoi(curr_word_, &pos, 0);
+        Int operand = std::stoi(curr_word_, &pos, 0);
 
         if (pos != curr_word_.size()) {
             throw CompileError::ImmediateNotANumber(curr_word_, line_number_);
@@ -436,9 +443,7 @@ args::Immediate Compiler::Impl::GetImmediate(size_t bit_size) const {
                                                      line_number_);
         }
 
-        // two's complement is used for negative values per C++ standard
-        // see: https://urlis.net/kh43f3cf
-        return static_cast<uint32_t>(operand);
+        return operand;
     } catch (const std::invalid_argument&) {
         throw CompileError::ImmediateNotANumber(curr_word_, line_number_);
     } catch (const std::out_of_range&) {
@@ -499,7 +504,7 @@ args::Address Compiler::Impl::GetAddress(bool is_entry) {
 ///                               Line parsing                               ///
 ////////////////////////////////////////////////////////////////////////////////
 
-args::RMArgs Compiler::Impl::GetRMOperands() {
+args::RMArgs Compiler::Impl::GetRMArgs() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::RMCommandNoRegister(line_number_);
     }
@@ -513,7 +518,7 @@ args::RMArgs Compiler::Impl::GetRMOperands() {
     return {reg, GetAddress()};
 }
 
-args::RRArgs Compiler::Impl::GetRROperands() {
+args::RRArgs Compiler::Impl::GetRRArgs() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::RRCommandNoReceiver(line_number_);
     }
@@ -533,7 +538,7 @@ args::RRArgs Compiler::Impl::GetRROperands() {
     return {recv, src, GetImmediate(args::kModSize)};
 }
 
-args::RIArgs Compiler::Impl::GetRIOperands() {
+args::RIArgs Compiler::Impl::GetRIArgs() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::RICommandNoRegister(line_number_);
     }
@@ -547,7 +552,7 @@ args::RIArgs Compiler::Impl::GetRIOperands() {
     return {reg, GetImmediate(args::kImmSize)};
 }
 
-args::JArgs Compiler::Impl::GetJOperands() {
+args::JArgs Compiler::Impl::GetJArgs() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::JCommandNoAddress(line_number_);
     }
@@ -571,29 +576,25 @@ void Compiler::Impl::ProcessCurrLine() {
     auto [code, format] = GetCommand();
     switch (format) {
         case cmd::RM: {
-            auto ops = GetRMOperands();
-            auto bin = cmd::build::RM(code, ops);
+            cmd::Bin bin = cmd::build::RM(code, GetRMArgs());
             compiled_.push_back(bin);
             break;
         }
 
         case cmd::RR: {
-            auto ops = GetRROperands();
-            auto bin = cmd::build::RR(code, ops);
+            cmd::Bin bin = cmd::build::RR(code, GetRRArgs());
             compiled_.push_back(bin);
             break;
         }
 
         case cmd::RI: {
-            auto ops = GetRIOperands();
-            auto bin = cmd::build::RI(code, ops);
+            cmd::Bin bin = cmd::build::RI(code, GetRIArgs());
             compiled_.push_back(bin);
             break;
         }
 
         case cmd::J: {
-            auto ops = GetJOperands();
-            auto bin = cmd::build::J(code, ops);
+            cmd::Bin bin = cmd::build::J(code, GetJArgs());
             compiled_.push_back(bin);
             break;
         }

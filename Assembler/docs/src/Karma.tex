@@ -18,6 +18,8 @@
 
 \newcommand{\St}[1]{{\fontfamily{qcr}\selectfont #1}}
 \newcommand{\Ss}[1]{{\fontfamily{cmss}\selectfont #1}}
+\newcommand{\spp}[0]{\kern 0.2em}
+\newcommand{\sppp}[0]{\kern 0.35em}
 
 
 \title{\St{Karma} Computer}
@@ -36,30 +38,29 @@
 \setlength{\topmargin}{-.4in}
 \setlength{\headsep}{-.5in}
 \setlength{\textwidth}{7.7in}
-\setlength{\textheight}{10in}
+\setlength{\textheight}{10.17in}
 %--------------------
 
 \begin{document}
-\begin{titlingpage}
-	\maketitle
-    {
-        \hypersetup{hidelinks}
-        \tableofcontents
-    }
-    \vfill\null
-\end{titlingpage}
-    
+    \begin{titlingpage}
+        \maketitle
+        {
+            \hypersetup{hidelinks}
+            \tableofcontents
+        }
+        \vfill\null
+    \end{titlingpage}
+
     \newpage
 
-    \input{architecture}
+    \input{sections/architecture}
+
+    \input{sections/standard}
     \newpage
 
-    \input{processor}
+    \input{sections/executable}
     \newpage
 
-    \input{executable}
-    \newpage
-
-    \input{samples}
+    \input{sections/samples}
     \newpage
 \end{document}

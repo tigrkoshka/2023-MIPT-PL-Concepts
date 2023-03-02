@@ -1,9 +1,9 @@
 #include "architecture.hpp"
 
-#include <string>
-#include <unordered_map>
+#include <string>         // for string
+#include <unordered_map>  // for unordered_map
 
-#include "../../utils/utils.hpp"
+#include "../utils/utils.hpp"
 
 namespace karma::detail::specs::arch {
 
@@ -27,6 +27,6 @@ const std::unordered_map<std::string, Register> kRegisterNameToNum = {
 };
 
 const std::unordered_map<Register, std::string> kRegisterNumToName =
-    util::RevertMap(kRegisterNameToNum);
+    utils::RevertMap(kRegisterNameToNum);
 
 }  // namespace karma::detail::specs::arch

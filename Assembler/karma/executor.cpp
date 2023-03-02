@@ -2,18 +2,22 @@
 
 #include <algorithm>    // for copy
 #include <cmath>        // for floor
+#include <concepts>     // for totally_ordered
+#include <csignal>      // for sigset_t, sigfillset, sigwait
 #include <exception>    // for exception
 #include <iomanip>      // for quoted
 #include <iostream>     // for cout
 #include <sstream>      // for ostringstream
-#include <string>       // for string
 #include <type_traits>  // for make_signed_t
 
 #include "specs/architecture.hpp"
 #include "specs/exec.hpp"
 #include "specs/flags.hpp"
+#include "utils/utils.hpp"
 
 namespace karma {
+
+namespace utils = detail::utils;
 
 namespace flags = detail::specs::flags;
 namespace arch  = detail::specs::arch;
@@ -81,13 +85,22 @@ ExecutionError ExecutionError::QuotientOverflow(types::TwoWords dividend,
     return ExecutionError{ss.str()};
 }
 
+ExecutionError ExecutionError::BitwiseRHSTooBig(types::Word rhs,
+                                                cmd::Code code) {
+    std::ostringstream ss;
+    ss << "the right hand side of a bitwise operation (code " << code
+       << ") must be less than the bit size of a machine word ("
+       << sizeof(types::Word) * utils::kByteSize << "), got: " << rhs;
+    return ExecutionError{ss.str()};
+}
+
 ExecutionError ExecutionError::DtoiOverflow(types::Double value) {
     std::ostringstream ss;
     ss << "a word overflow occurred when casting " << value << " to integer";
     return ExecutionError{ss.str()};
 }
 
-ExecutionError ExecutionError::InvalidPutCharValue(args::Immediate value) {
+ExecutionError ExecutionError::InvalidPutCharValue(types::Word value) {
     std::ostringstream ss;
     ss << "the value in the register for the PUTCHAR syscall is " << value
        << ", which is an invalid char, because it is greater than 255";
@@ -122,6 +135,12 @@ types::TwoWords Executor::GetTwoRegisters(args::Source lower) const {
 void Executor::PutTwoRegisters(types::TwoWords value, args::Receiver lower) {
     registers_[lower]     = static_cast<types::Word>(value);
     registers_[lower + 1] = static_cast<types::Word>(value >> types::kWordSize);
+}
+
+void Executor::CheckBitwiseRHS(types::Word rhs, cmd::Code code) {
+    if (rhs >= sizeof(types::Word) * utils::kByteSize) {
+        throw ExecutionError::BitwiseRHSTooBig(rhs, code);
+    }
 }
 
 template <std::totally_ordered T>
@@ -231,7 +250,7 @@ void Executor::Push(types::Word value) {
     memory_[registers_[arch::kStackRegister]--] = value;
 }
 
-void Executor::Pop(args::Receiver recv, args::Modifier mod) {
+void Executor::Pop(args::Receiver recv, types::Word mod) {
     registers_[recv] = memory_[++registers_[arch::kStackRegister]] + mod;
 }
 
@@ -290,24 +309,16 @@ bool Executor::ExecuteRRCommand(cmd::Code code,
         return registers_[recv];
     };
 
-    auto lhs_two_words = [this, recv]() -> types::TwoWords {
-        return GetTwoRegisters(recv);
-    };
-
-    auto lhs_dbl = [&lhs_two_words]() -> types::Double {
-        return ToDbl(lhs_two_words());
+    auto lhs_dbl = [this, recv]() -> types::Double {
+        return ToDbl(GetTwoRegisters(recv));
     };
 
     auto rhs_word = [this, src, mod]() -> types::Word {
-        return registers_[src] + mod;
+        return registers_[src] + static_cast<types::Word>(mod);
     };
 
-    auto rhs_two_words = [this, src, mod]() -> types::TwoWords {
-        return GetTwoRegisters(src) + static_cast<types::TwoWords>(mod);
-    };
-
-    auto rhs_dbl = [&rhs_two_words]() -> types::Double {
-        return ToDbl(rhs_two_words());
+    auto rhs_dbl = [this, src]() -> types::Double {
+        return ToDbl(GetTwoRegisters(src));
     };
 
     switch (code) {
@@ -329,34 +340,44 @@ bool Executor::ExecuteRRCommand(cmd::Code code,
         }
 
         case cmd::DIV: {
-            Divide(lhs_two_words(),
+            Divide(GetTwoRegisters(recv),
                    static_cast<types::TwoWords>(rhs_word()),
                    recv);
             break;
         }
 
         case cmd::SHL: {
-            registers_[recv] <<= rhs_word();
+            types::Word rhs = rhs_word();
+            CheckBitwiseRHS(rhs, code);
+            registers_[recv] <<= rhs;
             break;
         }
 
         case cmd::SHR: {
-            registers_[recv] >>= rhs_word();
+            types::Word rhs = rhs_word();
+            CheckBitwiseRHS(rhs, code);
+            registers_[recv] >>= rhs;
             break;
         }
 
         case cmd::AND: {
-            registers_[recv] &= rhs_word();
+            types::Word rhs = rhs_word();
+            CheckBitwiseRHS(rhs, code);
+            registers_[recv] &= rhs;
             break;
         }
 
         case cmd::OR: {
-            registers_[recv] |= rhs_word();
+            types::Word rhs = rhs_word();
+            CheckBitwiseRHS(rhs, code);
+            registers_[recv] |= rhs;
             break;
         }
 
         case cmd::XOR: {
-            registers_[recv] ^= rhs_word();
+            types::Word rhs = rhs_word();
+            CheckBitwiseRHS(rhs, code);
+            registers_[recv] ^= rhs;
             break;
         }
 
@@ -462,31 +483,42 @@ bool Executor::ExecuteRRCommand(cmd::Code code,
 bool Executor::ExecuteRICommand(cmd::Code code,
                                 args::Register reg,
                                 args::Immediate imm) {
+    auto imm_word = [imm]() -> types::Word {
+        return static_cast<types::Word>(imm);
+    };
+
     switch (code) {
         case cmd::HALT: {
-            registers_[reg] = imm;
-            return false;
+            sigset_t wset{};
+            sigfillset(&wset);
+
+            int sig{};
+            sigwait(&wset, &sig);
+
+            break;
         }
 
         case cmd::SYSCALL: {
-            if (!Syscall(reg, static_cast<syscall::Code>(imm))) {
+            if (!Syscall(reg, static_cast<syscall::Code>(imm_word()))) {
                 return false;
             }
+
             break;
         }
 
         case cmd::ADDI: {
-            registers_[reg] += imm;
+            registers_[reg] += imm_word();
             break;
         }
 
         case cmd::SUBI: {
-            registers_[reg] -= imm;
+            registers_[reg] -= imm_word();
             break;
         }
 
         case cmd::MULI: {
-            auto res = static_cast<types::TwoWords>(registers_[reg]) * imm;
+            auto res = static_cast<types::TwoWords>(registers_[reg]) *
+                       static_cast<types::TwoWords>(imm_word());
 
             PutTwoRegisters(res, reg);
             break;
@@ -494,38 +526,48 @@ bool Executor::ExecuteRICommand(cmd::Code code,
 
         case cmd::DIVI: {
             Divide(GetTwoRegisters(reg),
-                   static_cast<types::TwoWords>(imm),
+                   static_cast<types::TwoWords>(imm_word()),
                    reg);
             break;
         }
 
         case cmd::LC: {
-            registers_[reg] = imm;
+            registers_[reg] = imm_word();
             break;
         }
 
         case cmd::SHLI: {
-            registers_[reg] <<= imm;
+            types::Word rhs = imm_word();
+            CheckBitwiseRHS(rhs, code);
+            registers_[reg] <<= rhs;
             break;
         }
 
         case cmd::SHRI: {
-            registers_[reg] >>= imm;
+            types::Word rhs = imm_word();
+            CheckBitwiseRHS(rhs, code);
+            registers_[reg] >>= rhs;
             break;
         }
 
         case cmd::ANDI: {
-            registers_[reg] &= imm;
+            types::Word rhs = imm_word();
+            CheckBitwiseRHS(rhs, code);
+            registers_[reg] &= rhs;
             break;
         }
 
         case cmd::ORI: {
-            registers_[reg] |= imm;
+            types::Word rhs = imm_word();
+            CheckBitwiseRHS(rhs, code);
+            registers_[reg] |= rhs;
             break;
         }
 
         case cmd::XORI: {
-            registers_[reg] ^= imm;
+            types::Word rhs = imm_word();
+            CheckBitwiseRHS(rhs, code);
+            registers_[reg] ^= rhs;
             break;
         }
 
@@ -535,17 +577,17 @@ bool Executor::ExecuteRICommand(cmd::Code code,
         }
 
         case cmd::PUSH: {
-            Push(registers_[reg] + imm);
+            Push(registers_[reg] + imm_word());
             break;
         }
 
         case cmd::POP: {
-            Pop(reg, imm);
+            Pop(reg, imm_word());
             break;
         }
 
         case cmd::CMPI: {
-            WriteComparisonToFlags(registers_[reg], imm);
+            WriteComparisonToFlags(registers_[reg], imm_word());
             break;
         }
 

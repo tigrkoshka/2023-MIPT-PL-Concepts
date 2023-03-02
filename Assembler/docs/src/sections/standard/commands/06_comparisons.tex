@@ -1,0 +1,79 @@
+\subsubsection{Comparisons and jumps}
+
+\cmdtable{Comparisons and jumps} {
+    43 & \St{cmp} & \Ss{RR} & \RRcmd{cmp}{r0}{r1}{2} & \St{r0\spp $<=>$\spp r1\spp +\spp 2} \\
+
+    \hline
+
+    44 & \St{cmpi} & \Ss{RI} & \RIcmd{cmpi}{r0}{0} & \St{r0\spp $<=>$\spp 0}  \\
+
+    \hline
+
+    45 & \St{cmpd} & \Ss{RR} & \RRcmd{cmpd}{r1}{r4}{0} &
+    \hspace{-0.42cm}
+    \St{
+        \makebox[1.47cm][l]{(r2,\spp r1)}
+        \makebox[0.6cm][c]{$<=>$}
+        \hspace{-0.3cm}
+        \makebox[1.47cm][l]{(r6,\spp r5)}
+    } \\
+
+    \hline
+
+    46 & \St{jmp} & \Ss{J} & \Jcmd{jmp}{0xffa} & Unconditional jump \\
+
+    \hline
+
+    47 & \St{jne} & \Ss{J} & \Jcmd{jne}{0xd471} & Jump if not equal \\
+
+    \hline
+
+    48 & \St{jeq} & \Ss{J} & \Jcmd{jeq}{05637} & Jump if equal \\
+
+    \hline
+
+    49 & \St{jle} & \Ss{J} & \Jcmd{jle}{1234} & Jump if less or equal \\
+
+    \hline
+
+    50 & \St{jl} & \Ss{J} & \Jcmd{jl}{0X1e4b} & Jump if less \\
+
+    \hline
+
+    51 & \St{jge} & \Ss{J} & \Jcmd{jge}{29834} & Jump if greater or equal \\
+
+    \hline
+
+    52 & \St{jg} & \Ss{J} & \Jcmd{jg}{03457} & Jump if greater \\
+}
+
+\paragraph{Flags register}\
+
+To allow for basic execution branching, an additional \St{flags} register is supported.
+It holds the result of the latest comparison.
+Only the lowest 6 bits of this register are used.
+The semantics of those bits is described in \hyperlink{flags:bits}{Table 11}.
+
+\hypertarget{flags:bits}{}
+{
+    \vspace{-0.4cm}
+    \renewcommand{\arraystretch}{1.4}
+    \begin{table}[h!]
+        \centering
+        \caption{\St{flags} register bits semantics (low-to-high, 0-indexed)}
+        \vspace{2mm}
+        \begin{tabular}{| c | c |}
+            \hline
+            0 & Equal            \\
+            1 & Not equal        \\
+            2 & Greater          \\
+            3 & Less             \\
+            4 & Greater or equal \\
+            5 & Less or equal    \\
+            \hline
+        \end{tabular}
+    \end{table}
+}
+
+Several bits may be simultaneously filled.
+For example, if the latest comparison resulted in equality, the value of the \St{flags} register will be $110001_2$, because equality causes the `less/greater or equal' conditions to also be true.

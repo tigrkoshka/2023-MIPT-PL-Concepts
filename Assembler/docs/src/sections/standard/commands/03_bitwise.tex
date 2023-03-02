@@ -1,0 +1,66 @@
+\subsubsection{Bitwise operators}
+
+\cmdtable{Bitwise operators}{
+    10 & \St{not} & \Ss{RI} & \RIcmd{not}{r1}{0} &
+    \St{r1\spp $=$\spp $\sim$r1} \\
+
+    \hline
+
+    11 & \St{shl} & \Ss{RR} & \RRcmd{shl}{r1}{r2}{1} &
+    \St{r1\spp $\mathrel{\ll}=$\spp r2\spp +\spp 1} \\
+
+    \hline
+
+    12 & \St{shli} & \Ss{RI} & \RIcmd{shli}{r1}{2} &
+    \St{r1\spp $\mathrel{\ll}=$\spp 2} \\
+
+    \hline
+
+    13 & \St{shr} & \Ss{RR} & \RRcmd{shr}{r1}{r2}{-4} &
+    \St{r1\spp $\mathrel{\gg}=$\spp r2\spp -\spp 4} \\
+
+    \hline
+
+    14 & \St{shri} & \Ss{RI} & \RIcmd{shri}{r1}{2} &
+    \St{r1\spp $\mathrel{\gg}=$\spp 2} \\
+
+    \hline
+
+    15 & \St{and} & \Ss{RR} & \RRcmd{and}{r4}{r6}{3} &
+    \St{r4\spp $\mathrel{\&}=$\spp r6\spp +\spp 3} \\
+
+    \hline
+
+    16 & \St{andi} & \Ss{RI} & \RIcmd{andi}{r5}{2} &
+    \St{r5\spp $\mathrel{\&}=$\spp 2} \\
+
+    \hline
+
+    17 & \St{or} & \Ss{RR} & \RRcmd{or}{r3}{r2}{-2} &
+    \St{r3\spp $\mathrel{|}=$\spp r2\spp -\spp 2} \\
+
+    \hline
+
+    18 & \St{ori} & \Ss{RI} & \RIcmd{ori}{r6}{100} &
+    \St{r6\spp $\mathrel{|}=$\spp 100} \\
+
+    \hline
+
+    19 & \St{xor} & \Ss{RR} & \RRcmd{xor}{r1}{r5}{0} &
+    \St{r1\spp $\mathrel{^\wedge}=$\spp r5} \\
+
+    \hline
+
+    20 & \St{xori} & \Ss{RI} & \RIcmd{xori}{r1}{127} &
+    \St{r1\spp $\mathrel{^\wedge}=$\spp 127} \\
+}
+
+\paragraph{\St{not}}\
+
+The immediate value is ignored, but per our agreement must be present for simplicity.
+
+\vspace{-0.35cm}
+
+\paragraph{Other bitwise operators}\
+
+All other bitwise operators take two \St{uint32} values obtained from the specified operands (see \hyperlink{types:twos_complement}{the respective section} for details) and produce a \St{uint32} value as a result. The right hand side operand must be less than the size of a machine word (i.e.\ no more than 31), otherwise an execution error occurs.

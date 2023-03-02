@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "../../utils/utils.hpp"
+#include "../utils/utils.hpp"
 
 namespace karma::detail::specs::cmd {
 
@@ -31,14 +31,14 @@ args::RMArgs RM(Bin command) {
 args::RRArgs RR(Bin command) {
     args::Receiver recv = (command >> kRecvShift) & kRegisterMask;
     args::Source src    = (command >> kSrcShift) & kRegisterMask;
-    args::Modifier mod  = command & kModMask;
+    args::Modifier mod  = utils::GetSignedValue(command, args::kModSize);
 
     return {recv, src, mod};
 }
 
 args::RIArgs RI(Bin command) {
     args::Register reg  = (command >> kRecvShift) & kRegisterMask;
-    args::Immediate imm = command & kImmMask;
+    args::Immediate imm = utils::GetSignedValue(command, args::kImmSize);
 
     return {reg, imm};
 }
@@ -67,7 +67,7 @@ Bin RR(Code code, args::RRArgs args) {
     return (code << kCodeShift) |  //
            (recv << kRecvShift) |  //
            (src << kSrcShift) |    //
-           mod;
+           utils::GetUnsignedBits(mod, args::kModSize);
 }
 
 Bin RI(Code code, args::RIArgs args) {
@@ -75,7 +75,7 @@ Bin RI(Code code, args::RIArgs args) {
 
     return (code << kCodeShift) |  //
            (recv << kRecvShift) |  //
-           imm;
+           utils::GetUnsignedBits(imm, args::kImmSize);
 }
 
 Bin J(Code code, args::JArgs args) {
@@ -205,6 +205,6 @@ const std::unordered_map<std::string, Code> kNameToCode = {
 };
 
 const std::unordered_map<Code, std::string> kCodeToName =
-    util::RevertMap(kNameToCode);
+    utils::RevertMap(kNameToCode);
 
 }  // namespace karma::detail::specs::cmd
