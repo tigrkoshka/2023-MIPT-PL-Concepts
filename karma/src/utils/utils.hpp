@@ -4,6 +4,7 @@
 #include <cstddef>        // for size_t
 #include <functional>     // for hash
 #include <sstream>        // for ostringstream
+#include <stdexcept>      // for overflow_error
 #include <type_traits>    // for make_[un]signed_t
 #include <unordered_map>  // for unordered_map
 

@@ -5,7 +5,6 @@
 #include <concepts>     // for totally_ordered
 #include <csignal>      // for sigset_t, sigfillset, sigwait
 #include <exception>    // for exception
-#include <iomanip>      // for quoted
 #include <iostream>     // for cout
 #include <sstream>      // for ostringstream
 #include <type_traits>  // for make_signed_t

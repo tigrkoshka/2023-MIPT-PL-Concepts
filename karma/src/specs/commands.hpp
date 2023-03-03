@@ -1,6 +1,9 @@
 #pragma once
 
-#include <type_traits>  // for make_signed_t
+#include <string>         // for string
+#include <tuple>          // for tuple
+#include <type_traits>    // for make_signed_t
+#include <unordered_map>  // for unordered_map
 
 #include "architecture.hpp"
 

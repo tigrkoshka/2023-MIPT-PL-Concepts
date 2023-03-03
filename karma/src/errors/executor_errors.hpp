@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>      // for size_t
 #include <sstream>      // for ostringstream
 #include <string>       // for string, to_string
 #include <type_traits>  // for is_same_v

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>  // for size_t
 #include <string>   // for string, to_string
 
 #include "../specs/commands.hpp"

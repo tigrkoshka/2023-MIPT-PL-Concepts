@@ -7,6 +7,7 @@
 #include <filesystem>   // for path
 #include <fstream>      // for ifstream
 #include <iostream>     // for cout, ios
+#include <stdexcept>    // for invalid_argument, out_of_range
 #include <type_traits>  // for make_unsigned_t
 #include <utility>      // for move
 
