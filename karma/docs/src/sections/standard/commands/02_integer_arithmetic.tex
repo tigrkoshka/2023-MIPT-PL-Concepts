@@ -2,89 +2,116 @@
 
 \cmdtable{Integer arithmetic operators}{
     2 & \St{add} & \Ss{RR} & \RRcmd{add}{r1}{r2}{-3} &
-    \St{r1\spp $\mathrel{+}=$\spp r2\spp -\spp 3} \\
+    \St{$\text{r1} \mathrel{+}= \text{r2} - \text{3}$} \\
 
     \hline
 
     3 & \St{addi} & \Ss{RI} & \RIcmd{addi}{r4}{10} &
-    \St{r4\spp $\mathrel{+}=$\spp 10} \\
+    \St{$\text{r4} \mathrel{+}= \text{10}$} \\
 
     \hline
 
     4 & \St{sub} & \Ss{RR} & \RRcmd{sub}{r3}{r5}{5} &
-    \St{r3\spp $\mathrel{-}=$\spp r5\spp +\spp 5} \\
+    \St{$\text{r3} \mathrel{-}= \text{r5} + \text{5}$} \\
 
     \hline
 
     5 & \St{subi} & \Ss{RI} & \RIcmd{subi}{r4}{1} &
-    \St{r4\spp $\mathrel{-}=$\spp 1} \\
+    \St{$\text{r4} \mathrel{-}= \text{1}$} \\
 
     \hline
 
     6 & \St{mul} & \Ss{RR} & \RRcmd{mul}{r3}{r7}{-2} &
-    \hspace{-0.20cm}
-    \St{(r4,\spp r3)\spp $=$\spp r3\spp $\ast$\spp (r7\spp -\spp 2)} \\
+    \St{$(\text{r4}, \text{r3}) = \text{r3} \ast (\text{r7} - \text{2})$} \\
 
     \hline
 
     7 & \St{muli} & \Ss{RI} & \RIcmd{muli}{r5}{100} &
-    \hspace{-0.20cm}
-    \St{(r6,\spp r5)\spp $=$\spp r5\spp $\ast$\spp 100} \\
+    \St{$(\text{r6}, \text{r5}) = \text{r5} \ast \text{100}$} \\
 
     \hline
 
     8 & \St{div} & \Ss{RR} & \RRcmd{div}{r3}{r8}{5} &
-    \vspace{0.18cm}
-    \hspace{-0.34cm}
-    \St{
-        \shortstack[l]{
-            tmp\spp $=$\spp (r4,\spp r3) \\
-            r3\spp $=$\spp tmp\spp /\spp (r8\spp +\spp 5) \\
-            r4\spp $=$\spp tmp\spp \%\spp (r8\spp +\spp 5)
-        }
-    }\vspace{0.03cm}
-    \\
+    \cmdcellalign{
+        &\text{tmp} = (\text{r4}, \text{r3}) \\
+        &\text{r3} = \text{tmp}\ /\ (\text{r8} + \text{5}) \\
+        &\text{r4} = \text{tmp}\ \%\ (\text{r8} + \text{5})
+    } \\
 
     \hline
 
     9 & \St{divi} & \Ss{RI} & \RIcmd{divi}{r6}{7} &
-    \vspace{0.18cm}
-    \St{
-        \shortstack[l]{
-            tmp\spp $=$\spp (r7,\spp r6) \\
-            r6\spp $=$\spp tmp\spp /\spp 7 \\
-            r7\spp $=$\spp tmp\spp \%\spp 7
-        }
-    }
-    \vspace{0.03cm}
-    \\
+    \cmdcellalign{
+        &\text{tmp} = (\text{r7}, \text{r6}) \\
+        &\text{r6} = \text{tmp}\ /\ 7 \\
+        &\text{r7} = \text{tmp}\ \%\ 7 \\
+    } \\
 }
 
 \paragraph{\St{add}, \St{addi}, \St{sub}, \St{subi}}\
 
-These commands take two \St{uint32} values obtained from the specified operands (see \hyperlink{types:twos_complement}{the respective section} for details) and produce a \St{uint32} value as a result.
+These commands take two \St{uint32} values obtained from the specified operands
+(see \hyperlink{types:twos_complement}{the respective section} for details)
+and produce a \St{uint32} value as a result.
 
-In the mathematical sense of things, for the unsigned (as-is) interpretation of the operands the arithmetic is simply performed modulo $2^{32}$. E.g.\ if \St{r0} contained 0, after \St{subi\sppp r0\sppp 1}, the value in \St{r0} will be $2^{32}-1$.
+In the mathematical sense of things, for the unsigned (as-is) interpretation of
+the operands the arithmetic is simply performed modulo $2^{32}$.
+E.g.\ if \St{r0} contained 0, after \St{subi\kern 0.35em r0\kern 0.35em 1},
+the value in \St{r0} will be $2^{32}-1$.
 
-At the same time, if both terms of each operation were to be interpreted as \textit{signed} integral values in the 32-bit two's complement representation, the result, if interpreted as a \textit{signed} integral value in the same representation, would be mathematically correct.
-That is provided by the two's complement representation of the signed operands (see explanations for \href{https://en.wikipedia.org/wiki/Two\%27s_complement#Addition}{addition} and \href{https://en.wikipedia.org/wiki/Two\%27s_complement#Subtraction}{subtraction}).
+At the same time, if both terms of each operation were to be interpreted as
+\textit{signed} integral values in the 32-bit two's complement representation,
+the result, if interpreted as a \textit{signed} integral value in the same
+representation, would be mathematically correct.
+That is provided by the two's complement representation of the signed operands
+(see explanations for
+\href{https://en.wikipedia.org/wiki/Two\%27s_complement#Addition}{addition} and
+\href{https://en.wikipedia.org/wiki/Two\%27s_complement#Subtraction}
+{subtraction}).
 
 \vspace{-0.35cm}
 
 \paragraph{\St{mul}, \St{muli}}\
 
-These commands multiply two \St{uint32} values obtained from the specified operands (see \hyperlink{types:twos_complement}{the respective section} for details), produce a \St{uint64} value and store it in the two registers starting from the specified receiver register (see \hyperlink{types:two_words_storage}{here} for details).
+These commands multiply two \St{uint32} values obtained from the specified
+operands (see \hyperlink{types:twos_complement}{the respective section}
+for details), produce a \St{uint64} value and store it into the two registers
+starting from the specified receiver register
+(see \hyperlink{types:two_words_storage}{here} for details).
 
-Unlike additive operations, these operations would not produce the correct results if the factors were to interpreted as \textit{signed} integral values in the 32-bit two's complement representation. That is because in order to produce valid results in such a case, the factors must first be \textit{extended} to the size of the destination type, i.e.\ rewritten in the 64-bit two's complement representation (see \href{https://en.wikipedia.org/wiki/Two\%27s_complement#Multiplication}{explanation}). However, if we were to perform such an extension, we would block the opportunity to multiply two big \textit{unsigned} values (because we would have interpreted them as \textit{signed} values and added non-zero bits to the right of the original representation when extending, thus producing an incorrect result for this case).
+Unlike additive operations, these operations would not produce the correct
+results if the factors were to interpreted as \textit{signed} integral values
+in the 32-bit two's complement representation.
+That is because in order to produce valid results in such a case,
+the factors must first be \textit{extended} to the size of the destination type,
+i.e.\ rewritten in the 64-bit two's complement representation (see
+\href{https://en.wikipedia.org/wiki/Two\%27s_complement#Multiplication}
+{explanation}).
+However, if we were to perform such an extension, we would block the opportunity
+to multiply two big \textit{unsigned} values (because we would have interpreted
+them as \textit{signed} values and added non-zero bits to the right of
+the original representation when extending, thus producing an incorrect result
+for this case).
 
-Overall, one must be cautious when specifying the source modifier and the immediate value in these operations, and bear in mind that if those produce negative factors, they will firstly be converted to \St{uint32} by being taken modulo $2^{32}$.
+Overall, one must be cautious when specifying the source modifier and
+the immediate value in these operations, and bear in mind that if those produce
+negative factors, they will firstly be converted to \St{uint32} by being taken
+modulo $2^{32}$.
 
 \vspace{-0.35cm}
 
 \paragraph{\St{div}, \St{divi}}\
 
-These commands accept a \St{uint64} dividend from the two registers starting from the specified receiver register (see \hyperlink{types:two_words_storage}{here} for storage details) and a \St{uint32} divisor and perform an integral division. The quotient is then placed in the receiver register and the remainder -- in the next register.
+These commands accept a \St{uint64} dividend from the two registers starting
+from the specified receiver register (see \hyperlink{types:two_words_storage}{here}
+for storage details) and a \St{uint32} divisor obtained in the
+\hyperlink{types:twos_complement}{common manner} and perform an integral division.
+The quotient is then placed into the receiver register and the remainder -- into
+the next register.
 
-If the quotient does not fit into a register, a `quotient overflow' execution error occurs.
+If the quotient does not fit into a register, a \textit{quotient overflow}
+execution error occurs.
 
-Like the \St{mul} and \St{muli} commands, these command only work with \textit{unsigned} operands and would not produce valid results if the operands were to be interpreted as \textit{signed} integral values.
+Like the \St{mul} and \St{muli} commands, these command only work with
+\textit{unsigned} operands and would not produce valid results if the operands
+were to be interpreted as \textit{signed} integral values.

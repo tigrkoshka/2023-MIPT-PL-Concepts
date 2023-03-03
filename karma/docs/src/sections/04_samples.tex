@@ -1,14 +1,17 @@
 \section{Code samples}
 
 \newcommand{\asmsample}[1]{
-    {
+        {
         \renewcommand{\baselinestretch}{0.5}
         \renewcommand{\arraystretch}{2}
 
         \selectfont
 
         \begin{table*}[h!]
-            \begin{tabular}{ m{4.5cm}  m{11cm} }
+            \begin{tabular}{
+                    >{\fontfamily{qcr}\selectfont} m{4.5cm}
+                    >{}                          m{11cm}
+            }
 
                 #1
 

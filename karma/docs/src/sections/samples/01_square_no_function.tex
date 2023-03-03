@@ -2,15 +2,15 @@
 
 \asmsample{
 
-    \St{main:}                 &                                                            \\
-    \qquad \St{syscall r0 100} & ; read an integer from \St{stdin} to \St{r0}               \\
-    \qquad \St{mov r2 r0 0}    & ; copy from \St{r0} to \St{r2}                             \\
-    \qquad \St{mul r0 r2 0}    & ; a pair of registers \St{(r0,r1)} contains the square     \\
-    \qquad \St{syscall r0 102} & ; print from \St{r0} to \St{stdout} (i.e.\ the lower bits) \\
-    \qquad \St{lc r0 10}       & ; store the constant 10 (`\textbackslash n') to \St{r0}    \\
-    \qquad \St{syscall r0 105} & ; print `\textbackslash n' from \St{r0} to \St{stdout}     \\
-    \qquad \St{lc r0 0}        & ; clear \St{r0}                                            \\
-    \qquad \St{syscall r0 0}   & ; exit the program with code \St{0}                        \\
-    \qquad \St{end main}       & ; start execution from label main                          \\
+    main:                 &                                                            \\
+    \qquad syscall r0 100 & ; read an integer from \St{stdin} to \St{r0}               \\
+    \qquad mov r2 r0 0    & ; copy from \St{r0} to \St{r2}                             \\
+    \qquad mul r0 r2 0    & ; a pair of registers \St{(r0,r1)} contains the square     \\
+    \qquad syscall r0 102 & ; print from \St{r0} to \St{stdout} (i.e.\ the lower bits) \\
+    \qquad lc r0 10       & ; store the constant 10 (`\textbackslash n') to \St{r0}    \\
+    \qquad syscall r0 105 & ; print `\textbackslash n' from \St{r0} to \St{stdout}     \\
+    \qquad lc r0 0        & ; clear \St{r0}                                            \\
+    \qquad syscall r0 0   & ; exit the program with code \St{0}                        \\
+    \qquad end main       & ; start execution from label main                          \\
 
 }

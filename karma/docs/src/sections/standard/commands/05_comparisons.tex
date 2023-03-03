@@ -1,0 +1,121 @@
+\hypertarget{cmd:flags}{
+    \subsubsection{Comparisons and jumps}
+}
+
+\cmdtable{Comparisons and jumps} {
+    27 & \St{cmp} & \Ss{RR} & \RRcmd{cmp}{r0}{r1}{2} &
+    \St{$\text{r0} <=> \text{r1} + \text{2}$} \\
+
+    \hline
+
+    28 & \St{cmpi} & \Ss{RI} & \RIcmd{cmpi}{r0}{0} &
+    \St{$\text{r0} <=> \text{0}$}  \\
+
+    \hline
+
+    29 & \St{cmpd} & \Ss{RR} & \RRcmd{cmpd}{r1}{r4}{0} &
+    \St{$(\text{r2}, \text{r1}) <=> (\text{r5}, \text{r4})$} \\
+
+    \hline
+
+    30 & \St{jmp} & \Ss{J} & \Jcmd{jmp}{0xffa} & Unconditional jump \\
+
+    \hline
+
+    31 & \St{jne} & \Ss{J} & \Jcmd{jne}{0xd471} & Jump if not equal \\
+
+    \hline
+
+    32 & \St{jeq} & \Ss{J} & \Jcmd{jeq}{05637} & Jump if equal \\
+
+    \hline
+
+    33 & \St{jle} & \Ss{J} & \Jcmd{jle}{1234} & Jump if less or equal \\
+
+    \hline
+
+    34 & \St{jl} & \Ss{J} & \Jcmd{jl}{0X1e4b} & Jump if less \\
+
+    \hline
+
+    35 & \St{jge} & \Ss{J} & \Jcmd{jge}{29834} & Jump if greater or equal \\
+
+    \hline
+
+    36 & \St{jg} & \Ss{J} & \Jcmd{jg}{03457} & Jump if greater \\
+}
+
+\paragraph{Flags register}\
+
+To allow for basic execution branching, an additional \St{flags} register
+is supported.
+It holds the result of the latest comparison.
+Only the lowest 6 bits of this register are used.
+The semantics of those bits is described in \hyperlink{flags:bits}{Table 11}.
+
+\hypertarget{flags:bits}{}
+{
+    \vspace{-0.4cm}
+    \renewcommand{\arraystretch}{1.4}
+    \begin{table}[h!]
+        \centering
+        \caption{\St{flags} register bits semantics (low-to-high, 0-indexed)}
+        \vspace{2mm}
+        \begin{tabular}{| c | c |}
+            \hline
+            0 & Equal            \\
+            1 & Not equal        \\
+            2 & Greater          \\
+            3 & Less             \\
+            4 & Greater or equal \\
+            5 & Less or equal    \\
+            \hline
+        \end{tabular}
+    \end{table}
+}
+
+Several bits may be simultaneously filled.
+For example, if the latest comparison resulted in equality,
+the value of the \St{flags} register will be $110001_2$, because equality
+causes the `less/greater or equal' conditions to also be true.
+
+\vspace{-0.35cm}
+
+\paragraph{\St{cmp}, \St{cmpi}, \St{cmpd}}\
+
+These are comparison operators.
+They compare the two values provided by the operands and store the result to
+the \St{flags} register according to the \hyperlink{flags:bits}{\St{flags}
+register bits semantics} described above.
+These are the only commands that store values in the \St{flags} register.
+
+The \St{cmp} and \St{cmpi} command compare the \St{uint32} value from
+the receiver register to the \St{uint32} value obtained from the operands in
+the {\hyperlink{types:twos_complement}{common manner}.
+
+The \St{cmpd} command ignores the immediate value operand and compares the two
+\St{double} values specified by the receiver and the source register operands.
+For the \St{double} values storage please refer to
+\hyperlink{types:two_words_storage}{this section}.
+
+\vspace{-0.35cm}
+
+\hypertarget{cmd:jump}{}
+
+\paragraph{Jump commands}\
+
+These commands implement execution branching.
+All of them, except for the \St{jmp} command, do nothing unless the condition
+mentioned in the table above is satisfied, that is, if the respective bit
+(according to the \hyperlink{flags:bits}{\St{flags} register bits semantics})
+is filled in the \St{flags} register.
+The \St{jmp} command is performed unconditionally.
+
+If one of these commands take effect, the next executed instruction will be
+the one stored in the provided memory address operand (because the \St{Karma}
+computer has a \href{https://en.wikipedia.org/wiki/Von_Neumann_architecture}
+{Von Neumann architecture}, the instructions' binaries are stored in
+the common address space).
+
+These are the only commands that read the value stored in the \St{flags}
+register.

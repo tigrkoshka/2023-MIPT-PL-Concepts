@@ -257,7 +257,7 @@ void Executor::Pop(args::Receiver recv, types::Word mod) {
 arch::Address Executor::Call(args::Address callee) {
     arch::Address ret = registers_[arch::kInstructionRegister];
 
-    Push(registers_[arch::kInstructionRegister]);
+    Push(ret);
     registers_[arch::kInstructionRegister] = callee;
 
     return ret;

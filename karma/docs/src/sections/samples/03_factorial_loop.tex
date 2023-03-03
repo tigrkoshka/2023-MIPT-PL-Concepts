@@ -2,32 +2,32 @@
 
 \asmsample{
 
-    \St{fact:}                 & ; a non-recursive function calculating the factorial of its argument \\
-    \qquad \St{loadr r0 r14 1} & ; load the first (and only) argument to \St{r0}                      \\
-    \qquad \St{mov r2 r0 0}    & ; copy the argument to r2                                            \\
-    \qquad \St{lc r0 1}        & ; initialise the result with \St{1}                                  \\
+    fact:                 & ; a non-recursive function calculating the factorial of its argument \\
+    \qquad loadr r0 r14 1 & ; load the first (and only) argument to \St{r0}                      \\
+    \qquad mov r2 r0 0    & ; copy the argument to r2                                            \\
+    \qquad lc r0 1        & ; initialise the result with \St{1}                                  \\
 
-    \St{loop:}                 & ; a while loop                                                       \\
-    \qquad \St{cmpi r2 1}      & ; compare \St{r2} to \St{1}                                          \\
-    \qquad \St{jle out}        & ; if the next factor is less or equal to \St{1}, break the cycle     \\
-    \qquad \St{mul r0 r2 0}    & ; multiply the current result by the next factor                     \\
-    \qquad \St{subi r2 1}      & ; decrement \St{r2} by \St{1}                                        \\
-    \qquad \St{jmp loop}       & ; continue the loop                                                  \\
+    loop:                 & ; a while loop                                                       \\
+    \qquad cmpi r2 1      & ; compare \St{r2} to \St{1}                                          \\
+    \qquad jle out        & ; if the next factor is less or equal to \St{1}, break the cycle     \\
+    \qquad mul r0 r2 0    & ; multiply the current result by the next factor                     \\
+    \qquad subi r2 1      & ; decrement \St{r2} by \St{1}                                        \\
+    \qquad jmp loop       & ; continue the loop                                                  \\
 
-    \St{out:}                  & ; out of the while loop                                              \\
-    \qquad \St{ret 1}          & ; return from function and remove the argument from the stack        \\
+    out:                  & ; out of the while loop                                              \\
+    \qquad ret 1          & ; return from function and remove the argument from the stack        \\
 
     &                                                                      \\
 
-    \St{main:}                 &                                                                      \\
-    \qquad \St{syscall r0 100} & ; read an integer from \St{stdin} to \St{r0}                         \\
-    \qquad \St{push r0 0}      & ; put \St{r0+0} to the stack as the \St{fact} argument               \\
-    \qquad \St{calli fact}     & ; call \St{fact}, the function will put the result to \St{r0}        \\
-    \qquad \St{syscall r0 102} & ; print \St{r0} to \St{stdout}                                       \\
-    \qquad \St{lc r0 10}       & ; store the constant \St{10} (`\textbackslash n') to \St{r0}         \\
-    \qquad \St{syscall r0 105} & ; print `\textbackslash n' from \St{r0} to \St{stdout}               \\
-    \qquad \St{lc r0 0}        & ; clear \St{r0}                                                      \\
-    \qquad \St{syscall r0 0}   & ; exit the program with code \St{0}                                  \\
-    \qquad \St{end main}       & ; start execution from label main                                    \\
+    main:                 &                                                                      \\
+    \qquad syscall r0 100 & ; read an integer from \St{stdin} to \St{r0}                         \\
+    \qquad push r0 0      & ; put \St{r0+0} to the stack as the \St{fact} argument               \\
+    \qquad calli fact     & ; call \St{fact}, the function will put the result to \St{r0}        \\
+    \qquad syscall r0 102 & ; print \St{r0} to \St{stdout}                                       \\
+    \qquad lc r0 10       & ; store the constant \St{10} (`\textbackslash n') to \St{r0}         \\
+    \qquad syscall r0 105 & ; print `\textbackslash n' from \St{r0} to \St{stdout}               \\
+    \qquad lc r0 0        & ; clear \St{r0}                                                      \\
+    \qquad syscall r0 0   & ; exit the program with code \St{0}                                  \\
+    \qquad end main       & ; start execution from label main                                    \\
 
 }

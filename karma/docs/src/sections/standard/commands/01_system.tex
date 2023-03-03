@@ -14,7 +14,9 @@
 
 \paragraph{\St{halt}}\
 
-The \St{halt} command sends an interruption signal to the CPU, which halts it until the next external signal is received, after which the execution is continued. The immediate value operand is ignored.
+The \St{halt} command sends an interruption signal to the CPU, which halts it
+until the next external signal is received, after which the execution is continued.
+The immediate value operand is ignored.
 
 \vspace{-0.35cm}
 
@@ -51,6 +53,11 @@ The semantics of those codes is described in Table 4:
     \end{table}
 }
 
-Specifying a value for the \St{syscall} immediate operand not listed in the table above leads to an error during compilation or execution (depending on whether such a value was originally specified in an assembler code or in a handcrafted executable file).
+Specifying a value for the \St{syscall} immediate operand not listed in
+the table above leads to an error during compilation or execution
+(depending on whether such a value was originally specified in an assembler
+code or in a handcrafted executable file).
 
-If the source register for the \St{PUTCHAR} system call contains a value greater than 255 (that is, not representing an \St{ASCII} character), an execution error will occur.
+If the source register for the \St{PUTCHAR} system call contains a value greater
+than 255 (that is, not representing an \St{ASCII} character), an execution error
+will occur.

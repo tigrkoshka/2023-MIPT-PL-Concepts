@@ -1,0 +1,101 @@
+\hypertarget{cmd:memory}{
+    \subsubsection{Data transfer commands}
+}
+
+\cmdtable{Data transfer commands} {
+
+    39 & \St{lc} & \Ss{RI} & \RIcmd{lc}{r7}{123} &
+    \St{$\text{r7} = \text{123}$} \\
+
+    \hline
+
+    40 & \St{mov} & \Ss{RR} & \RRcmd{mov}{r0}{r3}{10} &
+    \St{$\text{r0} = \text{r3} +\text{10}$} \\
+
+    \hline
+
+    41 & \St{load} & \Ss{RM} & \RMcmd{load}{r3}{0xffc2} &
+    \St{$\text{r3} = {}^*(\text{0xffc2})$} \\
+
+    \hline
+
+    42 & \St{load2} & \Ss{RM} & \RMcmd{load2}{r4}{13224} &
+    \cmdcellalign{
+        \text{r4} = {}^*(\text{13224}) \\
+        \text{r5} = {}^*(\text{13225}) \\
+    } \\
+
+    \hline
+
+    43 & \St{store} & \Ss{RM} & \RMcmd{store}{r1}{057123} &
+    \St{${}^*(\text{057123}) = \text{r1}$} \\
+
+    \hline
+
+    44 & \St{store2} & \Ss{RM} & \RMcmd{store2}{r0}{0X15fc} &
+    \cmdcellalign{
+            {}^*(\text{0X15fc}) = \text{r0} \\
+        {}^*(\text{0X15fd}) = \text{r1} \\
+    } \\
+
+    \hline
+
+    45 & \St{loadr} & \Ss{RR} & \LongRRcmd{loadr}{r8}{r1}{15} &
+    \St{$\text{r8} = {}^*(\text{r1} + \text{15})$} \\
+
+    \hline
+
+    46 & \St{loadr2} & \Ss{RR} & \LongRRcmd{loadr2}{r2}{r0}{12} &
+    \cmdcellalign{
+        \text{r2} = {}^*(\text{r0} + \text{12}) \\
+        \text{r3} = {}^*(\text{r0} + \text{13}) \\
+    } \\
+
+    \hline
+
+    47 & \St{storer} & \Ss{RR} & \LongRRcmd{storer}{r2}{r3}{3} &
+    \St{${}^*(\text{r3} + \text{3}) = \text{r2}$} \\
+
+    \hline
+
+    48 & \St{storer2} & \Ss{RR} & \LongRRcmd{storer2}{r5}{r2}{13} &
+    \cmdcellalign{
+            {}^*(\text{r2} + \text{13}) = \text{r5} \\
+        {}^*(\text{r3} + \text{14}) = \text{r6} \\
+    } \\
+}
+
+\paragraph{\St{lc}, \St{mov}}\
+
+These commands store the \St{uint32} value obtained from the operands in
+the {\hyperlink{types:twos_complement}{common manner} to the specified receiver
+register.
+
+\vspace{-0.35cm}
+
+\paragraph{Register-memory data transfer}\
+
+All the other commands are used to transfer data between the registers and
+the memory.
+
+Those of them which have the \Ss{RR} format treat the \St{uint32} value obtained
+from the operands in the {\hyperlink{types:twos_complement}{common manner}
+as a memory address.
+If this value does not represent a valid address, i.e.\ is greater or equal
+to $2^{20}$, an execution error occurs.
+Note that the \St{storer} and the \St{storer2} commands treat the receiver
+register operand as the opposite, i.e.\ as the \textit{source} for a value
+to be stored into the memory.
+These are the only two \Ss{RR} commands with such behaviour.
+
+For the \Ss{RM} format commands the memory cell is specified by the 20-bit
+\textit{unsigned} memory address operand.
+Since any 20-bit unsigned value represents a valid memory address, an execution
+error at this stage cannot occur in this case.
+
+The commands with a `\St{2}' suffix perform the same action as the respective
+commands without the suffix twice: once with the register and the memory cell
+specified by the operands and then with the next register and the next memory cell.
+Therefore, the specified register cannot be \St{r15} and the specified memory
+cell cannot be \St{0xfffff} (there are no next ones for them).
+If such a situation does occur, it results in an execution error.

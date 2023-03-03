@@ -2,71 +2,56 @@
 
 \cmdtable{Real-valued operators}{
     21 & \St{itod} & \Ss{RR} & \RRcmd{itod}{r2}{r5}{5} &
-    \hspace{-0.42cm}
-    \St{
-        \makebox[1.47cm][l]{(r3,\spp r2)}
-        \makebox[0.5cm][c]{$=$}
-        \makebox[2cm][l]{double(r5+5)}
-    }
+    \St{$(\text{r3}, \text{r2}) = \text{double}(\text{r5} + \text{5})$}
     \\
 
     \hline
 
     22 & \St{dtoi} & \Ss{RR} & \RRcmd{dtoi}{r2}{r5}{0} &
-    \St{r2 = uint32((r6,\spp r5))}
-    \\
+    \St{$\text{r2} = \text{uint32}((\text{r6}, \text{r5}))$}\\
 
     \hline
 
 
     23 & \St{addd} & \Ss{RR} & \RRcmd{addd}{r2}{r5}{0} &
-    \hspace{-0.42cm}
-    \St{
-        \makebox[1.47cm][l]{(r3,\spp r2)}
-        \makebox[0.4cm][c]{$\mathrel{+}=$}
-        \makebox[1.47cm][l]{(r6,\spp r5)}
-    } \\
+    \St{$(\text{r3}, \text{r2}) \mathrel{+}= (\text{r6}, \text{r5})$} \\
 
     \hline
 
     24 & \St{subd} & \Ss{RR} & \RRcmd{subd}{r1}{r6}{0} &
-    \hspace{-0.42cm}
-    \St{
-        \makebox[1.47cm][l]{(r2,\spp r1)}
-        \makebox[0.4cm][c]{$\mathrel{-}=$}
-        \makebox[1.47cm][l]{(r7,\spp r6)}
-    } \\
+    \St{$(\text{r2}, \text{r1}) \mathrel{-}= (\text{r7}, \text{r6})$} \\
 
     \hline
 
     25 & \St{muld} & \Ss{RR} & \RRcmd{muld}{r0}{r2}{0} &
-    \hspace{-0.42cm}
-    \St{
-        \makebox[1.47cm][l]{(r1,\spp r0)}
-        \makebox[0.4cm][c]{$\mathrel{\ast}=$}
-        \makebox[1.47cm][l]{(r3,\spp r2)}
-    } \\
+    \St{$(\text{r1}, \text{r0}) \mathrel{\ast}= (\text{r3}, \text{r2})$} \\
 
     \hline
 
     26 & \St{divd} & \Ss{RR} & \RRcmd{divd}{r1}{r3}{0} &
-    \hspace{-0.42cm}
-    \St{
-        \makebox[1.47cm][l]{(r2,\spp r1)}
-        \makebox[0.4cm][c]{$\mathrel{/}=$}
-        \makebox[1.47cm][l]{(r4,\spp r3)}
-    } \\
+    \St{$(\text{r2}, \text{r1}) \mathrel{/}= (\text{r4}, \text{r3})$} \\
 }
 
 \vspace{0.5cm}
 
-For the \St{double} values storage please refer to \hyperlink{types:two_words_storage}{this section}. For the double values representation please refer to \href{https://en.wikipedia.org/wiki/Floating-point_arithmetic}{Wiki}, specifically to the \href{https://en.wikipedia.org/wiki/Floating-point_arithmetic#Floating-point_numbers}{`Overview'} and \href{https://en.wikipedia.org/wiki/Floating-point_arithmetic#Internal_representation}{`Internal representation'} sections.
+For the \St{double} values storage please refer to
+\hyperlink{types:two_words_storage}{this section}.
+For the double values representation please refer to
+\href{https://en.wikipedia.org/wiki/Floating-point_arithmetic}{Wiki},
+specifically to the
+\href{https://en.wikipedia.org/wiki/Floating-point_arithmetic#Floating-point_numbers}
+{Overview} and
+\href{https://en.wikipedia.org/wiki/Floating-point_arithmetic#Internal_representation}
+{Internal representation} sections.
 
 \vspace{-0.35cm}
 
 \paragraph{\St{itod}}\
 
-The source modifier is added to the source register in a common manner (see \hyperlink{types:twos_complement}{the respective section} for details), after which the resulting \St{uint32} value is converted to \St{double} and stored in the two registers starting from the specified receiver register.
+The source modifier is added to the source register in
+the \hyperlink{types:twos_complement}{common manner}, after which the resulting
+\St{uint32} value is converted to \St{double} and stored into the two registers
+starting from the specified receiver register.
 
 \vspace{-0.35cm}
 
@@ -74,10 +59,14 @@ The source modifier is added to the source register in a common manner (see \hyp
 
 The source modifier is ignored, but per our agreement must be present for simplicity.
 
-The \St{double} value obtained from the two registers starting from the source register is converted to \St{uint32} and stored in the receiver register. If the value obtained after conversion does not fit into \St{uint32}, an execution error occurs.
+The \St{double} value obtained from the two registers starting from the source
+register is converted to \St{uint32} and stored into the receiver register.
+If the value obtained after conversion does not fit into \St{uint32},
+an execution error occurs.
 
 \vspace{-0.35cm}
 
 \paragraph{\St{Real-valued arithmetic operators}}\
 
-The source modifier is ignored for all real-valued arithmetic operators, but per our agreement must be present for simplicity.
+The source modifier is ignored for all real-valued arithmetic operators,
+but per our agreement must be present for simplicity.

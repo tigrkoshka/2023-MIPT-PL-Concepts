@@ -1,7 +1,11 @@
-\hypertarget{command:formats}{}
+\hypertarget{command:formats}{
+    \subsection{Command formats}
+}
 
-\subsection{Command formats}
-Each command takes up \textit{exactly one} word, 8 high bits of which specify the operation code and the use of the rest 24 bits is command-specific. With respect to the operation code each command may be of one of the following formats:
+Each command takes up \textit{exactly one} word, 8 high bits of which specify
+the operation code and the use of the rest 24 bits is command-specific.
+With respect to the operation code each command may be of one of the following
+formats:
 
     {
     \vspace{-0.4cm}
@@ -24,24 +28,25 @@ Each command takes up \textit{exactly one} word, 8 high bits of which specify th
 
             & &
 
-            \textbf{8 bits} & \textbf{4 bits} & \textbf{4 bits} & \textbf{16 bits} & \textbf{Syntax sample} \\
+            \textbf{8 bits} & \textbf{4 bits} & \textbf{4 bits} &
+            \textbf{16 bits} & \textbf{Syntax sample} \\
 
             \cline{3-6}
 
             Register-memory & \Ss{RM} &
-            
+
             \multirow{4}{*}{
-            		\vspace{-0.6cm}\shortstack[c]{command\\ code}
-            	} & 
-            	register & \multicolumn{2}{c|}{memory address}
+                \vspace{-0.6cm}\shortstack[c]{command \\ code}
+            } &
+            register & \multicolumn{2}{c|}{memory address}
             & \St{load r0, 12956} \\
 
             \cline{4-6}
 
             Register-register & \Ss{RR} & &
-            \vspace{0.2cm}\shortstack[c]{receiver\\ register} & 
-            \vspace{0.2cm}\shortstack[c]{source\\ register} & 
-            \vspace{0.2cm}\shortstack[c]{source\\ modifier}
+            \vspace{0.2cm}\shortstack[c]{receiver \\ register} &
+            \vspace{0.2cm}\shortstack[c]{source \\ register} &
+            \vspace{0.2cm}\shortstack[c]{source \\ modifier}
             & \St{mov r1, r2, -0xa21} \\
 
             \cline{4-6}
@@ -61,17 +66,30 @@ Each command takes up \textit{exactly one} word, 8 high bits of which specify th
     \end{table}
 }
 
-The \textit{memory address} operand for \Ss{RM} and \Ss{J} commands is interpreted as an unsigned integer representing the number of a memory cell (in 0-indexing). The bit size of the operand (20 bits) allows it to represent any memory cell (there are $2^{20}$ of them).
+The \textit{memory address} operand for \Ss{RM} and \Ss{J} commands is
+interpreted as an unsigned integer representing the number of a memory cell
+(in 0-indexing).
+The bit size of the operand (20 bits) allows it to represent any memory cell
+(there are $2^{20}$ of them).
 
-For \Ss{RM} and \Ss{J} commands the \textit{memory address} operand in the assembler code may be represented as:
+For \Ss{RM} and \Ss{J} commands the \textit{memory address} operand in
+the assembler code may be represented as:
 
 \begin{itemize}
     \item A decimal number (non-prefixed, not starting with \St{0})
+
     \item An octal number (with a \St{0} prefix)
+
     \item A hexadecimal number (with a \St{0x} or a \St{0X} prefix)
 \end{itemize}
 
-The same applies to the \textit{source modifier} and \textit{immediate value} operands for \Ss{RR} and \Ss{RI} commands respectively. If the operand is negative, in octal and hexadecimal representations the minus sign is placed before the prefix.
+The same applies to the \textit{source modifier} and \textit{immediate value}
+operands for \Ss{RR} and \Ss{RI} commands respectively.
+If the operand is negative, in octal and hexadecimal representations the minus
+sign is placed before the prefix.
 
-For the sake of not overcomplicating matters all arguments of any command are required.
-When using an \Ss{RR} command, if one does not wish to modify the value represented by the source modifier, the \textit{source modifier} should be specified as 0.
+For the sake of not overcomplicating matters all arguments of any command
+are required.
+When using an \Ss{RR} command, if one does not wish to modify the value
+represented by the source modifier, the \textit{source modifier} should
+be specified as 0.

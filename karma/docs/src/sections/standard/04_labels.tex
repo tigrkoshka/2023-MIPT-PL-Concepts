@@ -1,0 +1,40 @@
+\subsection{Labels}
+
+Either before a command or on a separate line one may place a \textit{label},
+which can be used later on in the assembler code to indicate the address of
+the command it is placed before.
+
+Syntax:
+
+\begin{itemize}
+    \item A label must consist only of lowercase latin letters and/or digits
+    and not start with a digit
+
+    \item A label must be followed by a colon
+
+    \item A label must be the first word in its line
+    (it may be the only word of the line)
+
+    \item A label must not conflict with predefined words
+    (i.e.\ command names, directives, etc.)
+
+    \item The next word after the label must be a command name\\
+    In particular, that means that there cannot be two consecutive
+    labels pointing to the same command
+
+    \item The labels must be unique (i.e.\ label redefinition is not allowed)
+\end{itemize}
+
+Usage:
+
+\begin{itemize}
+    \item A label usage may precede its definition
+
+    \item A label must be defined somewhere in the code to be used,
+    there are no predefined labels
+
+    \item A label may only be used as a memory address, i.e.\ only as
+    an operand of a command of either \Ss{RM} or \Ss{J} type \\
+    Note: this means that, when used, a label is always the last word in
+    its line (see \hyperlink{command:formats}{command formats})
+\end{itemize}

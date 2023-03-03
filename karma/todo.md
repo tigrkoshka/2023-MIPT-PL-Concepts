@@ -3,6 +3,8 @@
 1. Check "address < memory_size" before accessing memory_
 
 2. Check "register + 1 < registers_num" before accessing the next register
+   * Write a comment on why a register cannot be out of bounds
+     (it takes up 4 bits in command binary and we have 16 registers)
 
 3. Introduce constants (uint, uint64, double, string)
    * think on exec format:
@@ -25,17 +27,11 @@
 
 ### Code refactor:
 
-1. Split `karma::details::specs` namespace:
-   * `karma::details::specs::cmd`
-   * `karma::details::types`
+1. Extract errors to separate namespace `karma::errors`
 
-2. Maybe rethink errors? Options:
-   * namespaces
-     - cons: global access + too long identifiers or more "using namespace"
-   * Declaration to .cpp
-     - cons: they do not hurt the .hpp
+2. Rewrite all errors using `std::format` when GCC@13 is released
 
-3. Rewrite all errors using `std::format` when GCC@13 is released
-
-4. Concept definition: see `TODO` comments in [.clang-format](.clang-format)
+3. Concept definition: see `TODO` comments in [.clang-format](.clang-format)
    and [utils.hpp](src/utils/utils.hpp)
+
+4. Compile and disassemble may very well be separate functions (no need for a class)

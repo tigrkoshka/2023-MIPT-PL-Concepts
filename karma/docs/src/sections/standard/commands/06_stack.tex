@@ -1,0 +1,35 @@
+\hypertarget{cmd:stack}{
+    \subsubsection{Stack-related commands}
+}
+
+\cmdtable{Stack operators and function calls}{
+    37 & \hypertarget{cmd:push}{\St{push}} & \Ss{RI} & \RIcmd{push}{r0}{255} &
+    \St{${}^\ast(\text{r14}--) = \text{r0} + \text{255}$} \\
+
+    \hline
+
+    38 & \hypertarget{cmd:pop}{\St{pop}} & \Ss{RI} & \RIcmd{pop}{r3}{3} &
+    \St{$\text{r3} = {}^\ast(++ \text{r14}) + \text{3}$} \\
+
+}
+
+\vspace{0.5cm}
+
+These commands work directly with the stack, putting \St{uint32} values into
+it (\St{push}) and extracting them afterwards (\St{pop}).
+
+For the \St{push} command, the immediate value operand is added to the value
+from the specified source register before it is pushed to the stack.
+Similarly, for the \St{pop} command, the immediate value operand is added to
+the value retrieved (popped) from the stack before it is stored in the specified
+receiver register.
+The additions happen according to the {\hyperlink{types:twos_complement}
+{common rules}.
+
+The \St{r14} register is the stack head pointer
+(as stated \hyperlink{registers}{here}).
+It always points to the memory cell, in which the data will be put on
+\St{push} operation, that is, one memory cell `ahead' of the latest pushed value.
+
+The stack grows \textit{backwards}, i.e.\ the next pushed value is stored in
+the \textit{previous} memory cell from the latest pushed value.

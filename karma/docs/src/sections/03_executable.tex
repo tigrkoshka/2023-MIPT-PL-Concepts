@@ -1,9 +1,12 @@
 \section{\St{Karma} executable file}
 
-To run a program on a \St{Karma} computer one needs to generate an executable file which contains meta-information about the machine code and the code itself.
-The executable file is stored in a remote storage (e.g.\ a hard drive or an SSD) as a byte sequence.
+To run a program on a \St{Karma} computer one needs to generate an executable
+file which contains meta-information about the machine code and the code itself.
+The executable file is stored in a remote storage (e.g.\ a hard drive or an SSD)
+as a byte sequence.
 The header of the executable file takes up exactly 512 bytes.
-The format of the executable file is described in \hyperlink{flags:bits}{Table 5}.
+The format of the executable file is described in
+\hyperlink{flags:bits}{Table 5}.
 
 \hypertarget{executable:format}{}
 {
@@ -34,10 +37,23 @@ The format of the executable file is described in \hyperlink{flags:bits}{Table 5
 Notes:
 
 \begin{itemize}
-    \item The \St{ASCII} string at the beginning of the executable file contains 15 explicit characters and an implicit `\textbackslash 0' at the end
-    \item The code, constants and data segments sizes are denoted in bytes (as opposed to in machine words)
-    \item The code, constants and data segments are loaded into the \St{Karma} computer starting from the very first memory cell
-    \item The execution of the program starts from the instruction whose the address is specified in the executable file header
-    \item The header also specifies the initial stack head address
-    \item Currently a \St{Karma} executable file can run on only one processor -- that with ID 239
+    \item The \St{ASCII} string at the beginning of the executable file contains
+    15 explicit characters and an implicit `\textbackslash 0' at the end
+
+    \item The code, constants and data segments sizes are denoted in bytes
+    (as opposed to in machine words)
+
+    \item The execution of the program starts from the instruction whose address
+    is specified in the executable file header. \\
+    This is the initial value of the \St{r15} register
+
+    \item The header also specifies the initial stack head address \\
+    This is the initial value of the \St{r14} register
+
+    \item Currently a \St{Karma} executable file can run on only one processor
+    -- that with ID 239
+
+    \item The code, constants and data segments are loaded into the \St{Karma}
+    computer consecutively, starting from the very first memory cell
+    (i.e.\ the one with the 0 address)
 \end{itemize}

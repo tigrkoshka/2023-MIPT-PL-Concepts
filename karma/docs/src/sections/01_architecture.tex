@@ -1,11 +1,16 @@
 \section{Architecture}
 
-\St{Karma} is a computer with a Von Neumann architecture with an address space of $2^{20}$ cells, one \textit{machine word} (32 bits) each.
+\St{Karma} is a computer with a
+\href{https://en.wikipedia.org/wiki/Von_Neumann_architecture}
+{Von Neumann architecture} having an address space of $2^{20}$ cells,
+one 32-bit \textit{machine word} each.
 
-The processor has 16 one-word (32 bits each) registers \St{r0}-\St{r15}, as well as an additional \St{flags} register (also one-word).
+The processor has 16 one-word (32 bits each) registers \St{r0}-\St{r15},
+as well as an additional \St{flags} register (also one-word).
 Their usage is described in Table 1:
 
-    {
+\hypertarget{registers}{}
+{
     \vspace{-0.4cm}
     \renewcommand{\arraystretch}{1.4}
     \begin{table}[h!]
@@ -14,12 +19,19 @@ Their usage is described in Table 1:
         \vspace{2mm}
         \begin{tabular}{| c | c |}
             \hline
-            \St{r0}-\St{r12} & Free usage                  \\
-            \St{r13}         & Call frame pointer          \\
-            \St{r14}         & Stack pointer               \\
+            \St{r0}-\St{r13} & Free usage                  \\
+            \St{r14}         & Stack head pointer          \\
             \St{r15}         & Instruction pointer         \\
             \St{flags}       & Comparison operation result \\
             \hline
         \end{tabular}
     \end{table}
 }
+
+\vspace{-0.1cm}
+
+The usage of the \St{r14} register is described in
+the \hyperlink{cmd:stack}{Stack-related commands} section, the aim of
+the \St{r15} register is discussed in the \hyperlink{cmd:calls}{Function calls}
+section, and the usage of the \St{flags} register is detailed in
+the \hyperlink{cmd:flags}{Comparisons and jumps} section.

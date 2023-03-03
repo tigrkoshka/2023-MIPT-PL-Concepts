@@ -12,19 +12,50 @@ There are three architecture-defined basic types in the \St{Karma} assembler:
 \end{itemize}
 
 \hypertarget{types:two_words_storage}{}
-The two-word types (i.e.\ \St{uint64} and \St{double}) are represented by two consecutive memory cells or registers. The low 32 bits are placed in the first memory cell/register and the high 32 bits -- in the subsequent one. When referring to a two-word type value in commands, the specified memory cell/register is \textit{always} considered to be the first one (i.e.\ the one containing the low 32 bits of the value).
+The two-word types (i.e.\ \St{uint64} and \St{double}) are represented by two
+consecutive memory cells or registers.
+The low 32 bits are placed in the first memory cell/register and the high
+32 bits -- in the subsequent one.
+When referring to a two-word type value in commands, the specified
+memory cell/register is \textit{always} considered to be the first one
+(i.e.\ the one containing the low 32 bits of the value).
 
 \hypertarget{types:twos_complement}{
+
     \subsubsection{Source modifier and immediate value: two's complement}
 }
 
-The \St{RR} and \St{RI} commands both accept a signed integral operand, which cannot be straightforwardly represented using the basic types (because there are no signed integral basic types).
+The \St{RR} and \St{RI} commands both accept a signed integral operand, which
+cannot be straightforwardly represented using the basic types (because there
+are no signed integral basic types).
 
-The signed integral values always have the two's complement representation (see \href{https://en.wikipedia.org/wiki/Two\%27s_complement}{Wiki} for details). Such a representation is dependant on the bit size of the type that holds the value. Therefore, in the binary representation of a command, the same value may be represented differently if it is a source modifier versus an immediate value. That occurs iff the value is negative.
+The signed integral values always have the two's complement representation
+(see \href{https://en.wikipedia.org/wiki/Two\%27s_complement}{Wiki} for details).
+Such a representation is dependant on the bit size of the type that holds the
+value.
+Therefore, in the binary representation of a command, the same value may
+be represented differently if it is a source modifier versus an immediate value.
+That occurs iff the value is negative.
 
-Before usage, both the source modifier and the immediate value are transformed to \St{uint32} using the 32-bit two's complement representation for \textit{the same value}. E.g.\ if a source modifier was $-5$ (written in 16-bit two's complement representation), it will be converted to \textit{the same} $\textit{-5}$ \textit{value}, but in the 32-bit representation.
+Before usage, both the source modifier and the immediate value are transformed
+to \St{uint32} using the 32-bit two's complement representation for
+\textit{the same value}.
+E.g.\ if a source modifier was $-5$ (written in 16-bit two's complement
+representation), it will be converted to \textit{the same} $\textit{-5}$
+\textit{value}, but in the 32-bit representation.
 
-The two's complement representation of signed values is designed so that it produces intuitive additive operations results (see \href{https://en.wikipedia.org/wiki/Two\%27s_complement#Addition}{explanation}).
-Therefore, when specifying the source modifier, one does not need to think about the signed integral values representation, and may simply assume that the \textit{signed} source modifier value is added to the \textit{unsigned} source register value in a purely mathematical sense of things, after which the resulting value is taken modulo $2^{32}$.
+The two's complement representation of signed values is designed so that it
+produces intuitive additive operations results
+(see \href{https://en.wikipedia.org/wiki/Two\%27s_complement#Addition}
+{explanation}).
+Therefore, when specifying the source modifier, one does not need to think about
+the signed integral values representation, and may simply assume that
+the \textit{signed} source modifier value is added to the \textit{unsigned}
+source register value in a purely mathematical sense of things, after which
+the resulting value is taken modulo $2^{32}$.
 
-Note, that the addition of the source modifier to the source register value always happens \textit{before} the main operation (unless, of course, the command's documentation states that the source modifier is ignored). Therefore, all \Ss{RI} commands that do not ignore the source modifier effectively accept two \St{uint32} operands.
+Note, that the addition of the source modifier to the source register value
+always happens \textit{before} the main operation (unless, of course,
+the command's documentation states that the source modifier is ignored).
+Therefore, all \Ss{RI} commands that do not ignore the source modifier
+effectively accept two \St{uint32} operands.
