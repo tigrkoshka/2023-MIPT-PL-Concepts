@@ -19,6 +19,10 @@ add_executable(
         src/compiler.cpp
         src/executor.cpp
         src/disassembler.cpp
+        src/errors/compiler_errors.cpp
+        src/errors/disassembler_errors.cpp
+        src/errors/executor_errors.cpp
+        src/errors/error.cpp
         src/specs/architecture.cpp
         src/specs/commands.cpp
         src/specs/exec.cpp

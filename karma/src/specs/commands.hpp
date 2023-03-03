@@ -1,6 +1,6 @@
 #pragma once
 
-#include <type_traits> // for make_signed_t
+#include <type_traits>  // for make_signed_t
 
 #include "architecture.hpp"
 
@@ -9,65 +9,91 @@ namespace karma::detail::specs::cmd {
 using Bin = arch::Word;
 
 enum Format : arch::Word {
-    RM = 0,
-    RR = 1,
-    RI = 2,
-    J  = 3,
+    RM,
+    RR,
+    RI,
+    J,
 };
 
 enum Code : arch::Word {
-    HALT    = 0,
-    SYSCALL = 1,
-    ADD     = 2,
-    ADDI    = 3,
-    SUB     = 4,
-    SUBI    = 5,
-    MUL     = 6,
-    MULI    = 7,
-    DIV     = 8,
-    DIVI    = 9,
-    LC      = 12,
-    SHL     = 13,
-    SHLI    = 14,
-    SHR     = 15,
-    SHRI    = 16,
-    AND     = 17,
-    ANDI    = 18,
-    OR      = 19,
-    ORI     = 20,
-    XOR     = 21,
-    XORI    = 22,
-    NOT     = 23,
-    MOV     = 24,
-    ADDD    = 32,
-    SUBD    = 33,
-    MULD    = 34,
-    DIVD    = 35,
-    ITOD    = 36,
-    DTOI    = 37,
-    PUSH    = 38,
-    POP     = 39,
-    CALL    = 40,
-    CALLI   = 41,
-    RET     = 42,
-    CMP     = 43,
-    CMPI    = 44,
-    CMPD    = 45,
-    JMP     = 46,
-    JNE     = 47,
-    JEQ     = 48,
-    JLE     = 49,
-    JL      = 50,
-    JGE     = 51,
-    JG      = 52,
-    LOAD    = 64,
-    STORE   = 65,
-    LOAD2   = 66,
-    STORE2  = 67,
-    LOADR   = 68,
-    LOADR2  = 69,
-    STORER  = 70,
-    STORER2 = 71,
+    // System
+
+    HALT,
+    SYSCALL,
+
+    // Integer arithmetic
+
+    ADD,
+    ADDI,
+    SUB,
+    SUBI,
+    MUL,
+    MULI,
+    DIV,
+    DIVI,
+
+    // Bitwise operators
+
+    NOT,
+    SHL,
+    SHLI,
+    SHR,
+    SHRI,
+    AND,
+    ANDI,
+    OR,
+    ORI,
+    XOR,
+    XORI,
+
+    // Real-valued arithmetic
+
+    ITOD,
+    DTOI,
+    ADDD,
+    SUBD,
+    MULD,
+    DIVD,
+
+    // Comparisons
+
+    CMP,
+    CMPI,
+    CMPD,
+
+    // Jumps
+
+    JMP,
+    JNE,
+    JEQ,
+    JLE,
+    JL,
+    JGE,
+    JG,
+
+    // Stack
+
+    PUSH,
+    POP,
+
+    // Data transfer
+
+    LC,
+    MOV,
+    LOAD,
+    LOAD2,
+    STORE,
+    STORE2,
+    LOADR,
+    LOADR2,
+    STORER,
+    STORER2,
+
+    // Function calls
+
+    CALL,
+    CALLI,
+    RET,
 };
 
 using CodeFormat = std::tuple<Code, Format>;

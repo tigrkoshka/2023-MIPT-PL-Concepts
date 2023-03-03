@@ -12,8 +12,6 @@ const arch::Word kRegisterMask = 0xfu;
 const arch::Word kRecvShift    = 20u;
 const arch::Word kSrcShift     = 16u;
 const arch::Word kAddressMask  = 0xfffffu;
-const arch::Word kModMask      = 0xffffu;
-const arch::Word kImmMask      = 0xfffffu;
 
 Code GetCode(Bin command) {
     return static_cast<cmd::Code>(command >> kCodeShift);

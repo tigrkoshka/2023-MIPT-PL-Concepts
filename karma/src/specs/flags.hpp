@@ -4,7 +4,7 @@
 
 namespace karma::detail::specs::flags {
 
-enum Flag : arch::Word {
+enum Flag : arch::Register {
     EQUAL            = 0b1u,
     NOT_EQUAL        = 0b10u,
     GREATER          = 0b100u,
@@ -13,8 +13,8 @@ enum Flag : arch::Word {
     LESS_OR_EQUAL    = 0b100000u,
 };
 
-static const arch::Word kEqual   = EQUAL + GREATER_OR_EQUAL + LESS_OR_EQUAL;
-static const arch::Word kGreater = NOT_EQUAL + GREATER + GREATER_OR_EQUAL;
-static const arch::Word kLess    = NOT_EQUAL + LESS + LESS_OR_EQUAL;
+static const arch::Register kEqual   = EQUAL | GREATER_OR_EQUAL | LESS_OR_EQUAL;
+static const arch::Register kGreater = NOT_EQUAL | GREATER | GREATER_OR_EQUAL;
+static const arch::Register kLess    = NOT_EQUAL | LESS | LESS_OR_EQUAL;
 
 }  // namespace karma::detail::specs::flags

@@ -3,16 +3,19 @@
 #include <exception>    // for exception
 #include <filesystem>   // for path
 #include <fstream>      // for ofstream
-#include <ostream>      // for ostream
+#include <iostream>     // for ostream, cout
 #include <sstream>      // for ostringstream
 #include <string>       // for string
 #include <type_traits>  // for make_signed_t
 
+#include "errors/disassembler_errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/exec.hpp"
 
 namespace karma {
+
+using namespace errors::disassembler;  // NOLINT(google-build-using-namespace)
 
 namespace arch = detail::specs::arch;
 
@@ -20,48 +23,6 @@ namespace cmd  = detail::specs::cmd;
 namespace args = cmd::args;
 
 namespace exec = detail::specs::exec;
-
-////////////////////////////////////////////////////////////////////////////////
-///                              Internal errors                             ///
-////////////////////////////////////////////////////////////////////////////////
-
-using InternalError = Disassembler::InternalError;
-
-InternalError InternalError::FailedToOpen(const std::string& path) {
-    std::ostringstream ss;
-    ss << "failed to open " << std::quoted(path);
-    return InternalError{ss.str()};
-}
-
-InternalError InternalError::CommandNameNotFound(cmd::Code code) {
-    std::ostringstream ss;
-    ss << "name not found for command with code " << code;
-    return InternalError{ss.str()};
-}
-
-InternalError InternalError::RegisterNameNotFound(args::Register reg) {
-    std::ostringstream ss;
-    ss << "name not found for register # " << reg;
-    return InternalError{ss.str()};
-}
-
-InternalError InternalError::UnknownCommandFormat(cmd::Format format) {
-    std::ostringstream ss;
-    ss << "unknown command format " << format;
-    return InternalError{ss.str()};
-}
-
-////////////////////////////////////////////////////////////////////////////////
-///                           Disassembling errors                           ///
-////////////////////////////////////////////////////////////////////////////////
-
-using DisassembleError = Disassembler::DisassembleError;
-
-DisassembleError DisassembleError::UnknownCommand(cmd::Code code) {
-    std::ostringstream ss;
-    ss << "unknown command code " << code;
-    return DisassembleError{ss.str()};
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                          Disassembling a command                         ///
