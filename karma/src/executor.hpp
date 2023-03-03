@@ -45,20 +45,16 @@ class Executor {
     detail::specs::cmd::args::Address Call(detail::specs::cmd::args::Address);
 
     bool ExecuteRMCommand(detail::specs::cmd::Code,
-                          detail::specs::cmd::args::Register,
-                          detail::specs::cmd::args::Address);
+                          detail::specs::cmd::args::RMArgs);
 
     bool ExecuteRRCommand(detail::specs::cmd::Code,
-                          detail::specs::cmd::args::Receiver,
-                          detail::specs::cmd::args::Source,
-                          detail::specs::cmd::args::Modifier);
+                          detail::specs::cmd::args::RRArgs);
 
     bool ExecuteRICommand(detail::specs::cmd::Code,
-                          detail::specs::cmd::args::Register,
-                          detail::specs::cmd::args::Immediate);
+                          detail::specs::cmd::args::RIArgs);
 
     bool ExecuteJCommand(detail::specs::cmd::Code,
-                         detail::specs::cmd::args::Address);
+                         detail::specs::cmd::args::JArgs);
 
     bool ExecuteCommand(detail::specs::cmd::Bin);
 
