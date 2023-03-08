@@ -15,9 +15,9 @@
 
 namespace karma {
 
-using errors::disassembler::DisassembleError;
 using errors::disassembler::Error;
 using errors::disassembler::InternalError;
+using errors::disassembler::DisassembleError;
 
 namespace arch = detail::specs::arch;
 

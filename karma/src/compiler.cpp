@@ -21,9 +21,9 @@
 
 namespace karma {
 
-using errors::compiler::CompileError;
 using errors::compiler::Error;
 using errors::compiler::InternalError;
+using errors::compiler::CompileError;
 
 namespace utils = detail::utils;
 
