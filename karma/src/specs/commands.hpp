@@ -18,7 +18,7 @@ enum Format : arch::Word {
     J,
 };
 
-enum Code : arch::Word {
+enum Code : Bin {
     // System
 
     HALT,
@@ -49,7 +49,7 @@ enum Code : arch::Word {
     XOR,
     XORI,
 
-    // Real-valued arithmetic
+    // Real-valued operators
 
     ITOD,
     DTOI,
@@ -103,20 +103,6 @@ using CodeFormat = std::tuple<Code, Format>;
 
 Code GetCode(Bin);
 
-namespace syscall {
-
-enum Code : arch::Word {
-    EXIT        = 0,
-    SCANINT     = 100,
-    SCANDOUBLE  = 101,
-    PRINTINT    = 102,
-    PRINTDOUBLE = 103,
-    GETCHAR     = 104,
-    PUTCHAR     = 105,
-};
-
-}  // namespace syscall
-
 namespace args {
 
 using Register  = arch::Register;
@@ -135,6 +121,20 @@ using RIArgs = std::tuple<arch::Register, Immediate>;
 using JArgs  = std::tuple<Address>;
 
 }  // namespace args
+
+namespace syscall {
+
+enum Code : cmd::args::Immediate {
+    EXIT        = 0,
+    SCANINT     = 100,
+    SCANDOUBLE  = 101,
+    PRINTINT    = 102,
+    PRINTDOUBLE = 103,
+    GETCHAR     = 104,
+    PUTCHAR     = 105,
+};
+
+}  // namespace syscall
 
 namespace parse {
 

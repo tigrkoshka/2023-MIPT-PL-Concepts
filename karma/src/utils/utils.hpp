@@ -5,6 +5,7 @@
 #include <functional>     // for hash
 #include <sstream>        // for ostringstream
 #include <stdexcept>      // for overflow_error
+#include <string>         // for string
 #include <type_traits>    // for make_[un]signed_t
 #include <unordered_map>  // for unordered_map
 
@@ -167,5 +168,11 @@ std::make_unsigned_t<Int> GetUnsignedBits(Int value, size_t bit_size) {
 
     return (static_cast<Uint>(1) << static_cast<Uint>(bit_size)) - modulo;
 }
+
+static const std::string kWhitespaces = " \t\n\v\f\r";
+
+void TrimSpaces(std::string& str);
+
+void Unescape(std::string& str);
 
 }  // namespace karma::detail::utils

@@ -19,9 +19,9 @@ using TwoWords = uint64_t;
 using Double   = double;  // TODO: std::float64_t in C++23 (supported by GCC@13)
 using Char     = unsigned char;
 
-const size_t kWordSize     = sizeof(Word);
-const Word kMaxWord        = std::numeric_limits<Word>::max();
-static const Char kMaxChar = std::numeric_limits<Char>::max();
+static const size_t kWordSize = sizeof(Word);
+static const Word kMaxWord    = std::numeric_limits<Word>::max();
+static const Char kMaxChar    = std::numeric_limits<Char>::max();
 
 }  // namespace types
 
@@ -49,8 +49,8 @@ enum RegisterEnum : Register {
     R15,
 };
 
-static const Register kStackRegister       = R14;
-static const Register kInstructionRegister = R15;
+static const Register kStackRegister       = static_cast<Register>(R14);
+static const Register kInstructionRegister = static_cast<Register>(R15);
 
 extern const std::unordered_map<std::string, Register> kRegisterNameToNum;
 extern const std::unordered_map<Register, std::string> kRegisterNumToName;

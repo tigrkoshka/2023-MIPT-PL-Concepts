@@ -12,6 +12,14 @@ namespace karma::detail::specs::exec {
 
 const std::string kDefaultExtension = ".a";
 
+const std::string kIntroString = "ThisIsKarmaExec";
+const size_t kIntroSize        = kIntroString.size() + 1;
+const size_t kMetaInfoEndPos   = 40ull;
+const size_t kHeaderSize       = 512ll;
+const size_t kCodeSegmentPos   = kHeaderSize;
+
+static const arch::types::Word kProcessorID = 239ull;
+
 struct Data {
     specs::arch::Address entrypoint;
     specs::arch::Address initial_stack;
@@ -19,31 +27,6 @@ struct Data {
     std::vector<cmd::Bin> code;
     std::vector<arch::Word> constants;
     std::vector<arch::Word> data;
-};
-
-struct Error : std::runtime_error {
-   protected:
-    explicit Error(const std::string& message)
-        : std::runtime_error(message) {}
-};
-
-struct ExecFileError : Error {
-   private:
-    explicit ExecFileError(const std::string& message)
-        : Error("exec file error: " + message) {}
-   public:
-    static ExecFileError FailedToOpen();
-
-    static ExecFileError TooSmallForHeader(size_t size);
-    static ExecFileError InvalidExecSize(size_t exec_size,
-                                         size_t code_size,
-                                         size_t consts_size,
-                                         size_t data_size);
-
-    static ExecFileError NoTrailingZeroInIntro(const std::string& intro);
-    static ExecFileError InvalidIntroString(const std::string& intro);
-
-    static ExecFileError InvalidProcessorID(arch::types::Word processor_id);
 };
 
 void Write(const Data& data, const std::string& exec_path);

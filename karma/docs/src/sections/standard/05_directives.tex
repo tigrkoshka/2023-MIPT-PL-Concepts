@@ -1,5 +1,29 @@
 \subsection{Directives}
 
+\subsubsection{\St{include} directive}
+
+\vspace{-0.2cm}
+
+An assembler file may have several \St{include} directives at the beginning.
+An \St{include} directive must be followed by a string representing a relative
+(to the original file) path to another assembler file.
+
+If such directives are present, the files specified by them are compiled with
+the code from the original file as if their contents were copied to
+the beginning of the original file in the order of inclusion.
+In particular, that means that the code from the original file may use
+the labels defined in the included files.
+Therefore the labels must be unique throughout all the included files 
+as well as the original file.
+
+All include statements must appear before the code.
+If an \St{include} directive is encountered after the first command
+(or label, whichever occurs first) of the file or if the relative path
+specified by the directive is invalid for any reason (not a relative path,
+no such file exists, etc.), a compilation error occurs.
+
+\vspace{-0.35cm}
+
 \subsubsection{\St{end} directive}
 
 \vspace{-0.2cm}
@@ -8,24 +32,3 @@ An assembler program must have \textit{exactly one} \St{end} directive,
 which must be in \textit{the last} line of the program.
 It has one operand which indicates the address of the first instruction
 (or a label).
-
-\vspace{-0.35cm}
-
-\subsubsection{\St{include} directive}
-
-\vspace{-0.2cm}
-
-An assembler file may have several \St{include} directives at the beginning.
-An \St{include} directive must be followed by a string representing a relative
-(to the original file) path to another assembler file.
-If such directives are present, the files specified by them are compiled with
-the code from the original file as if their contents were copied to
-the beginning of the original file in the order of inclusion.
-In particular, that means that the code from the original file may use
-the labels defined in the included files.
-
-All include statements must appear before the code.
-If an \St{include} directive is encountered after the first command
-(or label, whichever occurs first) of the file or if the relative path
-specified by the directive is invalid for any reason (not a relative path,
-no such file exists, etc.), a compilation error occurs.

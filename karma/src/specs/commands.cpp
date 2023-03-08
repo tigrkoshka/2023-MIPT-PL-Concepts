@@ -93,8 +93,13 @@ const std::unordered_map<Format, std::string> kFormatToString = {
 };
 
 const std::unordered_map<Code, Format> kCodeToFormat = {
+  // System
+
     {HALT,    RI},
     {SYSCALL, RI},
+
+ // Integer arithmetic
+
     {ADD,     RR},
     {ADDI,    RI},
     {SUB,     RR},
@@ -103,7 +108,10 @@ const std::unordered_map<Code, Format> kCodeToFormat = {
     {MULI,    RI},
     {DIV,     RR},
     {DIVI,    RI},
-    {LC,      RI},
+
+ // Bitwise operators
+
+    {NOT,     RI},
     {SHL,     RR},
     {SHLI,    RI},
     {SHR,     RR},
@@ -114,22 +122,24 @@ const std::unordered_map<Code, Format> kCodeToFormat = {
     {ORI,     RI},
     {XOR,     RR},
     {XORI,    RI},
-    {NOT,     RI},
-    {MOV,     RR},
+
+ // Real-valued operators
+
+    {ITOD,    RR},
+    {DTOI,    RR},
     {ADDD,    RR},
     {SUBD,    RR},
     {MULD,    RR},
     {DIVD,    RR},
-    {ITOD,    RR},
-    {DTOI,    RR},
-    {PUSH,    RI},
-    {POP,     RI},
-    {CALL,    RR},
-    {CALLI,   J },
-    {RET,     J },
+
+ // Comparisons
+
     {CMP,     RR},
     {CMPI,    RI},
     {CMPD,    RR},
+
+ // Jumps
+
     {JMP,     J },
     {JNE,     J },
     {JEQ,     J },
@@ -137,19 +147,41 @@ const std::unordered_map<Code, Format> kCodeToFormat = {
     {JL,      J },
     {JGE,     J },
     {JG,      J },
+
+ // Stack
+
+    {PUSH,    RI},
+    {POP,     RI},
+
+ // Data transfer
+
+    {LC,      RI},
+    {MOV,     RR},
     {LOAD,    RM},
-    {STORE,   RM},
     {LOAD2,   RM},
+    {STORE,   RM},
     {STORE2,  RM},
     {LOADR,   RR},
-    {STORER,  RR},
     {LOADR2,  RR},
+    {STORER,  RR},
     {STORER2, RR},
+
+ // Function calls
+
+    {CALL,    RR},
+    {CALLI,   J },
+    {RET,     J },
 };
 
 const std::unordered_map<std::string, Code> kNameToCode = {
+
+    // System
+
     {"halt",    HALT   },
     {"syscall", SYSCALL},
+
+    // Integer arithmetic
+
     {"add",     ADD    },
     {"addi",    ADDI   },
     {"sub",     SUB    },
@@ -158,7 +190,10 @@ const std::unordered_map<std::string, Code> kNameToCode = {
     {"muli",    MULI   },
     {"div",     DIV    },
     {"divi",    DIVI   },
-    {"lc",      LC     },
+
+    // Bitwise operators
+
+    {"not",     NOT    },
     {"shl",     SHL    },
     {"shli",    SHLI   },
     {"shr",     SHR    },
@@ -169,22 +204,24 @@ const std::unordered_map<std::string, Code> kNameToCode = {
     {"ori",     ORI    },
     {"xor",     XOR    },
     {"xori",    XORI   },
-    {"not",     NOT    },
-    {"mov",     MOV    },
+
+    // Real-valued operators
+
+    {"itod",    ITOD   },
+    {"dtoi",    DTOI   },
     {"addd",    ADDD   },
     {"subd",    SUBD   },
     {"muld",    MULD   },
     {"divd",    DIVD   },
-    {"itod",    ITOD   },
-    {"dtoi",    DTOI   },
-    {"push",    PUSH   },
-    {"pop",     POP    },
-    {"call",    CALL   },
-    {"calli",   CALLI  },
-    {"ret",     RET    },
+
+    // Comparisons
+
     {"cmp",     CMP    },
     {"cmpi",    CMPI   },
     {"cmpd",    CMPD   },
+
+    // Jumps
+
     {"jmp",     JMP    },
     {"jne",     JNE    },
     {"jeq",     JEQ    },
@@ -192,14 +229,30 @@ const std::unordered_map<std::string, Code> kNameToCode = {
     {"jl",      JL     },
     {"jge",     JGE    },
     {"jg",      JG     },
+
+    // Stack
+
+    {"push",    PUSH   },
+    {"pop",     POP    },
+
+    // Data transfer
+
+    {"lc",      LC     },
+    {"mov",     MOV    },
     {"load",    LOAD   },
-    {"store",   STORE  },
     {"load2",   LOAD2  },
+    {"store",   STORE  },
     {"store2",  STORE2 },
     {"loadr",   LOADR  },
-    {"storer",  STORER },
     {"loadr2",  LOADR2 },
+    {"storer",  STORER },
     {"storer2", STORER2},
+
+    // Function calls
+
+    {"call",    CALL   },
+    {"calli",   CALLI  },
+    {"ret",     RET    },
 };
 
 const std::unordered_map<Code, std::string> kCodeToName =

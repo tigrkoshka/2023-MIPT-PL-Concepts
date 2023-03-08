@@ -5,6 +5,7 @@
 #include <string>   // for string, to_string
 
 #include "../specs/commands.hpp"
+#include "../specs/constants.hpp"
 #include "error.hpp"
 
 namespace karma::errors::compiler {
@@ -33,6 +34,9 @@ struct InternalError : Error {
     static InternalError UnknownCommandFormat(detail::specs::cmd::Format format,
                                               size_t line);
 
+    static InternalError UnknownConstantType(detail::specs::consts::Type type,
+                                             size_t line);
+
     static InternalError EmptyWord(size_t line);
 };
 
@@ -41,11 +45,31 @@ struct CompileError : Error {
     explicit CompileError(const std::string& message)
         : Error("compile error: " + message) {}
 
-    explicit CompileError(const std::string& message, size_t line)
+    CompileError(const std::string& message, size_t line)
         : Error("compile error at line " + std::to_string(line) + ": " +
                 message) {}
 
    public:
+    // constants
+
+    static CompileError EmptyConstantValue(detail::specs::consts::Type type,
+                                           size_t line);
+
+    static CompileError InvalidValue(detail::specs::consts::Type type,
+                                     const std::string& value,
+                                     size_t line);
+
+    static CompileError CharTooSmallForQuotes(const std::string& value,
+                                              size_t line);
+    static CompileError CharNoStartQuote(const std::string& value, size_t line);
+    static CompileError CharNoEndQuote(const std::string& value, size_t line);
+
+    static CompileError StringTooSmallForQuotes(const std::string& value,
+                                                size_t line);
+    static CompileError StringNoStartQuote(const std::string& value,
+                                           size_t line);
+    static CompileError StringNoEndQuote(const std::string& value, size_t line);
+
     // command
 
     static CompileError UnknownCommand(const std::string& command, size_t line);
@@ -71,6 +95,10 @@ struct CompileError : Error {
                                           size_t line,
                                           const std::string& latest_label,
                                           size_t latest_label_line);
+
+    static CompileError LabelRedefinition(const std::string& label,
+                                          size_t line,
+                                          size_t previous_definition_line);
 
     static CompileError FileEndsWithLabel(const std::string& label,
                                           size_t line);
@@ -141,9 +169,13 @@ struct CompileError : Error {
     static CompileError ExtraWordsAfterEntrypoint(const std::string& extra,
                                                   size_t line);
 
-    static CompileError ExtraWords(detail::specs::cmd::Format format,
-                                   const std::string& extra,
-                                   size_t line);
+    static CompileError ExtraWordsAfterConstant(detail::specs::consts::Type typ,
+                                                const std::string& extra,
+                                                size_t line);
+
+    static CompileError ExtraWordsAfterCommand(detail::specs::cmd::Format fmt,
+                                               const std::string& extra,
+                                               size_t line);
 };
 
 }  // namespace karma::errors::compiler

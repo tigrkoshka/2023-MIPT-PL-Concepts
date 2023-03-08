@@ -72,6 +72,10 @@ class Executor {
         : memory_(detail::specs::arch::kMemorySize),
           registers_(detail::specs::arch::kNRegisters) {}
 
+    // Non-copyable
+    Executor(const Executor&)           = delete;
+    Executor& operator=(const Executor&) = delete;
+
    private:
     std::vector<detail::specs::arch::types::Word> memory_;
 

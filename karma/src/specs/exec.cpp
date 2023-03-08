@@ -7,80 +7,15 @@
 #include <sstream>  // for ostringstream
 #include <vector>   // for vector
 
+#include "../errors/exec_errors.hpp"
 #include "architecture.hpp"
 #include "commands.hpp"
 
 namespace karma::detail::specs::exec {
 
+using errors::exec::ExecFileError;
+
 namespace types = arch::types;
-
-////////////////////////////////////////////////////////////////////////////////
-///                                 Constants                                ///
-////////////////////////////////////////////////////////////////////////////////
-
-const std::string kIntroString = "ThisIsKarmaExec";
-const size_t kIntroSize        = kIntroString.size() + 1;
-const size_t kMetaInfoEndPos   = 40ull;
-const size_t kHeaderSize       = 512ll;
-const size_t kCodeSegmentPos   = kHeaderSize;
-
-static const arch::types::Word kProcessorID = 239ull;
-
-////////////////////////////////////////////////////////////////////////////////
-///                                  Errors                                  ///
-////////////////////////////////////////////////////////////////////////////////
-
-ExecFileError ExecFileError::FailedToOpen() {
-    std::ostringstream ss;
-    ss << "failed to open exec file, please check that the path is correct";
-    return ExecFileError{ss.str()};
-}
-
-ExecFileError ExecFileError::TooSmallForHeader(size_t size) {
-    std::ostringstream ss;
-    ss << "exec size is " << size << ", which is less than "
-       << exec::kHeaderSize << " bytes required for the header";
-    return ExecFileError{ss.str()};
-}
-
-ExecFileError ExecFileError::InvalidExecSize(size_t exec_size,
-                                             size_t code_size,
-                                             size_t consts_size,
-                                             size_t data_size) {
-    std::ostringstream ss;
-    ss << "the exec file size (" << exec_size << ") does not equal "
-       << exec::kHeaderSize + code_size + consts_size + data_size
-       << ", which is the sum of the header size (" << exec::kHeaderSize
-       << ") and the total of the sizes of the code segment (" << code_size
-       << "), the constants segment (" << consts_size
-       << ") and the data segment (" << data_size
-       << ") specified in the header";
-    return ExecFileError{ss.str()};
-}
-
-ExecFileError ExecFileError::NoTrailingZeroInIntro(const std::string& intro) {
-    std::ostringstream ss;
-    ss << "expected the welcoming " << std::quoted(exec::kIntroString)
-       << R"( string (and a trailing '\0') as the first )" << exec::kIntroSize
-       << R"( bytes, but the first 16 bytes do not end with a '\0': )" << intro;
-    return ExecFileError{ss.str()};
-}
-
-ExecFileError ExecFileError::InvalidIntroString(const std::string& intro) {
-    std::ostringstream ss;
-    ss << "expected the welcoming " << std::quoted(exec::kIntroString)
-       << R"( string and a trailing '\0' as the first )" << exec::kIntroSize
-       << " bytes, instead got: " << std::quoted(intro)
-       << R"(" (with a trailing '\0'))";
-    return ExecFileError{ss.str()};
-}
-
-ExecFileError ExecFileError::InvalidProcessorID(types::Word processor_id) {
-    std::ostringstream ss;
-    ss << "exec file is built for processor with ID " << processor_id
-       << ", current processor ID: " << exec::kProcessorID;
-    return ExecFileError{ss.str()};
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Write                                  ///
@@ -123,10 +58,10 @@ void Write(const Data& data, const std::string& exec_path) {
     write_word(static_cast<types::Word>(arch::kMemorySize - 1));
 
     // target processor ID
-    write_word(exec::kProcessorID);
+    write_word(kProcessorID);
 
     // empty
-    binary << std::string(exec::kCodeSegmentPos - exec::kMetaInfoEndPos, '0');
+    binary << std::string(kCodeSegmentPos - kMetaInfoEndPos, '0');
 
     // code
     for (cmd::Bin command : data.code) {
@@ -151,7 +86,7 @@ Data Read(const std::string& exec_path) {
 
     // check that the exec size is not too small to contain a valid header
     auto exec_size = static_cast<size_t>(binary.tellg());
-    if (exec_size < exec::kHeaderSize) {
+    if (exec_size < kHeaderSize) {
         throw ExecFileError::TooSmallForHeader(exec_size);
     }
 
@@ -166,8 +101,8 @@ Data Read(const std::string& exec_path) {
 
     // read the first 16 bytes, which should represent
     // the introductory string (including the final '\0')
-    std::string intro(exec::kIntroSize, '\0');
-    binary.read(intro.data(), static_cast<std::streamsize>(exec::kIntroSize));
+    std::string intro(kIntroSize, '\0');
+    binary.read(intro.data(), static_cast<std::streamsize>(kIntroSize));
 
     // check that the introductory string is valid
     if (intro.back() != '\0') {
@@ -176,7 +111,7 @@ Data Read(const std::string& exec_path) {
     }
 
     intro.resize(intro.size() - 1);
-    if (intro != exec::kIntroString) {
+    if (intro != kIntroString) {
         throw ExecFileError::InvalidIntroString(intro);
     }
 
@@ -188,7 +123,7 @@ Data Read(const std::string& exec_path) {
     size_t data_size   = read_word();
 
     // check that the exec file size equals the size specified by the header
-    if (exec_size != exec::kHeaderSize + code_size + consts_size + data_size) {
+    if (exec_size != kHeaderSize + code_size + consts_size + data_size) {
         throw ExecFileError::InvalidExecSize(exec_size,
                                              code_size,
                                              consts_size,
@@ -203,12 +138,12 @@ Data Read(const std::string& exec_path) {
 
     // read the target processor ID
     types::Word processor_id = read_word();
-    if (processor_id != exec::kProcessorID) {
+    if (processor_id != kProcessorID) {
         throw ExecFileError::InvalidProcessorID(processor_id);
     }
 
     // jump to the code segment
-    binary.seekg(exec::kCodeSegmentPos);
+    binary.seekg(kCodeSegmentPos);
 
     // segments sizes is denoted in bytes, so we need to divide
     // it by types::kWordSize to get the number of machine words

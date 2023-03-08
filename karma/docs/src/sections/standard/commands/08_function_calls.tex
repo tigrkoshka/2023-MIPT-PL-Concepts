@@ -92,9 +92,10 @@ Both these command do the following:
 
 \begin{itemize}
     \item Push the value obtained from the \St{r15} register (i.e.\ the address
-    \item of the instruction that would be executed next if the current command
-    \item did not interrupt the consecutive execution, the \textit{return point})
-    \item to the stack (as if with the \hyperlink{cmd:push}{\St{push}} command)
+    of the instruction that would be executed next if the current command
+    did not interrupt the consecutive execution, the \textit{return point})
+    to the stack (as if with the \hyperlink{cmd:push}{\St{push}} command)
+    
     \item Store the address obtained by the operands (as described above) in
     the \St{r15} register (to be executed next)
 \end{itemize}

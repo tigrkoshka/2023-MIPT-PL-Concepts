@@ -1,14 +1,14 @@
-#include "src/compiler.hpp"
-#include "src/disassembler.hpp"
-#include "src/executor.hpp"
+#include "compiler.hpp"
+#include "disassembler.hpp"
+#include "executor.hpp"
 
 int main() {
-    karma::Compiler::MustCompile("../docs/samples/01_square_no_function.krm");
+    karma::MustCompile("../docs/samples/01_square_no_function.krm");
 
     karma::Executor executor;
     executor.MustExecute("../docs/samples/01_square_no_function.a");
 
-    karma::Disassembler::MustDisassemble(
+    karma::MustDisassemble(
         "../docs/samples/01_square_no_function.a");
 
     return 0;

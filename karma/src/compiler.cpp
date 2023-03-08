@@ -1,63 +1,213 @@
 #include "compiler.hpp"
 
 #include <algorithm>    // for min
-#include <cctype>       // for isalnum, isdigit
 #include <cstddef>      // for size_t
 #include <exception>    // for exception
 #include <filesystem>   // for path
 #include <fstream>      // for ifstream
 #include <iostream>     // for cout, ios
 #include <stdexcept>    // for invalid_argument, out_of_range
+#include <string>       // for string, stoull, stod
 #include <type_traits>  // for make_unsigned_t
 #include <utility>      // for move
 
 #include "errors/compiler_errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
+#include "specs/constants.hpp"
 #include "specs/exec.hpp"
 #include "specs/syntax.hpp"
+#include "utils/utils.hpp"
 
 namespace karma {
 
-using namespace errors::compiler;  // NOLINT(google-build-using-namespace)
+using errors::compiler::CompileError;
+using errors::compiler::Error;
+using errors::compiler::InternalError;
+
+namespace utils = detail::utils;
 
 namespace syntax = detail::specs::syntax;
 
 namespace cmd  = detail::specs::cmd;
 namespace args = cmd::args;
 
+namespace consts = detail::specs::consts;
+
 namespace arch  = detail::specs::arch;
 namespace types = arch::types;
 
 namespace exec = detail::specs::exec;
 
+namespace detail::compiler {
+
 ////////////////////////////////////////////////////////////////////////////////
-///                               Word parsing                               ///
+///                                  Labels                                  ///
 ////////////////////////////////////////////////////////////////////////////////
 
-bool Compiler::Impl::TryProcessEntrypoint() {
+void Impl::Labels::CheckLabel(const std::string& label, size_t line) {
+    if (label.empty()) {
+        throw CompileError::EmptyLabel(line);
+    }
+
+    if (std::isdigit(label[0]) != 0) {
+        throw CompileError::LabelStartsWithDigit(label, line);
+    }
+
+    for (char symbol : label) {
+        if (!syntax::IsAllowedLabelChar(symbol)) {
+            throw CompileError::InvalidLabelCharacter(symbol, label, line);
+        }
+    }
+}
+
+void Impl::Labels::SetCodeSize(size_t code_size) {
+    code_size_ = code_size;
+}
+
+const std::string& Impl::Labels::GetLatest() const {
+    return latest_label_;
+}
+
+size_t Impl::Labels::GetLatestLine() const {
+    return latest_label_line_;
+}
+
+std::optional<size_t> Impl::Labels::TryGetDefinition(
+    const std::string& label) const {
+    if (commands_labels_.contains(label)) {
+        return commands_labels_.at(label).first;
+    }
+
+    if (constants_labels_.contains(label)) {
+        return code_size_ + constants_labels_.at(label).first;
+    }
+
+    return std::nullopt;
+}
+
+std::optional<size_t> Impl::Labels::TryGetDefinitionLine(
+    const std::string& label) const {
+    if (commands_labels_.contains(label)) {
+        return commands_labels_.at(label).second;
+    }
+
+    if (constants_labels_.contains(label)) {
+        return constants_labels_.at(label).second;
+    }
+
+    return std::nullopt;
+}
+
+void Impl::Labels::RecordCommandLabel(const std::string& label,
+                                      size_t definition,
+                                      size_t line) {
+    commands_labels_[label] = {definition, line};
+    latest_label_line_      = line;
+    latest_label_           = label;
+}
+
+void Impl::Labels::RecordConstantLabel(const std::string& label,
+                                       size_t definition,
+                                       size_t line) {
+    constants_labels_[label] = {definition, line};
+    latest_label_line_       = line;
+    latest_label_            = label;
+}
+
+void Impl::Labels::RecordEntrypointLabel(const std::string& label) {
+    entrypoint_label_ = label;
+}
+
+const std::optional<std::string>& Impl::Labels::TryGetEntrypointLabel() {
+    return entrypoint_label_;
+}
+
+void Impl::Labels::RecordUsage(const std::string& label,
+                               size_t line_number,
+                               size_t command_number) {
+    usages_[label].emplace_back(line_number, command_number);
+}
+
+const Impl::Labels::AllUsages& Impl::Labels::GetUsages() {
+    return usages_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+///                                   Utils                                  ///
+////////////////////////////////////////////////////////////////////////////////
+
+size_t Impl::CurrCmdAddress() {
+    return code_.size();
+}
+
+size_t Impl::CurrConstAddress() {
+    // add 1 to the start of the current constant record, because
+    // the memory representation of any constant starts with one-word
+    // prefix specifying the constant's type for disassembling
+    return constants_.size() + 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+///                            Line types parsing                            ///
+////////////////////////////////////////////////////////////////////////////////
+
+bool Impl::TryProcessLabel() {
+    if (curr_word_.empty()) {
+        throw InternalError::EmptyWord(line_number_);
+    }
+
+    if (curr_word_.back() != syntax::kLabelEnd) {
+        return false;
+    }
+
+    curr_word_.resize(curr_word_.size() - 1);
+
+    if (std::exchange(latest_word_was_label_, true)) {
+        throw CompileError::ConsecutiveLabels(curr_word_,
+                                              line_number_,
+                                              labels_.GetLatest(),
+                                              labels_.GetLatestLine());
+    }
+
+    Labels::CheckLabel(curr_word_, line_number_);
+
+    if (std::optional<size_t> previous_definition_line =
+            labels_.TryGetDefinitionLine(curr_word_)) {
+        throw CompileError::LabelRedefinition(curr_word_,
+                                              line_number_,
+                                              *previous_definition_line);
+    }
+
+    return true;
+}
+
+bool Impl::TryProcessEntrypoint() {
+    if (curr_word_.empty()) {
+        throw InternalError::EmptyWord(line_number_);
+    }
+
     if (curr_word_ != syntax::kEntrypointDirective) {
         return false;
+    }
+
+    if (std::exchange(latest_word_was_label_, false)) {
+        throw CompileError::LabelBeforeEntrypoint(line_number_,
+                                                  labels_.GetLatest(),
+                                                  labels_.GetLatestLine());
     }
 
     if (seen_entrypoint_) {
         throw CompileError::SecondEntrypoint(line_number_, entrypoint_line_);
     }
 
-    if (latest_word_was_label_) {
-        throw CompileError::LabelBeforeEntrypoint(line_number_,
-                                                  latest_label_,
-                                                  latest_label_line_);
-    }
-
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::EntrypointWithoutAddress(line_number_);
     }
 
-    entrypoint_            = GetAddress(true);
-    entrypoint_line_       = line_number_;
-    seen_entrypoint_       = true;
-    latest_word_was_label_ = false;
+    entrypoint_      = GetAddress(true);
+    entrypoint_line_ = line_number_;
+    seen_entrypoint_ = true;
 
     if (curr_line_ >> curr_word_) {
         throw CompileError::ExtraWordsAfterEntrypoint(curr_word_, line_number_);
@@ -66,49 +216,210 @@ bool Compiler::Impl::TryProcessEntrypoint() {
     return true;
 }
 
-void Compiler::Impl::CheckLabel() const {
-    if (curr_word_.empty()) {
-        throw CompileError::EmptyLabel(line_number_);
-    }
+////////////////////////////////////////////////////////////////////////////////
+///                        Constants value processing                        ///
+////////////////////////////////////////////////////////////////////////////////
 
-    if (std::isdigit(curr_word_[0]) != 0) {
-        throw CompileError::LabelStartsWithDigit(curr_word_, line_number_);
-    }
+void Impl::ProcessUint32Constant() {
+    try {
+        size_t pos{};
 
-    for (char symbol : curr_word_) {
-        if (std::isalnum(symbol) == 0) {
-            throw CompileError::InvalidLabelCharacter(symbol,
-                                                      curr_word_,
-                                                      line_number_);
+        // there is no function specifically for uint32_t values
+        //
+        // not that if a user specified a negative value, after the static cast
+        // we will have interpreted it correctly, because taking a number
+        // modulo 2^32 is still correct if we have taken it modulo 2^64 first
+        auto value = static_cast<types::Word>(std::stoull(curr_word_, &pos, 0));
+
+        if (pos != curr_word_.size()) {
+            throw CompileError::InvalidValue(consts::UINT32,
+                                             curr_word_,
+                                             line_number_);
         }
+
+        constants_.push_back(value);
+    } catch (...) {
+        throw CompileError::InvalidValue(consts::UINT32,
+                                         curr_word_,
+                                         line_number_);
     }
 }
 
-bool Compiler::Impl::TryProcessLabel() {
-    if (curr_word_.back() != syntax::kLabelEnd) {
+void Impl::ProcessUint64Constant() {
+    try {
+        size_t pos{};
+
+        // there is no function specifically for uint32_t values
+        types::TwoWords value = std::stoull(curr_word_, &pos, 0);
+
+        if (pos != curr_word_.size()) {
+            throw CompileError::InvalidValue(consts::UINT64,
+                                             curr_word_,
+                                             line_number_);
+        }
+
+        auto low_bits  = static_cast<types::Word>(value);
+        auto high_bits = static_cast<types::Word>(value >> types::kWordSize);
+
+        constants_.push_back(low_bits);
+        constants_.push_back(high_bits);
+    } catch (...) {
+        throw CompileError::InvalidValue(consts::UINT64,
+                                         curr_word_,
+                                         line_number_);
+    }
+}
+
+void Impl::ProcessDoubleConstant() {
+    try {
+        size_t pos{};
+
+        types::Double value = std::stod(curr_word_, &pos);
+
+        if (pos != curr_word_.size()) {
+            throw CompileError::InvalidValue(consts::DOUBLE,
+                                             curr_word_,
+                                             line_number_);
+        }
+
+        auto as_words = *reinterpret_cast<types::TwoWords*>(&value);
+
+        auto low_bits  = static_cast<types::Word>(as_words);
+        auto high_bits = static_cast<types::Word>(as_words >> types::kWordSize);
+
+        constants_.push_back(low_bits);
+        constants_.push_back(high_bits);
+    } catch (...) {
+        throw CompileError::InvalidValue(consts::DOUBLE,
+                                         curr_word_,
+                                         line_number_);
+    }
+}
+
+void Impl::ProcessCharConstant() {
+    if (curr_word_.size() < 2) {
+        throw CompileError::CharTooSmallForQuotes(curr_word_, line_number_);
+    }
+
+    if (curr_word_.front() != consts::kCharQuote) {
+        throw CompileError::CharNoStartQuote(curr_word_, line_number_);
+    }
+
+    if (curr_word_.back() != consts::kCharQuote) {
+        throw CompileError::CharNoEndQuote(curr_word_, line_number_);
+    }
+
+    curr_word_ = curr_word_.substr(1, curr_word_.size() - 2);
+
+    utils::Unescape(curr_word_);
+
+    if (curr_word_.size() != 1) {
+        throw CompileError::InvalidValue(consts::CHAR,
+                                         curr_word_,
+                                         line_number_);
+    }
+
+    constants_.push_back(static_cast<types::Word>(curr_word_[0]));
+}
+
+void Impl::ProcessStringConstant() {
+    if (curr_word_.size() < 2) {
+        throw CompileError::StringTooSmallForQuotes(curr_word_, line_number_);
+    }
+
+    if (curr_word_.front() != consts::kStringQuote) {
+        throw CompileError::StringNoStartQuote(curr_word_, line_number_);
+    }
+
+    if (curr_word_.back() != consts::kStringQuote) {
+        throw CompileError::StringNoEndQuote(curr_word_, line_number_);
+    }
+
+    curr_word_ = curr_word_.substr(1, curr_word_.size() - 2);
+
+    utils::Unescape(curr_word_);
+
+    for (char symbol : curr_word_) {
+        constants_.push_back(static_cast<types::Word>(symbol));
+    }
+    constants_.push_back(0u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+///                           Constants processing                           ///
+////////////////////////////////////////////////////////////////////////////////
+
+bool Impl::TryProcessConstant() {
+    if (curr_word_.empty()) {
+        throw InternalError::EmptyWord(line_number_);
+    }
+
+    if (!consts::kNameToType.contains(curr_word_)) {
         return false;
     }
 
-    curr_word_.resize(curr_word_.size() - 1);
-
-    CheckLabel();
-
-    if (latest_word_was_label_) {
-        throw CompileError::ConsecutiveLabels(curr_word_,
-                                              line_number_,
-                                              latest_label_,
-                                              latest_label_line_);
+    if (std::exchange(latest_word_was_label_, false)) {
+        labels_.RecordConstantLabel(labels_.GetLatest(),
+                                    CurrConstAddress(),
+                                    line_number_);
     }
 
-    latest_word_was_label_         = true;
-    latest_label_                  = curr_word_;
-    latest_label_line_             = line_number_;
-    label_definitions_[curr_word_] = static_cast<types::Word>(command_number_);
+    consts::Type type = consts::kNameToType.at(curr_word_);
+
+    getline(curr_line_, curr_word_);
+    utils::TrimSpaces(curr_word_);
+
+    if (curr_word_.empty()) {
+        throw CompileError::EmptyConstantValue(type, line_number_);
+    }
+
+    constants_.push_back(type);
+
+    switch (type) {
+        case consts::UINT32: {
+            ProcessUint32Constant();
+            break;
+        }
+
+        case consts::UINT64: {
+            ProcessUint64Constant();
+            break;
+        }
+
+        case consts::DOUBLE: {
+            ProcessDoubleConstant();
+            break;
+        }
+
+        case consts::CHAR: {
+            ProcessCharConstant();
+            break;
+        }
+
+        case consts::STRING: {
+            ProcessStringConstant();
+            break;
+        }
+
+        default: {
+            throw InternalError::UnknownConstantType(type, line_number_);
+        }
+    }
+
+    if (curr_line_ >> curr_word_) {
+        throw CompileError::ExtraWordsAfterConstant(type,
+                                                    curr_word_,
+                                                    line_number_);
+    }
 
     return true;
 }
 
-cmd::CodeFormat Compiler::Impl::GetCommand() {
+////////////////////////////////////////////////////////////////////////////////
+///                           Command word parsing                           ///
+////////////////////////////////////////////////////////////////////////////////
+
+cmd::CodeFormat Impl::GetCodeFormat() {
     if (!cmd::kNameToCode.contains(curr_word_)) {
         throw CompileError::UnknownCommand(curr_word_, line_number_);
     }
@@ -126,7 +437,7 @@ cmd::CodeFormat Compiler::Impl::GetCommand() {
     return {code, format};
 }
 
-args::Register Compiler::Impl::GetRegister() const {
+args::Register Impl::GetRegister() const {
     if (curr_word_.empty()) {
         throw InternalError::EmptyWord(line_number_);
     }
@@ -138,7 +449,7 @@ args::Register Compiler::Impl::GetRegister() const {
     return arch::kRegisterNameToNum.at(curr_word_);
 }
 
-args::Immediate Compiler::Impl::GetImmediate(size_t bit_size) const {
+args::Immediate Impl::GetImmediate(size_t bit_size) const {
     if (curr_word_.empty()) {
         throw InternalError::EmptyWord(line_number_);
     }
@@ -180,13 +491,20 @@ args::Immediate Compiler::Impl::GetImmediate(size_t bit_size) const {
     }
 }
 
-args::Address Compiler::Impl::GetAddress(bool is_entry) {
+args::Address Impl::GetAddress(bool is_entrypoint) {
     if (curr_word_.empty()) {
         throw InternalError::EmptyWord(line_number_);
     }
 
     try {
         size_t pos{};
+
+        // we do not use std::stoll, because a valid address must be a 20-bit
+        // unsigned value, so if it does not fit into a 32-bit signed integer,
+        // it is out of range
+        //
+        // we do not use std::stoul, because we want to give a separate
+        // compile error if a user specified a negative value as an address
         int32_t operand = std::stoi(curr_word_, &pos, 0);
 
         if (pos != curr_word_.size()) {
@@ -197,8 +515,8 @@ args::Address Compiler::Impl::GetAddress(bool is_entry) {
             // but a label cannot start with a digit
             //
             // NOTE: we do allow '0', '0x' and '0X' prefixed numbers,
-            //       but in all those cases word still starts with a digit ('0')
-            //       and thus is not a valid label
+            //       but in all those cases the word still starts with
+            //       a digit ('0') and thus is not a valid label
             throw CompileError::LabelStartsWithDigit(curr_word_, line_number_);
         }
 
@@ -215,14 +533,14 @@ args::Address Compiler::Impl::GetAddress(bool is_entry) {
     } catch (const std::invalid_argument&) {
         // this implies that the word does not start with a digit,
         // so we assume it's a label
-        CheckLabel();
+        Labels::CheckLabel(curr_word_, line_number_);
 
-        if (is_entry) {
-            entrypoint_label_ = curr_word_;
+        if (is_entrypoint) {
+            labels_.RecordEntrypointLabel(curr_word_);
         } else {
-            label_usages_[curr_word_].emplace_back(line_number_,
-                                                   command_number_);
+            labels_.RecordUsage(curr_word_, line_number_, CurrCmdAddress());
         }
+
         return 0;
     } catch (const std::out_of_range&) {
         throw CompileError::AddressOutOfMemory(curr_word_, line_number_);
@@ -230,10 +548,10 @@ args::Address Compiler::Impl::GetAddress(bool is_entry) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///                               Line parsing                               ///
+///                           Command args parsing                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-args::RMArgs Compiler::Impl::GetRMArgs() {
+args::RMArgs Impl::GetRMArgs() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::RMCommandNoRegister(line_number_);
     }
@@ -247,7 +565,7 @@ args::RMArgs Compiler::Impl::GetRMArgs() {
     return {reg, GetAddress()};
 }
 
-args::RRArgs Compiler::Impl::GetRRArgs() {
+args::RRArgs Impl::GetRRArgs() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::RRCommandNoReceiver(line_number_);
     }
@@ -267,7 +585,7 @@ args::RRArgs Compiler::Impl::GetRRArgs() {
     return {recv, src, GetImmediate(args::kModSize)};
 }
 
-args::RIArgs Compiler::Impl::GetRIArgs() {
+args::RIArgs Impl::GetRIArgs() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::RICommandNoRegister(line_number_);
     }
@@ -281,7 +599,7 @@ args::RIArgs Compiler::Impl::GetRIArgs() {
     return {reg, GetImmediate(args::kImmSize)};
 }
 
-args::JArgs Compiler::Impl::GetJArgs() {
+args::JArgs Impl::GetJArgs() {
     if (!(curr_line_ >> curr_word_)) {
         throw CompileError::JCommandNoAddress(line_number_);
     }
@@ -289,42 +607,38 @@ args::JArgs Compiler::Impl::GetJArgs() {
     return GetAddress();
 }
 
-void Compiler::Impl::ProcessCurrLine() {
-    if (!(curr_line_ >> curr_word_)) {
-        return;
+////////////////////////////////////////////////////////////////////////////////
+///                              Command parsing                             ///
+////////////////////////////////////////////////////////////////////////////////
+
+cmd::Bin Impl::MustParseCommand() {
+    cmd::Bin bin{};
+
+    if (std::exchange(latest_word_was_label_, false)) {
+        labels_.RecordCommandLabel(labels_.GetLatest(),
+                                   CurrCmdAddress(),
+                                   line_number_);
     }
 
-    if (TryProcessEntrypoint()) {
-        return;
-    }
-
-    if (TryProcessLabel() && !(curr_line_ >> curr_word_)) {
-        return;
-    }
-
-    auto [code, format] = GetCommand();
+    auto [code, format] = GetCodeFormat();
     switch (format) {
         case cmd::RM: {
-            cmd::Bin bin = cmd::build::RM(code, GetRMArgs());
-            compiled_.push_back(bin);
+            bin = cmd::build::RM(code, GetRMArgs());
             break;
         }
 
         case cmd::RR: {
-            cmd::Bin bin = cmd::build::RR(code, GetRRArgs());
-            compiled_.push_back(bin);
+            bin = cmd::build::RR(code, GetRRArgs());
             break;
         }
 
         case cmd::RI: {
-            cmd::Bin bin = cmd::build::RI(code, GetRIArgs());
-            compiled_.push_back(bin);
+            bin = cmd::build::RI(code, GetRIArgs());
             break;
         }
 
         case cmd::J: {
-            cmd::Bin bin = cmd::build::J(code, GetJArgs());
-            compiled_.push_back(bin);
+            bin = cmd::build::J(code, GetJArgs());
             break;
         }
 
@@ -334,40 +648,77 @@ void Compiler::Impl::ProcessCurrLine() {
     }
 
     if (curr_line_ >> curr_word_) {
-        CompileError::ExtraWords(format, curr_word_, line_number_);
+        throw CompileError::ExtraWordsAfterCommand(format,
+                                                   curr_word_,
+                                                   line_number_);
     }
 
-    ++command_number_;
+    return bin;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+///                               Line parsing                               ///
+////////////////////////////////////////////////////////////////////////////////
+
+void Impl::ProcessCurrLine() {
+    if (!(curr_line_ >> curr_word_)) {
+        return;
+    }
+
+    if (TryProcessLabel() && !(curr_line_ >> curr_word_)) {
+        return;
+    }
+
+    if (TryProcessEntrypoint()) {
+        return;
+    }
+
+    if (TryProcessConstant()) {
+        return;
+    }
+
+    code_.push_back(MustParseCommand());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                            Labels substitution                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Compiler::Impl::FillLabels() {
-    for (const auto& [label, usages] : label_usages_) {
-        if (!label_definitions_.contains(label)) {
+void Impl::FillLabels() {
+    for (const auto& [label, usages] : labels_.GetUsages()) {
+        std::optional<size_t> definition_opt = labels_.TryGetDefinition(label);
+        if (!definition_opt) {
             // use usages[0], because it is the first occurrence
             // of the label (we store label usages while parsing
             // the file line by line)
             throw CompileError::UndefinedLabel(label, usages[0].first);
         }
 
-        arch::Address address = label_definitions_.at(label);
+        auto definition = static_cast<args::Address>(*definition_opt);
         for (auto [_, n_cmd] : usages) {
             // the address always occupies the last
             // bits of the command binary
-            compiled_[n_cmd] |= address;
+            code_[n_cmd] |= definition;
         }
     }
 
-    if (!entrypoint_label_.empty()) {
-        if (!label_definitions_.contains(entrypoint_label_)) {
-            throw CompileError::UndefinedLabel(entrypoint_label_,
+    const std::optional<std::string>& entrypoint_label_opt =
+        labels_.TryGetEntrypointLabel();
+
+    if (entrypoint_label_opt) {
+        const std::string& entrypoint_label = *entrypoint_label_opt;
+
+        std::optional<size_t> definition_opt =
+            labels_.TryGetDefinition(entrypoint_label);
+        if (!definition_opt) {
+            // use usages[0], because it is the first occurrence
+            // of the label (we store label usages while parsing
+            // the file line by line)
+            throw CompileError::UndefinedLabel(entrypoint_label,
                                                entrypoint_line_);
         }
 
-        entrypoint_ = label_definitions_.at(entrypoint_label_);
+        entrypoint_ = static_cast<args::Address>(*definition_opt);
     }
 }
 
@@ -375,7 +726,7 @@ void Compiler::Impl::FillLabels() {
 ///                                Prepare data                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Compiler::Impl::PrepareExecData(std::istream& code) {
+void Impl::PrepareExecData(std::istream& code) {
     for (std::string line; std::getline(code, line); ++line_number_) {
         // ignore comments
         line.resize(std::min(line.find(syntax::kCommentSep), line.size()));
@@ -385,13 +736,15 @@ void Compiler::Impl::PrepareExecData(std::istream& code) {
     }
 
     if (latest_word_was_label_) {
-        throw CompileError::FileEndsWithLabel(latest_label_,
-                                              latest_label_line_);
+        throw CompileError::FileEndsWithLabel(labels_.GetLatest(),
+                                              labels_.GetLatestLine());
     }
 
     if (!seen_entrypoint_) {
         throw CompileError::NoEntrypoint();
     }
+
+    labels_.SetCodeSize(code_.size());
 
     FillLabels();
 }
@@ -400,33 +753,30 @@ void Compiler::Impl::PrepareExecData(std::istream& code) {
 ///                           Compile from istream                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Compiler::Impl::CompileImpl(std::istream& code,
-                                 const std::string& exec_path) {
+void Impl::CompileImpl(std::istream& code, const std::string& exec_path) {
     PrepareExecData(code);
 
     exec::Data data{
         .entrypoint    = entrypoint_,
         .initial_stack = static_cast<types::Word>(arch::kMemorySize - 1),
-        .code          = compiled_,
-        // TODO: constants and data
-        .constants = std::vector<arch::Word>(),
-        .data      = std::vector<arch::Word>(),
+        .code          = code_,
+        .constants     = constants_,
+        .data          = std::vector<arch::Word>(),
     };
 
     exec::Write(data, exec_path);
 }
 
-void Compiler::Impl::MustCompile(std::istream& code,
-                                 const std::string& exec_path) {
+void Impl::MustCompile(std::istream& code, const std::string& exec_path) {
     CompileImpl(code, exec_path);
 }
 
-void Compiler::Impl::Compile(std::istream& code, const std::string& exec_path) {
+void Impl::Compile(std::istream& code, const std::string& exec_path) {
     try {
         CompileImpl(code, exec_path);
     } catch (const Error& e) {
         std::cout << e.what() << std::endl;
-    } catch (const exec::Error& e) {
+    } catch (const errors::Error& e) {
         std::cout << e.what() << std::endl;
     } catch (const std::exception& e) {
         std::cout << "compiler: unexpected exception: " << e.what()
@@ -440,9 +790,7 @@ void Compiler::Impl::Compile(std::istream& code, const std::string& exec_path) {
 ///                             Compile from file                            ///
 ////////////////////////////////////////////////////////////////////////////////
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void Compiler::Impl::CompileImpl(const std::string& src,
-                                 const std::string& dst) {
+void Impl::CompileImpl(const std::string& src, const std::string& dst) {
     std::ifstream code(src);
     if (code.fail()) {
         throw InternalError::FailedToOpen(src);
@@ -461,19 +809,16 @@ void Compiler::Impl::CompileImpl(const std::string& src,
     CompileImpl(code, real_dst);
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void Compiler::Impl::MustCompile(const std::string& src,
-                                 const std::string& dst) {
+void Impl::MustCompile(const std::string& src, const std::string& dst) {
     CompileImpl(src, dst);
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void Compiler::Impl::Compile(const std::string& src, const std::string& dst) {
+void Impl::Compile(const std::string& src, const std::string& dst) {
     try {
         CompileImpl(src, dst);
     } catch (const Error& e) {
         std::cout << e.what() << std::endl;
-    } catch (const exec::Error& e) {
+    } catch (const errors::Error& e) {
         std::cout << e.what() << std::endl;
     } catch (const std::exception& e) {
         std::cout << "compiler: unexpected exception: " << e.what()
@@ -483,29 +828,29 @@ void Compiler::Impl::Compile(const std::string& src, const std::string& dst) {
     }
 }
 
+}  // namespace detail::compiler
+
 ////////////////////////////////////////////////////////////////////////////////
 ///                             Exported wrappers                            ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Compiler::MustCompile(std::istream& code, const std::string& exec_path) {
-    Impl impl;
+void MustCompile(std::istream& code, const std::string& exec_path) {
+    detail::compiler::Impl impl;
     impl.MustCompile(code, exec_path);
 }
 
-void Compiler::Compile(std::istream& code, const std::string& exec_path) {
-    Impl impl;
+void Compile(std::istream& code, const std::string& exec_path) {
+    detail::compiler::Impl impl;
     impl.Compile(code, exec_path);
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void Compiler::MustCompile(const std::string& src, const std::string& dst) {
-    Impl impl;
+void MustCompile(const std::string& src, const std::string& dst) {
+    detail::compiler::Impl impl;
     impl.MustCompile(src, dst);
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void Compiler::Compile(const std::string& src, const std::string& dst) {
-    Impl impl;
+void Compile(const std::string& src, const std::string& dst) {
+    detail::compiler::Impl impl;
     impl.Compile(src, dst);
 }
 

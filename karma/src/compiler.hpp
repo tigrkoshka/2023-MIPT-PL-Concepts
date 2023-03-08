@@ -14,72 +14,126 @@
 
 namespace karma {
 
-class Compiler {
+namespace detail::compiler {
+class Impl {
    private:
-    class Impl {
+    struct Labels {
        private:
-        bool TryProcessEntrypoint();
-        void CheckLabel() const;
-        bool TryProcessLabel();
+        // definition, definition_line
+        using Definition = std::pair<size_t, size_t>;
 
-        detail::specs::cmd::CodeFormat GetCommand();
-        detail::specs::cmd::args::Register GetRegister() const;
-        detail::specs::cmd::args::Immediate GetImmediate(size_t bit_size) const;
-        detail::specs::cmd::args::Address GetAddress(bool is_entry = false);
+        // label -> definition
+        using Definitions = std::unordered_map<std::string, Definition>;
 
-        detail::specs::cmd::args::RMArgs GetRMArgs();
-        detail::specs::cmd::args::RRArgs GetRRArgs();
-        detail::specs::cmd::args::RIArgs GetRIArgs();
-        detail::specs::cmd::args::JArgs GetJArgs();
+        // line_number, position in code of the command which uses the label
+        using Usages = std::vector<std::pair<size_t, size_t>>;
 
-        void ProcessCurrLine();
-        void FillLabels();
-        void PrepareExecData(std::istream& code);
-
-        void CompileImpl(std::istream& code, const std::string& exec_path);
-        void CompileImpl(const std::string& src, const std::string& dst);
+        // label -> LabelUsage
+        using AllUsages = std::unordered_map<std::string, Usages>;
 
        public:
-        void MustCompile(std::istream& code, const std::string& exec_path);
-        void Compile(std::istream& code, const std::string& exec_path);
+        static void CheckLabel(const std::string& label, size_t line);
 
-        void MustCompile(const std::string& src, const std::string& dst);
-        void Compile(const std::string& src, const std::string& dst);
+        void SetCodeSize(size_t code_size);
+
+        const std::string& GetLatest() const;
+        size_t GetLatestLine() const;
+
+        std::optional<size_t> TryGetDefinition(const std::string& label) const;
+        std::optional<size_t> TryGetDefinitionLine(const std::string& label) const;
+
+        void RecordCommandLabel(const std::string& label,
+                                size_t definition,
+                                size_t line);
+        void RecordConstantLabel(const std::string& label,
+                                 size_t definition,
+                                 size_t line);
+
+        void RecordEntrypointLabel(const std::string& label);
+        const std::optional<std::string>& TryGetEntrypointLabel();
+
+        void RecordUsage(const std::string& label,
+                         size_t line_number,
+                         size_t command_number);
+        const AllUsages& GetUsages();
 
        private:
-        size_t line_number_{0};
-        size_t command_number_{0};
-
-        std::istringstream curr_line_;
-        std::string curr_word_;
-
-        size_t latest_label_line_{0};
         std::string latest_label_;
-        bool latest_word_was_label_{false};
+        size_t latest_label_line_{0};
 
-        detail::specs::arch::Address entrypoint_{0};
-        std::string entrypoint_label_;
-        size_t entrypoint_line_{0};
-        bool seen_entrypoint_{false};
+        Definitions commands_labels_;
+        Definitions constants_labels_;
+        std::optional<std::string> entrypoint_label_;
 
-        // label -> command_number
-        std::unordered_map<std::string, detail::specs::arch::Address>
-            label_definitions_;
+        AllUsages usages_;
 
-        // label -> line_number, command_number
-        std::unordered_map<std::string, std::vector<std::pair<size_t, size_t>>>
-            label_usages_;
-
-        std::vector<detail::specs::arch::Word> compiled_;
+        size_t code_size_{};
     };
 
-   public:
-    static void MustCompile(std::istream& code, const std::string& exec_path);
-    static void Compile(std::istream& code, const std::string& exec_path);
+   private:
+    size_t CurrCmdAddress();
+    size_t CurrConstAddress();
 
-    static void MustCompile(const std::string& src,
-                            const std::string& dst = "");
-    static void Compile(const std::string& src, const std::string& dst = "");
+    bool TryProcessLabel();
+    bool TryProcessEntrypoint();
+
+    void ProcessUint32Constant();
+    void ProcessUint64Constant();
+    void ProcessDoubleConstant();
+    void ProcessCharConstant();
+    void ProcessStringConstant();
+    bool TryProcessConstant();
+
+    detail::specs::cmd::CodeFormat GetCodeFormat();
+    detail::specs::cmd::args::Register GetRegister() const;
+    detail::specs::cmd::args::Immediate GetImmediate(size_t bit_size) const;
+    detail::specs::cmd::args::Address GetAddress(bool is_entrypoint = false);
+
+    detail::specs::cmd::args::RMArgs GetRMArgs();
+    detail::specs::cmd::args::RRArgs GetRRArgs();
+    detail::specs::cmd::args::RIArgs GetRIArgs();
+    detail::specs::cmd::args::JArgs GetJArgs();
+
+    detail::specs::cmd::Bin MustParseCommand();
+
+    void ProcessCurrLine();
+    void FillLabels();
+    void PrepareExecData(std::istream& code);
+
+    void CompileImpl(std::istream& code, const std::string& exec_path);
+    void CompileImpl(const std::string& src, const std::string& dst);
+
+   public:
+    void MustCompile(std::istream& code, const std::string& exec_path);
+    void Compile(std::istream& code, const std::string& exec_path);
+
+    void MustCompile(const std::string& src, const std::string& dst);
+    void Compile(const std::string& src, const std::string& dst);
+
+   private:
+    size_t line_number_{0};
+
+    std::istringstream curr_line_;
+    std::string curr_word_;
+
+    bool latest_word_was_label_{false};
+
+    detail::specs::arch::Address entrypoint_{0};
+    size_t entrypoint_line_{0};
+    bool seen_entrypoint_{false};
+
+    std::vector<detail::specs::arch::types::Word> code_;
+    std::vector<detail::specs::arch::types::Word> constants_;
+
+    Labels labels_;
 };
+
+}  // namespace detail::compiler
+
+void MustCompile(std::istream& code, const std::string& exec_path);
+void Compile(std::istream& code, const std::string& exec_path);
+
+void MustCompile(const std::string& src, const std::string& dst = "");
+void Compile(const std::string& src, const std::string& dst = "");
 
 }  // namespace karma

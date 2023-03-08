@@ -9,6 +9,7 @@ Checks: >
   -altera-struct-pack-align,
 
   -bugprone-dynamic-static-initializers,
+  -bugprone-easily-swappable-parameters,
 
   -cppcoreguidelines-pro-type-reinterpret-cast,
 

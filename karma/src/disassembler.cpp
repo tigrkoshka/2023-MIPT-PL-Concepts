@@ -15,7 +15,9 @@
 
 namespace karma {
 
-using namespace errors::disassembler;  // NOLINT(google-build-using-namespace)
+using errors::disassembler::DisassembleError;
+using errors::disassembler::Error;
+using errors::disassembler::InternalError;
 
 namespace arch = detail::specs::arch;
 
@@ -24,11 +26,13 @@ namespace args = cmd::args;
 
 namespace exec = detail::specs::exec;
 
+namespace detail::disassembler {
+
 ////////////////////////////////////////////////////////////////////////////////
 ///                          Disassembling a command                         ///
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string Disassembler::GetRegister(args::Register reg) {
+std::string Impl::GetRegister(args::Register reg) {
     if (!arch::kRegisterNumToName.contains(reg)) {
         throw InternalError::RegisterNameNotFound(reg);
     }
@@ -36,7 +40,7 @@ std::string Disassembler::GetRegister(args::Register reg) {
     return arch::kRegisterNumToName.at(reg);
 }
 
-std::string Disassembler::GetCommandStringFromBin(cmd::Bin command) {
+std::string Impl::GetCommandStringFromBin(cmd::Bin command) {
     std::ostringstream result;
 
     cmd::Code code = cmd::GetCode(command);
@@ -106,8 +110,7 @@ std::string Disassembler::GetCommandStringFromBin(cmd::Bin command) {
 ///                          Disassembling to stream                         ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Disassembler::DisassembleImpl(const std::string& exec_path,
-                                   std::ostream& out) {
+void Impl::DisassembleImpl(const std::string& exec_path, std::ostream& out) {
     out << "main:\n";
 
     exec::Data data = exec::Read(exec_path);
@@ -118,18 +121,16 @@ void Disassembler::DisassembleImpl(const std::string& exec_path,
     out << "end main\n";
 }
 
-void Disassembler::MustDisassemble(const std::string& exec_path,
-                                   std::ostream& out) {
+void Impl::MustDisassemble(const std::string& exec_path, std::ostream& out) {
     DisassembleImpl(exec_path, out);
 }
 
-void Disassembler::Disassemble(const std::string& exec_path,
-                               std::ostream& out) {
+void Impl::Disassemble(const std::string& exec_path, std::ostream& out) {
     try {
         DisassembleImpl(exec_path, out);
     } catch (const Error& e) {
         std::cout << e.what() << std::endl;
-    } catch (const exec::Error& e) {
+    } catch (const errors::Error& e) {
         std::cout << e.what() << std::endl;
     } catch (const std::exception& e) {
         std::cout << "disassembler: unexpected exception: " << e.what()
@@ -144,8 +145,8 @@ void Disassembler::Disassemble(const std::string& exec_path,
 ////////////////////////////////////////////////////////////////////////////////
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void Disassembler::DisassembleImpl(const std::string& exec_path,
-                                   const std::string& dst) {
+void Impl::DisassembleImpl(const std::string& exec_path,
+                           const std::string& dst) {
     std::string real_dst = dst;
     if (real_dst.empty()) {
         std::filesystem::path src_path(exec_path);
@@ -165,19 +166,18 @@ void Disassembler::DisassembleImpl(const std::string& exec_path,
 }
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void Disassembler::MustDisassemble(const std::string& exec_path,
-                                   const std::string& dst) {
+void Impl::MustDisassemble(const std::string& exec_path,
+                           const std::string& dst) {
     return DisassembleImpl(exec_path, dst);
 }
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-void Disassembler::Disassemble(const std::string& exec_path,
-                               const std::string& dst) {
+void Impl::Disassemble(const std::string& exec_path, const std::string& dst) {
     try {
         DisassembleImpl(exec_path, dst);
     } catch (const Error& e) {
         std::cout << e.what() << std::endl;
-    } catch (const exec::Error& e) {
+    } catch (const errors::Error& e) {
         std::cout << e.what() << std::endl;
     } catch (const std::exception& e) {
         std::cout << "disassembler: unexpected exception: " << e.what()
@@ -185,6 +185,28 @@ void Disassembler::Disassemble(const std::string& exec_path,
     } catch (...) {
         std::cout << "disassembler: unexpected exception" << std::endl;
     }
+}
+
+}  // namespace detail::disassembler
+
+////////////////////////////////////////////////////////////////////////////////
+///                             Exported wrappers                            ///
+////////////////////////////////////////////////////////////////////////////////
+
+void MustDisassemble(const std::string& exec_path, std::ostream& out) {
+    detail::disassembler::Impl::MustDisassemble(exec_path, out);
+}
+
+void Disassemble(const std::string& exec_path, std::ostream& out) {
+    detail::disassembler::Impl::Disassemble(exec_path, out);
+}
+
+void MustDisassemble(const std::string& exec_path, const std::string& dst) {
+    detail::disassembler::Impl::MustDisassemble(exec_path, dst);
+}
+
+void Disassemble(const std::string& exec_path, const std::string& dst) {
+    detail::disassembler::Impl::Disassemble(exec_path, dst);
 }
 
 }  // namespace karma

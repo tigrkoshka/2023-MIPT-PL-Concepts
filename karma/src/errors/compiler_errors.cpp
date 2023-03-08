@@ -6,11 +6,14 @@
 #include <string>   // for string, to_string
 
 #include "../specs/commands.hpp"
+#include "../specs/constants.hpp"
 #include "../specs/syntax.hpp"
 
 namespace karma::errors::compiler {
 
 namespace cmd = detail::specs::cmd;
+
+namespace consts = detail::specs::consts;
 
 namespace syntax = detail::specs::syntax;
 
@@ -28,23 +31,95 @@ InternalError InternalError::FormatNotFound(cmd::Code command_code,
                                             size_t line) {
     std::ostringstream ss;
     ss << "did not find format for command with code " << command_code;
-    return InternalError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 InternalError InternalError::UnknownCommandFormat(cmd::Format format,
                                                   size_t line) {
     std::ostringstream ss;
     ss << "unknown command format " << format;
-    return InternalError{ss.str(), line};
+    return {ss.str(), line};
+}
+
+InternalError InternalError::UnknownConstantType(consts::Type type,
+                                                 size_t line) {
+    std::ostringstream ss;
+    ss << "unknown command format " << type;
+    return {ss.str(), line};
 }
 
 InternalError InternalError::EmptyWord(size_t line) {
-    return InternalError{"the current word is empty", line};
+    return {"the current word is empty", line};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                            Compilation errors                            ///
 ////////////////////////////////////////////////////////////////////////////////
+
+///---------------------------------Constants--------------------------------///
+
+CompileError CompileError::EmptyConstantValue(consts::Type type, size_t line) {
+    std::ostringstream ss;
+    ss << "empty value for a constant of type " << consts::kTypeToName.at(type);
+    return {ss.str(), line};
+}
+
+CompileError CompileError::InvalidValue(consts::Type type,
+                                        const std::string& value,
+                                        size_t line) {
+    std::ostringstream ss;
+    ss << "invalid value for " << consts::kTypeToName.at(type) << " constant "
+       << std::quoted(value);
+    return {ss.str(), line};
+}
+
+CompileError CompileError::CharTooSmallForQuotes(const std::string& value,
+                                                 size_t line) {
+    std::ostringstream ss;
+    ss << "a char constant must be surrounded by single quotes, instead got: "
+       << std::quoted(value);
+    return {ss.str(), line};
+}
+
+CompileError CompileError::CharNoStartQuote(const std::string& value,
+                                            size_t line) {
+    std::ostringstream ss;
+    ss << "char constant value must start with a single quote, instead got: "
+       << std::quoted(value);
+    return {ss.str(), line};
+}
+
+CompileError CompileError::CharNoEndQuote(const std::string& value,
+                                          size_t line) {
+    std::ostringstream ss;
+    ss << "char constant value must end with a single quote, instead got: "
+       << std::quoted(value);
+    return {ss.str(), line};
+}
+
+CompileError CompileError::StringTooSmallForQuotes(const std::string& value,
+                                                   size_t line) {
+    std::ostringstream ss;
+    ss << "a string constant must be surrounded by double quotes, instead got: "
+       << std::quoted(value);
+    return {ss.str(), line};
+}
+
+CompileError CompileError::StringNoStartQuote(const std::string& value,
+                                              size_t line) {
+    std::ostringstream ss;
+    ss << "string constant value must start with a double quote, instead got: "
+       << std::quoted(value);
+    return {ss.str(), line};
+}
+
+CompileError CompileError::StringNoEndQuote(const std::string& value,
+                                            size_t line) {
+    std::ostringstream ss;
+    ss << "string constant value must end with a double quote, instead got: "
+       << std::quoted(value);
+    return {ss.str(), line};
+}
 
 ///----------------------------------Command---------------------------------///
 
@@ -52,7 +127,7 @@ CompileError CompileError::UnknownCommand(const std::string& command,
                                           size_t line) {
     std::ostringstream ss;
     ss << "unknown command " << std::quoted(command);
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 ///--------------------------------Entrypoint--------------------------------///
@@ -67,17 +142,17 @@ CompileError CompileError::SecondEntrypoint(size_t line,
     std::ostringstream ss;
     ss << "encountered second entrypoint (previous one on line "
        << entrypoint_line << ")";
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 CompileError CompileError::EntrypointWithoutAddress(size_t line) {
-    return CompileError{"entrypoint address not specified", line};
+    return {"entrypoint address not specified", line};
 }
 
 ///----------------------------------Labels----------------------------------///
 
 CompileError CompileError::EmptyLabel(size_t line) {
-    return CompileError("label name must not be empty", line);
+    return {"label name must not be empty", line};
 }
 
 CompileError CompileError::LabelBeforeEntrypoint(
@@ -88,7 +163,7 @@ CompileError CompileError::LabelBeforeEntrypoint(
     ss << "label " << std::quoted(latest_label) << " is placed before the "
        << std::quoted(syntax::kEntrypointDirective) << " directive (at line "
        << end_line << "), but a label can only appear before a command";
-    return CompileError{ss.str(), latest_label_line};
+    return {ss.str(), latest_label_line};
 }
 
 CompileError CompileError::ConsecutiveLabels(const std::string& label,
@@ -100,7 +175,16 @@ CompileError CompileError::ConsecutiveLabels(const std::string& label,
        << " is not separated from the previous one ("
        << std::quoted(latest_label) << " in line " << latest_label_line
        << ") by at least one command";
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
+}
+
+CompileError CompileError::LabelRedefinition(const std::string& label,
+                                             size_t line,
+                                             size_t previous_definition_line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label) << " redefinition at line " << line
+       << ": previous definition was at line " << previous_definition_line;
+    return {ss.str(), line};
 }
 
 CompileError CompileError::FileEndsWithLabel(const std::string& label,
@@ -108,14 +192,14 @@ CompileError CompileError::FileEndsWithLabel(const std::string& label,
     std::ostringstream ss;
     ss << "label " << std::quoted(label)
        << " is the last non-comment word in file";
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 CompileError CompileError::LabelStartsWithDigit(const std::string& label,
                                                 size_t line) {
     std::ostringstream ss;
     ss << "label " << std::quoted(label) << " starts with a digit";
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 CompileError CompileError::InvalidLabelCharacter(char invalid,
@@ -123,15 +207,15 @@ CompileError CompileError::InvalidLabelCharacter(char invalid,
                                                  size_t line) {
     std::ostringstream ss;
     ss << "label " << std::quoted(label) << " contains an invalid character: \'"
-       << invalid << "\' (only latin letters and digits are allowed)";
-    return CompileError{ss.str(), line};
+       << invalid << "\'";
+    return {ss.str(), line};
 }
 
 CompileError CompileError::UndefinedLabel(const std::string& label,
                                           size_t line) {
     std::ostringstream ss;
     ss << "label " << std::quoted(label) << " is not defined";
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 ///---------------------------------Register---------------------------------///
@@ -140,7 +224,7 @@ CompileError CompileError::UnknownRegister(const std::string& reg,
                                            size_t line) {
     std::ostringstream ss;
     ss << "unknown register " << std::quoted(reg);
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 ///----------------------------------Address---------------------------------///
@@ -150,7 +234,7 @@ CompileError CompileError::AddressNegative(const std::string& address,
     std::ostringstream ss;
     ss << "the address operand " << std::quoted(address, ')')
        << " must not be negative";
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 CompileError CompileError::AddressOutOfMemory(const std::string& address,
@@ -158,7 +242,7 @@ CompileError CompileError::AddressOutOfMemory(const std::string& address,
     std::ostringstream ss;
     ss << "the address operand " << std::quoted(address, ')')
        << " exceeds the memory size";
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 ///---------------------------------Immediate--------------------------------///
@@ -167,7 +251,7 @@ CompileError CompileError::ImmediateNotANumber(const std::string& immediate,
                                                size_t line) {
     std::ostringstream ss;
     ss << "the immediate operand is not a number: " << std::quoted(immediate);
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 CompileError CompileError::ImmediateLessThanMin(int32_t min,
@@ -176,7 +260,7 @@ CompileError CompileError::ImmediateLessThanMin(int32_t min,
     std::ostringstream ss;
     ss << "the immediate operand is less than the allowed minimum (" << min
        << "): " << immediate;
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 CompileError CompileError::ImmediateMoreThanMax(int32_t max,
@@ -185,50 +269,38 @@ CompileError CompileError::ImmediateMoreThanMax(int32_t max,
     std::ostringstream ss;
     ss << "the immediate operand is less than the allowed maximum (" << max
        << "): " << immediate;
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 CompileError CompileError::ImmediateOutOfRange(const std::string& immediate,
                                                size_t line) {
     std::ostringstream ss;
     ss << "the immediate operand is out of range " << immediate;
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
 ///------------------------------------RM------------------------------------///
 
 CompileError CompileError::RMCommandNoRegister(size_t line) {
-    return CompileError{
-        "register not specified for RM format command",
-        line,
-    };
+    return {"register not specified for RM format command", line};
 }
 
 CompileError CompileError::RMCommandNoAddress(size_t line) {
-    return CompileError{
-        "memory address not specified for RM format command",
-        line,
-    };
+    return {"memory address not specified for RM format command", line};
 }
 
 ///------------------------------------RR------------------------------------///
 
 CompileError CompileError::RRCommandNoReceiver(size_t line) {
-    return CompileError{
-        "receiver register not specified for RR format command",
-        line,
-    };
+    return {"receiver register not specified for RR format command", line};
 }
 
 CompileError CompileError::RRCommandNoSource(size_t line) {
-    return CompileError{
-        "source register not specified for RR format command",
-        line,
-    };
+    return {"source register not specified for RR format command", line};
 }
 
 CompileError CompileError::RRCommandNoModifier(size_t line) {
-    return CompileError{
+    return {
         "source modifier operand not specified for RR format command, "
         "specify 0 for no modification",
         line,
@@ -238,26 +310,17 @@ CompileError CompileError::RRCommandNoModifier(size_t line) {
 ///------------------------------------RI------------------------------------///
 
 CompileError CompileError::RICommandNoRegister(size_t line) {
-    return CompileError{
-        "register not specified for RI format command",
-        line,
-    };
+    return {"register not specified for RI format command", line};
 }
 
 CompileError CompileError::RICommandNoImmediate(size_t line) {
-    return CompileError{
-        "immediate operand not specified for RI format command",
-        line,
-    };
+    return {"immediate operand not specified for RI format command", line};
 }
 
 ///-------------------------------------J------------------------------------///
 
 CompileError CompileError::JCommandNoAddress(size_t line) {
-    return CompileError{
-        "memory address not specified for J format command",
-        line,
-    };
+    return {"memory address not specified for J format command", line};
 }
 
 ///--------------------------------Extra words-------------------------------///
@@ -269,18 +332,29 @@ CompileError CompileError::ExtraWordsAfterEntrypoint(const std::string& extra,
        << std::quoted(syntax::kEntrypointDirective)
        << " directive, but has unexpected words at the end (starting from "
        << std::quoted(extra) << ")";
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
 }
 
-CompileError CompileError::ExtraWords(cmd::Format format,
-                                      const std::string& extra,
-                                      size_t line) {
+CompileError CompileError::ExtraWordsAfterConstant(consts::Type type,
+                                                   const std::string& extra,
+                                                   size_t line) {
     std::ostringstream ss;
-    ss << "the line starts with a valid command (format "
-       << cmd::kFormatToString.at(format)
+    ss << "the line starts with a valid constant (type "
+       << consts::kTypeToName.at(type)
        << "), but has unexpected words at the end (starting from "
        << std::quoted(extra) << ")";
-    return CompileError{ss.str(), line};
+    return {ss.str(), line};
+}
+
+CompileError CompileError::ExtraWordsAfterCommand(cmd::Format fmt,
+                                                  const std::string& extra,
+                                                  size_t line) {
+    std::ostringstream ss;
+    ss << "the line starts with a valid command (format "
+       << cmd::kFormatToString.at(fmt)
+       << "), but has unexpected words at the end (starting from "
+       << std::quoted(extra) << ")";
+    return {ss.str(), line};
 }
 
 }  // namespace karma::errors::compiler

@@ -17,7 +17,9 @@
 
 namespace karma {
 
-using namespace errors::executor;  // NOLINT(google-build-using-namespace)
+using errors::executor::Error;
+using errors::executor::InternalError;
+using errors::executor::ExecutionError;
 
 namespace utils = detail::utils;
 
@@ -193,14 +195,14 @@ bool Executor::ExecuteRMCommand(cmd::Code code,
             break;
         }
 
-        case cmd::STORE: {
-            memory_[addr] = registers_[reg];
-            break;
-        }
-
         case cmd::LOAD2: {
             registers_[reg]     = memory_[addr];
             registers_[reg + 1] = memory_[addr + 1];
+            break;
+        }
+
+        case cmd::STORE: {
+            memory_[addr] = registers_[reg];
             break;
         }
 
@@ -298,8 +300,21 @@ bool Executor::ExecuteRRCommand(cmd::Code code,
             break;
         }
 
-        case cmd::MOV: {
-            registers_[recv] = rhs_word();
+        case cmd::ITOD: {
+            PutTwoRegisters(ToUll(static_cast<types::Double>(rhs_word())),
+                            recv);
+            break;
+        }
+
+        case cmd::DTOI: {
+            types::Double dbl = rhs_dbl();
+            auto res          = static_cast<types::TwoWords>(floor(dbl));
+
+            if (res >= static_cast<types::TwoWords>(types::kMaxWord)) {
+                throw ExecutionError::DtoiOverflow(dbl);
+            }
+
+            registers_[recv] = static_cast<types::Word>(res);
             break;
         }
 
@@ -330,29 +345,6 @@ bool Executor::ExecuteRRCommand(cmd::Code code,
             break;
         }
 
-        case cmd::ITOD: {
-            PutTwoRegisters(ToUll(static_cast<types::Double>(rhs_word())),
-                            recv);
-            break;
-        }
-
-        case cmd::DTOI: {
-            types::Double dbl = rhs_dbl();
-            auto res          = static_cast<types::TwoWords>(floor(dbl));
-
-            if (res >= static_cast<types::TwoWords>(types::kMaxWord)) {
-                throw ExecutionError::DtoiOverflow(dbl);
-            }
-
-            registers_[recv] = static_cast<types::Word>(res);
-            break;
-        }
-
-        case cmd::CALL: {
-            registers_[recv] = Call(rhs_word());
-            break;
-        }
-
         case cmd::CMP: {
             WriteComparisonToFlags(lhs_word(), rhs_word());
             break;
@@ -363,13 +355,13 @@ bool Executor::ExecuteRRCommand(cmd::Code code,
             break;
         }
 
-        case cmd::LOADR: {
-            registers_[recv] = memory_[rhs_word()];
+        case cmd::MOV: {
+            registers_[recv] = rhs_word();
             break;
         }
 
-        case cmd::STORER: {
-            memory_[rhs_word()] = registers_[recv];
+        case cmd::LOADR: {
+            registers_[recv] = memory_[rhs_word()];
             break;
         }
 
@@ -381,11 +373,21 @@ bool Executor::ExecuteRRCommand(cmd::Code code,
             break;
         }
 
+        case cmd::STORER: {
+            memory_[rhs_word()] = registers_[recv];
+            break;
+        }
+
         case cmd::STORER2: {
             args::Address address = rhs_word();
 
             memory_[address]     = registers_[recv];
             memory_[address + 1] = registers_[recv + 1];
+            break;
+        }
+
+        case cmd::CALL: {
+            registers_[recv] = Call(rhs_word());
             break;
         }
 
@@ -448,8 +450,8 @@ bool Executor::ExecuteRICommand(cmd::Code code,
             break;
         }
 
-        case cmd::LC: {
-            registers_[reg] = imm_word();
+        case cmd::NOT: {
+            registers_[reg] = ~registers_[reg];
             break;
         }
 
@@ -488,8 +490,8 @@ bool Executor::ExecuteRICommand(cmd::Code code,
             break;
         }
 
-        case cmd::NOT: {
-            registers_[reg] = ~registers_[reg];
+        case cmd::CMPI: {
+            WriteComparisonToFlags(registers_[reg], imm_word());
             break;
         }
 
@@ -503,8 +505,8 @@ bool Executor::ExecuteRICommand(cmd::Code code,
             break;
         }
 
-        case cmd::CMPI: {
-            WriteComparisonToFlags(registers_[reg], imm_word());
+        case cmd::LC: {
+            registers_[reg] = imm_word();
             break;
         }
 
@@ -518,24 +520,8 @@ bool Executor::ExecuteRICommand(cmd::Code code,
 
 bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
     switch (code) {
-        case cmd::CALLI: {
-            Call(addr);
-            break;
-        }
-
-        case cmd::RET: {
-            Pop(arch::kInstructionRegister, 0);
-            registers_[arch::kStackRegister] += addr;
-            break;
-        }
-
         case cmd::JMP: {
             registers_[arch::kInstructionRegister] = addr;
-            break;
-        }
-
-        case cmd::JEQ: {
-            Jump(flags::EQUAL, addr);
             break;
         }
 
@@ -544,8 +530,13 @@ bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
             break;
         }
 
-        case cmd::JG: {
-            Jump(flags::GREATER, addr);
+        case cmd::JEQ: {
+            Jump(flags::EQUAL, addr);
+            break;
+        }
+
+        case cmd::JLE: {
+            Jump(flags::LESS_OR_EQUAL, addr);
             break;
         }
 
@@ -559,8 +550,19 @@ bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
             break;
         }
 
-        case cmd::JLE: {
-            Jump(flags::LESS_OR_EQUAL, addr);
+        case cmd::JG: {
+            Jump(flags::GREATER, addr);
+            break;
+        }
+
+        case cmd::CALLI: {
+            Call(addr);
+            break;
+        }
+
+        case cmd::RET: {
+            Pop(arch::kInstructionRegister, 0);
+            registers_[arch::kStackRegister] += addr;
             break;
         }
 
@@ -633,11 +635,11 @@ void Executor::Execute(const std::string& exec_path) {
         ExecuteImpl(exec_path);
     } catch (const Error& e) {
         std::cout << "executing " << exec_path << ": " << e.what() << std::endl;
-    } catch (const exec::Error& e) {
-        std::cout << "executing " << exec_path << ": " << e.what() << std::endl;
+    } catch (const errors::Error& e) {
+        std::cout << exec_path << ": " << e.what() << std::endl;
     } catch (const std::exception& e) {
-        std::cout << "executing " << exec_path
-                  << ": unexpected exception: " << e.what() << std::endl;
+        std::cout << exec_path << ": unexpected exception: " << e.what()
+                  << std::endl;
     } catch (...) {
         std::cout << "executing " << exec_path << ": unexpected exception";
     }
