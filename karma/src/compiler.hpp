@@ -42,12 +42,9 @@ class Impl {
         std::optional<size_t> TryGetDefinition(const std::string& label) const;
         std::optional<size_t> TryGetDefinitionLine(const std::string& label) const;
 
-        void RecordCommandLabel(const std::string& label,
-                                size_t definition,
-                                size_t line);
-        void RecordConstantLabel(const std::string& label,
-                                 size_t definition,
-                                 size_t line);
+        void RecordLabelOccurrence(const std::string& label, size_t line);
+        void RecordCommandLabel(size_t definition);
+        void RecordConstantLabel(size_t definition);
 
         void RecordEntrypointLabel(const std::string& label);
         const std::optional<std::string>& TryGetEntrypointLabel();
@@ -84,7 +81,7 @@ class Impl {
     void ProcessStringConstant();
     bool TryProcessConstant();
 
-    detail::specs::cmd::CodeFormat GetCodeFormat();
+    detail::specs::cmd::CodeFormat GetCodeFormat() const;
     detail::specs::cmd::args::Register GetRegister() const;
     detail::specs::cmd::args::Immediate GetImmediate(size_t bit_size) const;
     detail::specs::cmd::args::Address GetAddress(bool is_entrypoint = false);
@@ -96,8 +93,11 @@ class Impl {
 
     detail::specs::cmd::Bin MustParseCommand();
 
+    size_t FindCommentStart(const std::string& line) const;
     void ProcessCurrLine();
+
     void FillLabels();
+
     void PrepareExecData(std::istream& code);
 
     void CompileImpl(std::istream& code, const std::string& exec_path);

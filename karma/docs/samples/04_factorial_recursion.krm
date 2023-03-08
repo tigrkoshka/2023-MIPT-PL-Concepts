@@ -1,26 +1,26 @@
-fact:                ; a recursive function calculating the factorial of its argument
-  loadr r0 r14 1     ; load the first (and only) argument to r0
-  cmpi r0 1          ; compare r0 to 1
-  jg skip0           ; if the argument is greater that 1, recurse
-  lc r0 1            ; else store 1 (the result for this case, 1! = 1) to r0
-  ret 1              ; return from function and remove the argument from the stack
+fact:                # a recursive function calculating the factorial of its argument
+  loadr r0 r14 2     # load the first (and only) argument to r0
+  cmpi r0 1          # compare r0 to 1
+  jg skip0           # if the argument is greater that 1, recurse
+  lc r0 1            # else store 1 (the result for this case, 1! = 1) to r0
+  ret 1              # return from function and remove the argument from the stack
 
-skip0:               ; a supplemental function providing recursion
-  push r0 0          ; push the current value to the stack (!)
-  subi r0 1          ; decrement the current value by 1
-  push r0 0          ; push the decremented value to stack as the fact argument
-  calli fact         ; r0 contains the result for the decremented value
-  pop r2 0           ; pop the value stored during the (!) push to r2
-  mul r0 r2 0        ; multiply the result for the decremented value by the current value
-  ret 1              ; return from function and remove the argument from the stack
+skip0:               # a supplemental function providing recursion
+  push r0 0          # push the current value to the stack (!)
+  subi r0 1          # decrement the current value by 1
+  push r0 0          # push the decremented value to stack as the fact argument
+  calli fact         # r0 contains the result for the decremented value
+  pop r2 0           # pop the value stored during the (!) push to r2
+  mul r0 r2 0        # multiply the result for the decremented value by the current value
+  ret 1              # return from function and remove the argument from the stack
 
 main:
-  syscall r0 100     ; read an integer from stdin to r0
-  push r0 0          ; put r0+0 to the stack as the fact argument
-  calli fact         ; call fact, the function will put the result to r0
-  syscall r0 102     ; print r0 to stdout
-  lc r0 10           ; store the constant 10 ('\n') to r0
-  syscall r0 105     ; print '\n' from r0 to stdout
-  lc r0 0            ; clear r0
-  syscall r0 0       ; exit the program with code 0
-end main             ; start execution from label main
+  syscall r0 100     # read an integer from stdin to r0
+  push r0 0          # put r0+0 to the stack as the fact argument
+  calli fact         # call fact, the function will put the result to r0
+  syscall r0 102     # print r0 to stdout
+  lc r0 10           # store the constant 10 ('\n') to r0
+  syscall r0 105     # print '\n' from r0 to stdout
+  lc r0 0            # clear r0
+  syscall r0 0       # exit the program with code 0
+end main             # start execution from label main

@@ -2,31 +2,31 @@
 
 \asmsample{
 
-    sqr:                  & ; a function calculating the square with one argument on the stack \\
-    \qquad loadr r0 r14 1 & ; load the first (and only) argument to \St{r0}                    \\
-    \qquad mov r2 r0 0    & ; copy from \St{r0} to \St{r2}                                     \\
-    \qquad mul r0 r2 0    & ; a pair of registers \St{(r0,r1)} contains the square             \\
-    \qquad ret 1          & ; return from function and remove the argument from the stack      \\
+    sqr:                  & \# a function calculating the square with one argument on the stack \\
+    \qquad loadr r0 r14 2 & \# load the first (and only) argument to \St{r0}                    \\
+    \qquad mov r2 r0 0    & \# copy from \St{r0} to \St{r2}                                     \\
+    \qquad mul r0 r2 0    & \# a pair of registers \St{(r0,r1)} contains the square             \\
+    \qquad ret 1          & \# return from function and remove the argument from the stack      \\
 
     &                                                                    \\
 
-    intout:               & ; a function printing its argument and `\textbackslash n'          \\
-    \qquad load r0 r14 1  & ; load the first (and only) argument to \St{r0}                    \\
-    \qquad syscall r0 102 & ; print \St{r0} to \St{stdout}                                     \\
-    \qquad lc r0 10       & ; store the constant \St{10} (`\textbackslash n') to \St{r0}       \\
-    \qquad syscall r0 105 & ; print `\textbackslash n' from \St{r0} to \St{stdout}             \\
-    \qquad ret 1          & ; return from function and remove the argument from the stack      \\
+    intout:               & \# a function printing its argument and `\textbackslash n'          \\
+    \qquad load r0 r14 1  & \# load the first (and only) argument to \St{r0}                    \\
+    \qquad syscall r0 102 & \# print \St{r0} to \St{stdout}                                     \\
+    \qquad lc r0 10       & \# store the constant \St{10} (`\textbackslash n') to \St{r0}       \\
+    \qquad syscall r0 105 & \# print `\textbackslash n' from \St{r0} to \St{stdout}             \\
+    \qquad ret 1          & \# return from function and remove the argument from the stack      \\
 
     &                                                                    \\
 
     main:                 &                                                                    \\
-    \qquad syscall r0 100 & ; read an integer from \St{stdin} to \St{r0}                       \\
-    \qquad push r0 0      & ; put \St{r0+0} to the stack as the \St{sqr} argument              \\
-    \qquad calli sqr      & ; call \St{sqr}, the function will put the result to \St{r0}       \\
-    \qquad push r0 0      & ; prepare the result of \St{sqr} to be passed to \St{intout}       \\
-    \qquad calli intout   & ; call \St{intout} with the prepared argument                      \\
-    \qquad lc r0 0        & ; clear \St{r0}                                                    \\
-    \qquad syscall r0 0   & ; exit the program with code \St{0}                                \\
-    \qquad end main       & ; start execution from label main                                  \\
+    \qquad syscall r0 100 & \# read an integer from \St{stdin} to \St{r0}                       \\
+    \qquad push r0 0      & \# put \St{r0+0} to the stack as the \St{sqr} argument              \\
+    \qquad calli sqr      & \# call \St{sqr}, the function will put the result to \St{r0}       \\
+    \qquad push r0 0      & \# prepare the result of \St{sqr} to be passed to \St{intout}       \\
+    \qquad calli intout   & \# call \St{intout} with the prepared argument                      \\
+    \qquad lc r0 0        & \# clear \St{r0}                                                    \\
+    \qquad syscall r0 0   & \# exit the program with code \St{0}                                \\
+    \qquad end main       & \# start execution from label main                                  \\
 
 }

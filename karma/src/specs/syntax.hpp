@@ -4,7 +4,7 @@
 
 namespace karma::detail::specs::syntax {
 
-static const char8_t kCommentSep = ';';
+static const char8_t kCommentSep = '#';
 static const char8_t kLabelEnd   = ':';
 
 bool IsAllowedLabelChar(char);

@@ -32,6 +32,7 @@ const std::unordered_map<char, char> kEscapeSequences{
     {'r',  '\r'},
     {'t',  '\t'},
     {'v',  '\v'},
+    {'#',  '#' },
 };
 
 void Unescape(std::string& str) {

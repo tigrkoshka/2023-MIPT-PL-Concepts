@@ -21,9 +21,9 @@
 
 namespace karma {
 
+using errors::compiler::CompileError;
 using errors::compiler::Error;
 using errors::compiler::InternalError;
-using errors::compiler::CompileError;
 
 namespace utils = detail::utils;
 
@@ -99,20 +99,18 @@ std::optional<size_t> Impl::Labels::TryGetDefinitionLine(
     return std::nullopt;
 }
 
-void Impl::Labels::RecordCommandLabel(const std::string& label,
-                                      size_t definition,
-                                      size_t line) {
-    commands_labels_[label] = {definition, line};
-    latest_label_line_      = line;
-    latest_label_           = label;
+void Impl::Labels::RecordLabelOccurrence(const std::string& label,
+                                         size_t line) {
+    latest_label_line_ = line;
+    latest_label_      = label;
 }
 
-void Impl::Labels::RecordConstantLabel(const std::string& label,
-                                       size_t definition,
-                                       size_t line) {
-    constants_labels_[label] = {definition, line};
-    latest_label_line_       = line;
-    latest_label_            = label;
+void Impl::Labels::RecordCommandLabel(size_t definition) {
+    commands_labels_[latest_label_] = {definition, latest_label_line_};
+}
+
+void Impl::Labels::RecordConstantLabel(size_t definition) {
+    constants_labels_[latest_label_] = {definition, latest_label_line_};
 }
 
 void Impl::Labels::RecordEntrypointLabel(const std::string& label) {
@@ -178,6 +176,8 @@ bool Impl::TryProcessLabel() {
                                               line_number_,
                                               *previous_definition_line);
     }
+
+    labels_.RecordLabelOccurrence(curr_word_, line_number_);
 
     return true;
 }
@@ -359,9 +359,7 @@ bool Impl::TryProcessConstant() {
     }
 
     if (std::exchange(latest_word_was_label_, false)) {
-        labels_.RecordConstantLabel(labels_.GetLatest(),
-                                    CurrConstAddress(),
-                                    line_number_);
+        labels_.RecordConstantLabel(CurrConstAddress());
     }
 
     consts::Type type = consts::kNameToType.at(curr_word_);
@@ -419,7 +417,7 @@ bool Impl::TryProcessConstant() {
 ///                           Command word parsing                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-cmd::CodeFormat Impl::GetCodeFormat() {
+cmd::CodeFormat Impl::GetCodeFormat() const {
     if (!cmd::kNameToCode.contains(curr_word_)) {
         throw CompileError::UnknownCommand(curr_word_, line_number_);
     }
@@ -431,8 +429,6 @@ cmd::CodeFormat Impl::GetCodeFormat() {
     }
 
     cmd::Format format = cmd::kCodeToFormat.at(code);
-
-    latest_word_was_label_ = false;
 
     return {code, format};
 }
@@ -614,13 +610,12 @@ args::JArgs Impl::GetJArgs() {
 cmd::Bin Impl::MustParseCommand() {
     cmd::Bin bin{};
 
+    auto [code, format] = GetCodeFormat();
+
     if (std::exchange(latest_word_was_label_, false)) {
-        labels_.RecordCommandLabel(labels_.GetLatest(),
-                                   CurrCmdAddress(),
-                                   line_number_);
+        labels_.RecordCommandLabel(CurrCmdAddress());
     }
 
-    auto [code, format] = GetCodeFormat();
     switch (format) {
         case cmd::RM: {
             bin = cmd::build::RM(code, GetRMArgs());
@@ -726,10 +721,30 @@ void Impl::FillLabels() {
 ///                                Prepare data                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
+size_t Impl::FindCommentStart(const std::string& line) const {
+    size_t curr_start_pos = 0;
+
+    while (true) {
+        size_t comment_start = line.find(syntax::kCommentSep, curr_start_pos);
+
+        if (comment_start == curr_start_pos ||
+            comment_start == std::string::npos) {
+            return comment_start;
+        }
+
+        if (line[comment_start - 1] == '\\') {
+            curr_start_pos = comment_start + 1;
+            continue;
+        }
+
+        return comment_start;
+    }
+}
+
 void Impl::PrepareExecData(std::istream& code) {
     for (std::string line; std::getline(code, line); ++line_number_) {
         // ignore comments
-        line.resize(std::min(line.find(syntax::kCommentSep), line.size()));
+        line.resize(std::min(FindCommentStart(line), line.size()));
 
         curr_line_ = std::istringstream(line);
         ProcessCurrLine();
