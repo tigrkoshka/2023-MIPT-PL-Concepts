@@ -186,9 +186,9 @@ arch::Address Executor::Call(args::Address callee) {
 ///                              Execute command                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-bool Executor::ExecuteRMCommand(cmd::Code code, args::RMArgs args) {
-    auto [reg, addr] = args;
-
+bool Executor::ExecuteRMCommand(cmd::Code code,
+                                args::Register reg,
+                                args::Address addr) {
     switch (code) {
         case cmd::LOAD: {
             registers_[reg] = memory_[addr];
@@ -220,9 +220,10 @@ bool Executor::ExecuteRMCommand(cmd::Code code, args::RMArgs args) {
     return true;
 }
 
-bool Executor::ExecuteRRCommand(cmd::Code code, args::RRArgs args) {
-    auto [recv, src, mod] = args;
-
+bool Executor::ExecuteRRCommand(cmd::Code code,
+                                args::Receiver recv,
+                                args::Source src,
+                                args::Modifier mod) {
     auto lhs_word = [this, recv]() -> types::Word {
         return registers_[recv];
     };
@@ -398,9 +399,9 @@ bool Executor::ExecuteRRCommand(cmd::Code code, args::RRArgs args) {
     return true;
 }
 
-bool Executor::ExecuteRICommand(cmd::Code code, args::RIArgs args) {
-    auto [reg, imm] = args;
-
+bool Executor::ExecuteRICommand(cmd::Code code,
+                                args::Register reg,
+                                args::Immediate imm) {
     auto imm_word = [imm]() -> types::Word {
         return static_cast<types::Word>(imm);
     };
@@ -517,9 +518,7 @@ bool Executor::ExecuteRICommand(cmd::Code code, args::RIArgs args) {
     return true;
 }
 
-bool Executor::ExecuteJCommand(cmd::Code code, args::JArgs args) {
-    auto [addr] = args;
-
+bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
     switch (code) {
         case cmd::JMP: {
             registers_[arch::kInstructionRegister] = addr;
@@ -585,19 +584,23 @@ bool Executor::ExecuteCommand(cmd::Bin command) {
 
     switch (cmd::Format format = cmd::kCodeToFormat.at(code)) {
         case cmd::RM: {
-            return ExecuteRMCommand(code, cmd::parse::RM(command));
+            auto [reg, addr] = cmd::parse::RM(command);
+            return ExecuteRMCommand(code, reg, addr);
         }
 
         case cmd::RR: {
-            return ExecuteRRCommand(code, cmd::parse::RR(command));
+            auto [recv, src, mod] = cmd::parse::RR(command);
+            return ExecuteRRCommand(code, recv, src, mod);
         }
 
         case cmd::RI: {
-            return ExecuteRICommand(code, cmd::parse::RI(command));
+            auto [reg, imm] = cmd::parse::RI(command);
+            return ExecuteRICommand(code, reg, imm);
         }
 
         case cmd::J: {
-            return ExecuteJCommand(code, cmd::parse::J(command));
+            auto [addr] = cmd::parse::J(command);
+            return ExecuteJCommand(code, addr);
         }
 
         default: {
