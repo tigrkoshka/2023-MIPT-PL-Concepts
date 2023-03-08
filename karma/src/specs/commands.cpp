@@ -3,7 +3,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "../utils/utils.hpp"
+#include "../utils/map.hpp"
+#include "../utils/types.hpp"
 
 namespace karma::detail::specs::cmd {
 
@@ -29,14 +30,14 @@ args::RMArgs RM(Bin command) {
 args::RRArgs RR(Bin command) {
     args::Receiver recv = (command >> kRecvShift) & kRegisterMask;
     args::Source src    = (command >> kSrcShift) & kRegisterMask;
-    args::Modifier mod  = utils::GetSignedValue(command, args::kModSize);
+    args::Modifier mod  = utils::types::GetSignedValue(command, args::kModSize);
 
     return {recv, src, mod};
 }
 
 args::RIArgs RI(Bin command) {
     args::Register reg  = (command >> kRecvShift) & kRegisterMask;
-    args::Immediate imm = utils::GetSignedValue(command, args::kImmSize);
+    args::Immediate imm = utils::types::GetSignedValue(command, args::kImmSize);
 
     return {reg, imm};
 }
@@ -65,7 +66,7 @@ Bin RR(Code code, args::RRArgs args) {
     return (code << kCodeShift) |  //
            (recv << kRecvShift) |  //
            (src << kSrcShift) |    //
-           utils::GetUnsignedBits(mod, args::kModSize);
+           utils::types::GetUnsignedBits(mod, args::kModSize);
 }
 
 Bin RI(Code code, args::RIArgs args) {
@@ -73,7 +74,7 @@ Bin RI(Code code, args::RIArgs args) {
 
     return (code << kCodeShift) |  //
            (recv << kRecvShift) |  //
-           utils::GetUnsignedBits(imm, args::kImmSize);
+           utils::types::GetUnsignedBits(imm, args::kImmSize);
 }
 
 Bin J(Code code, args::JArgs args) {
@@ -175,12 +176,12 @@ const std::unordered_map<Code, Format> kCodeToFormat = {
 
 const std::unordered_map<std::string, Code> kNameToCode = {
 
-    // System
+  // System
 
     {"halt",    HALT   },
     {"syscall", SYSCALL},
 
-    // Integer arithmetic
+ // Integer arithmetic
 
     {"add",     ADD    },
     {"addi",    ADDI   },
@@ -191,7 +192,7 @@ const std::unordered_map<std::string, Code> kNameToCode = {
     {"div",     DIV    },
     {"divi",    DIVI   },
 
-    // Bitwise operators
+ // Bitwise operators
 
     {"not",     NOT    },
     {"shl",     SHL    },
@@ -205,7 +206,7 @@ const std::unordered_map<std::string, Code> kNameToCode = {
     {"xor",     XOR    },
     {"xori",    XORI   },
 
-    // Real-valued operators
+ // Real-valued operators
 
     {"itod",    ITOD   },
     {"dtoi",    DTOI   },
@@ -214,13 +215,13 @@ const std::unordered_map<std::string, Code> kNameToCode = {
     {"muld",    MULD   },
     {"divd",    DIVD   },
 
-    // Comparisons
+ // Comparisons
 
     {"cmp",     CMP    },
     {"cmpi",    CMPI   },
     {"cmpd",    CMPD   },
 
-    // Jumps
+ // Jumps
 
     {"jmp",     JMP    },
     {"jne",     JNE    },
@@ -230,12 +231,12 @@ const std::unordered_map<std::string, Code> kNameToCode = {
     {"jge",     JGE    },
     {"jg",      JG     },
 
-    // Stack
+ // Stack
 
     {"push",    PUSH   },
     {"pop",     POP    },
 
-    // Data transfer
+ // Data transfer
 
     {"lc",      LC     },
     {"mov",     MOV    },
@@ -248,7 +249,7 @@ const std::unordered_map<std::string, Code> kNameToCode = {
     {"storer",  STORER },
     {"storer2", STORER2},
 
-    // Function calls
+ // Function calls
 
     {"call",    CALL   },
     {"calli",   CALLI  },
@@ -256,6 +257,6 @@ const std::unordered_map<std::string, Code> kNameToCode = {
 };
 
 const std::unordered_map<Code, std::string> kCodeToName =
-    utils::RevertMap(kNameToCode);
+    utils::map::Revert(kNameToCode);
 
 }  // namespace karma::detail::specs::cmd

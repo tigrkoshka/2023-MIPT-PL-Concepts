@@ -1,6 +1,6 @@
 #include "constants.hpp"
 
-#include "../utils/utils.hpp"
+#include "../utils/map.hpp"
 
 namespace karma::detail::specs::consts {
 
@@ -13,6 +13,6 @@ const std::unordered_map<Type, std::string> kTypeToName = {
 };
 
 const std::unordered_map<std::string, Type> kNameToType =
-    utils::RevertMap(kTypeToName);
+    utils::map::Revert(kTypeToName);
 
 }  // namespace karma::detail::specs::consts

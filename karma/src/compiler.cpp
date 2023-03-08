@@ -17,7 +17,7 @@
 #include "specs/constants.hpp"
 #include "specs/exec.hpp"
 #include "specs/syntax.hpp"
-#include "utils/utils.hpp"
+#include "utils/strings.hpp"
 
 namespace karma {
 
@@ -311,7 +311,7 @@ void Impl::ProcessCharConstant() {
 
     curr_word_ = curr_word_.substr(1, curr_word_.size() - 2);
 
-    utils::Unescape(curr_word_);
+    utils::strings::Unescape(curr_word_);
 
     if (curr_word_.size() != 1) {
         throw CompileError::InvalidValue(consts::CHAR,
@@ -337,7 +337,7 @@ void Impl::ProcessStringConstant() {
 
     curr_word_ = curr_word_.substr(1, curr_word_.size() - 2);
 
-    utils::Unescape(curr_word_);
+    utils::strings::Unescape(curr_word_);
 
     for (char symbol : curr_word_) {
         constants_.push_back(static_cast<types::Word>(symbol));
@@ -367,7 +367,7 @@ bool Impl::TryProcessConstant() {
     consts::Type type = consts::kNameToType.at(curr_word_);
 
     getline(curr_line_, curr_word_);
-    utils::TrimSpaces(curr_word_);
+    utils::strings::TrimSpaces(curr_word_);
 
     if (curr_word_.empty()) {
         throw CompileError::EmptyConstantValue(type, line_number_);

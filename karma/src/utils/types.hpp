@@ -1,36 +1,12 @@
 #pragma once
 
-#include <concepts>       // for convertible_to, [un]signed_integral
-#include <cstddef>        // for size_t
-#include <functional>     // for hash
-#include <sstream>        // for ostringstream
-#include <stdexcept>      // for overflow_error
-#include <string>         // for string
-#include <type_traits>    // for make_[un]signed_t
-#include <unordered_map>  // for unordered_map
+#include <concepts>     // for [un]signed_integral
+#include <cstddef>      // for size_t
+#include <sstream>      // for ostringstream
+#include <stdexcept>    // for overflow_error
+#include <type_traits>  // for make_[un]signed_t
 
-namespace karma::detail::utils {
-
-// TODO: turn formatting on when clang-format@16 (in llvm@16) is released
-// clang-format does not yet properly support concepts definition
-// clang-format off
-template <typename T>
-concept Hashable = requires(T val) {
-    { std::hash<T>{}(val) } -> std::convertible_to<std::size_t>;
-};
-// clang-format on
-
-template <Hashable K, Hashable V>
-std::unordered_map<V, K> RevertMap(const std::unordered_map<K, V>& map) {
-    std::unordered_map<V, K> reverted;
-    reverted.reserve(map.size());
-
-    for (const auto& [k, v] : map) {
-        reverted[v] = k;
-    }
-
-    return reverted;
-}
+namespace karma::detail::utils::types {
 
 const size_t kByteSize = 8ull;
 
@@ -169,10 +145,4 @@ std::make_unsigned_t<Int> GetUnsignedBits(Int value, size_t bit_size) {
     return (static_cast<Uint>(1) << static_cast<Uint>(bit_size)) - modulo;
 }
 
-static const std::string kWhitespaces = " \t\n\v\f\r";
-
-void TrimSpaces(std::string& str);
-
-void Unescape(std::string& str);
-
-}  // namespace karma::detail::utils
+}  // namespace karma::detail::utils::types

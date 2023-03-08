@@ -6,7 +6,7 @@
 
 #include "../specs/architecture.hpp"
 #include "../specs/commands.hpp"
-#include "../utils/utils.hpp"
+#include "../utils/types.hpp"
 
 namespace karma::errors::executor {
 
@@ -66,7 +66,7 @@ ExecutionError ExecutionError::BitwiseRHSTooBig(types::Word rhs,
     std::ostringstream ss;
     ss << "the right hand side of a bitwise operation (code " << code
        << ") must be less than the bit size of a machine word ("
-       << sizeof(types::Word) * utils::kByteSize << "), got: " << rhs;
+       << sizeof(types::Word) * utils::types::kByteSize << "), got: " << rhs;
     return ExecutionError{ss.str()};
 }
 

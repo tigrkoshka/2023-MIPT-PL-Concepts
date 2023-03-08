@@ -1,8 +1,12 @@
-#include "utils.hpp"
+#include "strings.hpp"
 
-#include <string>  // for string
+#include <cstddef>        // for size_t
+#include <string>         // for string
+#include <unordered_map>  // for unordered_map
 
-namespace karma::detail::utils {
+namespace karma::detail::utils::strings {
+
+const std::string kWhitespaces = " \t\n\v\f\r";
 
 void TrimSpaces(std::string& str) {
     const size_t start = str.find_first_not_of(kWhitespaces);
@@ -16,18 +20,18 @@ void TrimSpaces(std::string& str) {
     str = str.substr(start, end - start + 1);
 }
 
-const std::unordered_map<char, char> kEscapeSequences {
+const std::unordered_map<char, char> kEscapeSequences{
     {'\'', '\''},
     {'\"', '\"'},
-    {'?', '\?'},
+    {'?',  '\?'},
     {'\\', '\\'},
-    {'a', '\a'},
-    {'b', '\b'},
-    {'f', '\f'},
-    {'n', '\n'},
-    {'r', '\r'},
-    {'t', '\t'},
-    {'v', '\v'},
+    {'a',  '\a'},
+    {'b',  '\b'},
+    {'f',  '\f'},
+    {'n',  '\n'},
+    {'r',  '\r'},
+    {'t',  '\t'},
+    {'v',  '\v'},
 };
 
 void Unescape(std::string& str) {
@@ -51,7 +55,7 @@ void Unescape(std::string& str) {
 
         if (!kEscapeSequences.contains(curr)) {
             str[curr_pos++] = '\\';
-            str[curr_pos] = curr;
+            str[curr_pos]   = curr;
             continue;
         }
 
@@ -61,4 +65,4 @@ void Unescape(std::string& str) {
     str = str.substr(0, curr_pos);
 }
 
-}  // namespace karma::detail::utils
+}  // namespace karma::detail::utils::strings

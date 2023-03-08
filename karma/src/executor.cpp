@@ -13,7 +13,7 @@
 #include "specs/architecture.hpp"
 #include "specs/exec.hpp"
 #include "specs/flags.hpp"
-#include "utils/utils.hpp"
+#include "utils/types.hpp"
 
 namespace karma {
 
@@ -57,7 +57,7 @@ void Executor::PutTwoRegisters(types::TwoWords value, args::Receiver lower) {
 }
 
 void Executor::CheckBitwiseRHS(types::Word rhs, cmd::Code code) {
-    if (rhs >= sizeof(types::Word) * utils::kByteSize) {
+    if (rhs >= sizeof(types::Word) * utils::types::kByteSize) {
         throw ExecutionError::BitwiseRHSTooBig(rhs, code);
     }
 }

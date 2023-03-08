@@ -1,8 +1,9 @@
 add_library(
-        specs
+        specs STATIC
         architecture.cpp
         commands.cpp
         exec.cpp
         flags.cpp
         syntax.cpp
-        constants.cpp)
+        constants.cpp
+)

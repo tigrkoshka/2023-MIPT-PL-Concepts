@@ -1,4 +1,6 @@
 add_library(
-        utils
-        utils.cpp
+        utils STATIC
+        map.cpp
+        strings.cpp
+        types.cpp
 )
