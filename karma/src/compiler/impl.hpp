@@ -9,8 +9,9 @@
 #include <utility>        // for pair
 #include <vector>         // for vector
 
-#include "../specs/architecture.hpp"
-#include "../specs/commands.hpp"
+#include "specs/architecture.hpp"
+#include "specs/commands.hpp"
+
 #include "labels.hpp"
 
 namespace karma::compiler::detail {

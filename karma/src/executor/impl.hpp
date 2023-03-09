@@ -5,9 +5,9 @@
 #include <string>     // for string
 #include <vector>     // for vector
 
-#include "../specs/architecture.hpp"
-#include "../specs/commands.hpp"
-#include "../specs/flags.hpp"
+#include "specs/architecture.hpp"
+#include "specs/commands.hpp"
+#include "specs/flags.hpp"
 
 namespace karma::executor::detail {
 

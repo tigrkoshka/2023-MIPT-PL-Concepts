@@ -1,5 +1,5 @@
 add_library(
-        utils STATIC
+        utils OBJECT
         error.cpp
         map.cpp
         strings.cpp

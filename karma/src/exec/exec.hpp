@@ -3,8 +3,8 @@
 #include <string>  // for string
 #include <vector>  // for vector
 
-#include "../specs/architecture.hpp"
-#include "../specs/commands.hpp"
+#include "specs/architecture.hpp"
+#include "specs/commands.hpp"
 
 namespace karma::detail::exec {
 

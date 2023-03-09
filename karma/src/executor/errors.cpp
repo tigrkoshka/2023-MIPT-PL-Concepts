@@ -4,9 +4,9 @@
 #include <sstream>  // for ostringstream
 #include <string>   // for string
 
-#include "../specs/architecture.hpp"
-#include "../specs/commands.hpp"
-#include "../utils/types.hpp"
+#include "specs/architecture.hpp"
+#include "specs/commands.hpp"
+#include "utils/types.hpp"
 
 namespace karma::errors::executor {
 

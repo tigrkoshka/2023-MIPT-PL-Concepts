@@ -6,7 +6,7 @@
 #include <stdexcept>    // for overflow_error
 #include <type_traits>  // for make_[un]signed_t
 
-#include "../specs/architecture.hpp"
+#include "specs/architecture.hpp"
 
 namespace karma::detail::utils::types {
 

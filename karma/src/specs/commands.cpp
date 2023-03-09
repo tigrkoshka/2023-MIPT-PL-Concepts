@@ -3,8 +3,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "../utils/map.hpp"
-#include "../utils/types.hpp"
+#include "utils/map.hpp"
+#include "utils/types.hpp"
 
 namespace karma::detail::specs::cmd {
 

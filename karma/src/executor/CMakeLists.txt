@@ -1,5 +1,5 @@
 add_library(
-        executor STATIC
+        executor OBJECT
         executor.cpp
         impl.cpp
         errors.cpp

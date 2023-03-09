@@ -8,7 +8,9 @@
 namespace karma {
 
 Executor::Executor()
-    : impl_(std::make_shared<executor::detail::Impl>()) {}
+    : impl_(std::make_unique<executor::detail::Impl>()) {}
+
+Executor::~Executor() = default;
 
 void Executor::MustExecute(const std::string& exec_path) {
     impl_->MustExecute(exec_path);

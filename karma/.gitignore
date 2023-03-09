@@ -1,3 +1,10 @@
+# CMake generated files
+build/
+lib/
+
+# Executable file for main.cpp
+karma_play
+
 # Compiled Karma executables
 *.a
 

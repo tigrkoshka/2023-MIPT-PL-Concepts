@@ -1,5 +1,5 @@
 add_library(
-        compiler STATIC
+        compiler OBJECT
         compiler.cpp
         impl.cpp
         labels.cpp

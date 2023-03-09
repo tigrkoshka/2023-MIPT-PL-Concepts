@@ -14,8 +14,7 @@ class Impl;
 class Executor {
    public:
     Executor();
-
-    ~Executor() = default;
+    ~Executor();
 
     // Non-copyable
     Executor(const Executor&)            = delete;
@@ -30,7 +29,7 @@ class Executor {
     void Execute(const std::string& exec_path);
 
    private:
-    std::shared_ptr<executor::detail::Impl> impl_;
+    std::unique_ptr<executor::detail::Impl> impl_;
 };
 
 }  // namespace karma

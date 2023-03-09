@@ -1,5 +1,8 @@
 #include "compiler.hpp"
 
+#include <istream>  // for istream
+#include <string>   // for string
+
 #include "impl.hpp"
 
 namespace karma::compiler {

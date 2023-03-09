@@ -11,14 +11,15 @@
 #include <type_traits>  // for make_unsigned_t
 #include <utility>      // for move
 
-#include "../exec/exec.hpp"
-#include "../specs/architecture.hpp"
-#include "../specs/commands.hpp"
-#include "../specs/constants.hpp"
-#include "../specs/exec.hpp"
-#include "../specs/syntax.hpp"
-#include "../utils/strings.hpp"
-#include "../utils/types.hpp"
+#include "exec/exec.hpp"
+#include "specs/architecture.hpp"
+#include "specs/commands.hpp"
+#include "specs/constants.hpp"
+#include "specs/exec.hpp"
+#include "specs/syntax.hpp"
+#include "utils/strings.hpp"
+#include "utils/types.hpp"
+
 #include "errors.hpp"
 
 namespace karma::compiler::detail {

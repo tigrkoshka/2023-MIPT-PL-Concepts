@@ -4,8 +4,8 @@
 #include <sstream>  // for ostringstream
 #include <string>   // for string
 
-#include "../specs/commands.hpp"
-#include "../specs/constants.hpp"
+#include "specs/commands.hpp"
+#include "specs/constants.hpp"
 
 namespace karma::errors::disassembler {
 

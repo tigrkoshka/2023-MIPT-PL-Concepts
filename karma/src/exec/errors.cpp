@@ -3,8 +3,8 @@
 #include <iomanip>  // for quoted
 #include <sstream>  // for ostringstream
 
-#include "../specs/architecture.hpp"
-#include "../specs/exec.hpp"
+#include "specs/architecture.hpp"
+#include "specs/exec.hpp"
 
 namespace karma::errors::exec {
 

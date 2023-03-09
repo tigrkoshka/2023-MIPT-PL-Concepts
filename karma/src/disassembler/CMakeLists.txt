@@ -1,5 +1,5 @@
 add_library(
-        disassembler STATIC
+        disassembler OBJECT
         disassembler.cpp
         impl.cpp
         errors.cpp

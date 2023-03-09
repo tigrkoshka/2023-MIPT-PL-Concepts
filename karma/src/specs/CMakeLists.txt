@@ -1,5 +1,5 @@
 add_library(
-        specs STATIC
+        specs OBJECT
         architecture.cpp
         commands.cpp
         exec.cpp

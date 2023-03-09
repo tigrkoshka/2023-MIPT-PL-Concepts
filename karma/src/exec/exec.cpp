@@ -7,10 +7,11 @@
 #include <sstream>  // for ostringstream
 #include <vector>   // for vector
 
-#include "../exec/errors.hpp"
-#include "../specs/architecture.hpp"
-#include "../specs/commands.hpp"
-#include "../specs/exec.hpp"
+#include "specs/architecture.hpp"
+#include "specs/commands.hpp"
+#include "specs/exec.hpp"
+
+#include "errors.hpp"
 
 namespace karma::detail::exec {
 

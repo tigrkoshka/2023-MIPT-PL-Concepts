@@ -1,5 +1,5 @@
 add_library(
-        exec STATIC
+        exec OBJECT
         exec.cpp
         errors.cpp
 )

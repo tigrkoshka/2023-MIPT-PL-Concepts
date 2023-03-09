@@ -3,8 +3,8 @@
 #include <cstddef>  // for size_t
 #include <string>   // for string
 
-#include "../specs/architecture.hpp"
-#include "../utils/error.hpp"
+#include "specs/architecture.hpp"
+#include "utils/error.hpp"
 
 namespace karma::errors::exec {
 

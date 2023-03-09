@@ -4,7 +4,8 @@
 #include <optional>       // for optional
 #include <string>         // for string
 
-#include "../specs/syntax.hpp"
+#include "specs/syntax.hpp"
+
 #include "errors.hpp"
 
 namespace karma::compiler::detail {

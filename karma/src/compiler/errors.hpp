@@ -4,9 +4,9 @@
 #include <cstdint>  // for int32_t
 #include <string>   // for string, to_string
 
-#include "../specs/commands.hpp"
-#include "../specs/constants.hpp"
-#include "../utils/error.hpp"
+#include "specs/commands.hpp"
+#include "specs/constants.hpp"
+#include "utils/error.hpp"
 
 namespace karma::errors::compiler {
 

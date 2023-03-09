@@ -9,10 +9,11 @@
 #include <sstream>      // for ostringstream
 #include <type_traits>  // for make_signed_t
 
-#include "../exec/exec.hpp"
-#include "../specs/architecture.hpp"
-#include "../specs/flags.hpp"
-#include "../utils/types.hpp"
+#include "exec/exec.hpp"
+#include "specs/architecture.hpp"
+#include "specs/flags.hpp"
+#include "utils/types.hpp"
+
 #include "errors.hpp"
 
 namespace karma::executor::detail {
