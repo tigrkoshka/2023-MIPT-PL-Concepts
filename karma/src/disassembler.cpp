@@ -22,8 +22,6 @@ using errors::disassembler::Error;
 using errors::disassembler::InternalError;
 using errors::disassembler::DisassembleError;
 
-namespace utils = detail::utils;
-
 namespace arch = detail::specs::arch;
 
 namespace cmd  = detail::specs::cmd;
@@ -164,8 +162,6 @@ void Impl::DisassembleConstants(const Segment& constants, std::ostream& out) {
             throw DisassembleError::UnknownConstantType(type);
         }
 
-        const std::string& type_string = consts::kTypeToName.at(type);
-
         std::string value{};
 
         switch (type) {
@@ -190,10 +186,10 @@ void Impl::DisassembleConstants(const Segment& constants, std::ostream& out) {
                 break;
 
             default:
-                throw InternalError::UnprocessedConstantType(type_string);
+                throw InternalError::UnprocessedConstantType(type);
         }
 
-        out << type_string << " " << value << std::endl;
+        out << consts::kTypeToName.at(type) << " " << value << std::endl;
     }
 }
 
@@ -268,7 +264,7 @@ std::string Impl::GetCommandString(cmd::Bin command) {
         }
 
         default: {
-            throw InternalError::UnknownCommandFormat(format);
+            throw InternalError::UnprocessedCommandFormat(format);
         }
     }
 

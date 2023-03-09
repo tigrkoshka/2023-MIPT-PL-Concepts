@@ -25,17 +25,23 @@ ExecFileError ExecFileError::TooSmallForHeader(size_t size) {
     return ExecFileError{ss.str()};
 }
 
+ExecFileError ExecFileError::TooBigForMemory(size_t size) {
+    std::ostringstream ss;
+    ss << "the combined size of the code and constants segments is " << size
+       << ", which is greater than the memory size " << arch::kMemorySize
+       << ", so the code and the constants do not fit into the memory";
+    return ExecFileError{ss.str()};
+}
+
 ExecFileError ExecFileError::InvalidExecSize(size_t exec_size,
                                              size_t code_size,
-                                             size_t consts_size,
-                                             size_t data_size) {
+                                             size_t consts_size) {
     std::ostringstream ss;
     ss << "the exec file size (" << exec_size << ") does not equal "
-       << exec::kHeaderSize + code_size + consts_size + data_size
+       << exec::kHeaderSize + code_size + consts_size
        << ", which is the sum of the header size (" << exec::kHeaderSize
        << ") and the total of the sizes of the code segment (" << code_size
-       << "), the constants segment (" << consts_size
-       << ") and the data segment (" << data_size
+       << ") and the constants segment (" << consts_size
        << ") specified in the header";
     return ExecFileError{ss.str()};
 }

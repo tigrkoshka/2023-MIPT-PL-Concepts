@@ -13,7 +13,7 @@
 
 }
 
-\vspace{0.5cm}
+\vspace{0.4cm}
 
 These commands work directly with the stack, putting \St{uint32} values into
 it (\St{push}) and extracting them afterwards (\St{pop}).
@@ -30,6 +30,5 @@ The \St{r14} register is the stack head pointer
 (as stated \hyperlink{registers}{here}).
 It always points to the memory cell, in which the data will be put on
 \St{push} operation, that is, one memory cell `ahead' of the latest pushed value.
-
 The stack grows \textit{backwards}, i.e.\ the next pushed value is stored in
-the \textit{previous} memory cell from the latest pushed value.
+the \textit{previous} memory cell from the latest one.

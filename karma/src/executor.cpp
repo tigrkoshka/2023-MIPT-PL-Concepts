@@ -209,7 +209,7 @@ bool Executor::ExecuteRMCommand(cmd::Code code,
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(cmd::RM, code);
+            throw InternalError::UnprocessedCommandForFormat(cmd::RM, code);
         }
     }
 
@@ -389,7 +389,7 @@ bool Executor::ExecuteRRCommand(cmd::Code code,
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(cmd::RR, code);
+            throw InternalError::UnprocessedCommandForFormat(cmd::RR, code);
         }
     }
 
@@ -508,7 +508,7 @@ bool Executor::ExecuteRICommand(cmd::Code code,
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(cmd::RI, code);
+            throw InternalError::UnprocessedCommandForFormat(cmd::RI, code);
         }
     }
 
@@ -564,7 +564,7 @@ bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
         }
 
         default: {
-            throw InternalError::UnknownCommandForFormat(cmd::J, code);
+            throw InternalError::UnprocessedCommandForFormat(cmd::J, code);
         }
     }
 
@@ -601,7 +601,7 @@ bool Executor::ExecuteCommand(cmd::Bin command) {
         }
 
         default: {
-            throw InternalError::UnknownCommandFormat(format);
+            throw InternalError::UnprocessedCommandFormat(format);
         }
     }
 }
@@ -624,13 +624,18 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
               data.constants.end(),
               memory_.begin() + static_cast<DiffT>(data.code.size()));
 
-    std::copy(data.data.begin(),
-              data.data.end(),
-              memory_.begin() + static_cast<DiffT>(data.code.size()) +
-                  static_cast<DiffT>(data.constants.size()));
+    while(true) {
+        arch::Address curr_address = registers_[arch::kInstructionRegister];
 
-    while (registers_[arch::kInstructionRegister] < data.code.size() &&
-           ExecuteCommand(memory_[registers_[arch::kInstructionRegister]])) {
+        if (curr_address >= memory_.size()) {
+            throw ExecutionError::ExecPointerOutOfMemory(curr_address);
+        }
+
+        cmd::Bin curr_command = memory_[curr_address];
+
+        if (!ExecuteCommand(curr_command)) {
+            break;
+        }
     }
 }
 

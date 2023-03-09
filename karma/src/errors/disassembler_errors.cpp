@@ -24,9 +24,10 @@ InternalError InternalError::FailedToOpen(const std::string& path) {
     return InternalError{ss.str()};
 }
 
-InternalError InternalError::UnprocessedConstantType(const std::string& type) {
+InternalError InternalError::UnprocessedConstantType(consts::Type type) {
     std::ostringstream ss;
-    ss << "constant of type " << type << "is not processed";
+    ss << "processing for constant of type " << consts::kTypeToName.at(type)
+       << " is not implemented";
     return InternalError{ss.str()};
 }
 
@@ -42,9 +43,10 @@ InternalError InternalError::RegisterNameNotFound(args::Register reg) {
     return InternalError{ss.str()};
 }
 
-InternalError InternalError::UnknownCommandFormat(cmd::Format format) {
+InternalError InternalError::UnprocessedCommandFormat(cmd::Format format) {
     std::ostringstream ss;
-    ss << "unknown command format " << format;
+    ss << "processing for command format " << cmd::kFormatToString.at(format)
+       << " is not implemented";
     return InternalError{ss.str()};
 }
 

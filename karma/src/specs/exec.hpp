@@ -26,7 +26,6 @@ struct Data {
 
     std::vector<cmd::Bin> code;
     std::vector<arch::Word> constants;
-    std::vector<arch::Word> data;
 };
 
 void Write(const Data& data, const std::string& exec_path);

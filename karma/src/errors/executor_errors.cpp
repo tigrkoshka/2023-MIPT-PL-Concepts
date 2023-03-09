@@ -10,7 +10,7 @@
 
 namespace karma::errors::executor {
 
-namespace arch  = detail::specs::arch;
+namespace arch = detail::specs::arch;
 
 namespace cmd     = detail::specs::cmd;
 namespace args    = cmd::args;
@@ -22,23 +22,31 @@ namespace utils = detail::utils;
 ///                              Internal errors                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-InternalError InternalError::UnknownCommandFormat(cmd::Format format) {
+InternalError InternalError::UnprocessedCommandFormat(cmd::Format format) {
     std::ostringstream ss;
-    ss << "unknown command format " << format;
+    ss << "processing for format " << cmd::kFormatToString.at(format)
+       << " is not implemented";
     return InternalError{ss.str()};
 }
 
-InternalError InternalError::UnknownCommandForFormat(cmd::Format format,
-                                                     cmd::Code code) {
+InternalError InternalError::UnprocessedCommandForFormat(cmd::Format format,
+                                                         cmd::Code code) {
     std::ostringstream ss;
-    ss << "unknown command code " << code << " for command format "
-       << std::quoted(cmd::kFormatToString.at(format));
+    ss << "processing for command " << cmd::kCodeToName.at(code)
+       << " of format " << cmd::kFormatToString.at(format)
+       << " is not implemented";
     return InternalError{ss.str()};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                             Execution errors                             ///
 ////////////////////////////////////////////////////////////////////////////////
+
+ExecutionError ExecutionError::ExecPointerOutOfMemory(arch::Address address) {
+    std::ostringstream ss;
+    ss << "execution pointer is outside of memory: " << std::hex << address;
+    return ExecutionError{ss.str()};
+}
 
 ExecutionError ExecutionError::UnknownCommand(cmd::Code code) {
     std::ostringstream ss;

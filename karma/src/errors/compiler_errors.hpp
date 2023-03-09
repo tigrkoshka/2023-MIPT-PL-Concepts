@@ -28,14 +28,13 @@ struct InternalError : Error {
    public:
     static InternalError FailedToOpen(const std::string& path);
 
-    static InternalError FormatNotFound(detail::specs::cmd::Code command_code,
-                                        size_t line);
+    static InternalError FormatNotFound(detail::specs::cmd::Code, size_t line);
 
-    static InternalError UnknownCommandFormat(detail::specs::cmd::Format format,
-                                              size_t line);
+    static InternalError UnprocessedCommandFormat(detail::specs::cmd::Format,
+                                                  size_t line);
 
-    static InternalError UnknownConstantType(detail::specs::consts::Type type,
-                                             size_t line);
+    static InternalError UnprocessedConstantType(detail::specs::consts::Type,
+                                                 size_t line);
 
     static InternalError EmptyWord(size_t line);
 };
@@ -50,38 +49,6 @@ struct CompileError : Error {
                 message) {}
 
    public:
-    // constants
-
-    static CompileError EmptyConstantValue(detail::specs::consts::Type type,
-                                           size_t line);
-
-    static CompileError InvalidValue(detail::specs::consts::Type type,
-                                     const std::string& value,
-                                     size_t line);
-
-    static CompileError CharTooSmallForQuotes(const std::string& value,
-                                              size_t line);
-    static CompileError CharNoStartQuote(const std::string& value, size_t line);
-    static CompileError CharNoEndQuote(const std::string& value, size_t line);
-
-    static CompileError StringTooSmallForQuotes(const std::string& value,
-                                                size_t line);
-    static CompileError StringNoStartQuote(const std::string& value,
-                                           size_t line);
-    static CompileError StringNoEndQuote(const std::string& value, size_t line);
-
-    // command
-
-    static CompileError UnknownCommand(const std::string& command, size_t line);
-
-    // entrypoint
-
-    static CompileError NoEntrypoint();
-
-    static CompileError SecondEntrypoint(size_t line, size_t entrypoint_line);
-
-    static CompileError EntrypointWithoutAddress(size_t line);
-
     // labels
 
     static CompileError EmptyLabel(size_t line);
@@ -110,6 +77,42 @@ struct CompileError : Error {
                                               size_t line);
 
     static CompileError UndefinedLabel(const std::string& label, size_t line);
+
+    // entrypoint
+
+    static CompileError NoEntrypoint();
+
+    static CompileError SecondEntrypoint(size_t line, size_t entrypoint_line);
+
+    static CompileError EntrypointWithoutAddress(size_t line);
+
+    // constants
+
+    static CompileError EmptyConstantValue(detail::specs::consts::Type type,
+                                           size_t line);
+
+    static CompileError InvalidValue(detail::specs::consts::Type type,
+                                     const std::string& value,
+                                     size_t line);
+
+    static CompileError CharTooSmallForQuotes(const std::string& value,
+                                              size_t line);
+
+    static CompileError CharNoStartQuote(const std::string& value, size_t line);
+
+    static CompileError CharNoEndQuote(const std::string& value, size_t line);
+
+    static CompileError StringTooSmallForQuotes(const std::string& value,
+                                                size_t line);
+
+    static CompileError StringNoStartQuote(const std::string& value,
+                                           size_t line);
+
+    static CompileError StringNoEndQuote(const std::string& value, size_t line);
+
+    // command
+
+    static CompileError UnknownCommand(const std::string& command, size_t line);
 
     // register
 

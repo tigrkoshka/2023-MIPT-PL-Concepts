@@ -22,14 +22,14 @@ struct InternalError : Error {
    public:
     static InternalError FailedToOpen(const std::string& path);
 
-    static InternalError UnprocessedConstantType(const std::string& type);
+    static InternalError UnprocessedConstantType(detail::specs::consts::Type);
 
     static InternalError CommandNameNotFound(detail::specs::cmd::Code);
 
     static InternalError RegisterNameNotFound(
         detail::specs::cmd::args::Register);
 
-    static InternalError UnknownCommandFormat(detail::specs::cmd::Format);
+    static InternalError UnprocessedCommandFormat(detail::specs::cmd::Format);
 };
 
 struct DisassembleError : Error {

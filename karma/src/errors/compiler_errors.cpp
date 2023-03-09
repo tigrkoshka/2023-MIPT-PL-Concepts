@@ -34,17 +34,19 @@ InternalError InternalError::FormatNotFound(cmd::Code command_code,
     return {ss.str(), line};
 }
 
-InternalError InternalError::UnknownCommandFormat(cmd::Format format,
-                                                  size_t line) {
+InternalError InternalError::UnprocessedCommandFormat(cmd::Format format,
+                                                      size_t line) {
     std::ostringstream ss;
-    ss << "unknown command format " << format;
+    ss << "processing for command format " << cmd::kFormatToString.at(format)
+       << " is not implemented";
     return {ss.str(), line};
 }
 
-InternalError InternalError::UnknownConstantType(consts::Type type,
-                                                 size_t line) {
+InternalError InternalError::UnprocessedConstantType(consts::Type type,
+                                                     size_t line) {
     std::ostringstream ss;
-    ss << "unknown command format " << type;
+    ss << "processing for constant type " << consts::kTypeToName.at(type)
+       << " is not implemented";
     return {ss.str(), line};
 }
 
@@ -55,6 +57,93 @@ InternalError InternalError::EmptyWord(size_t line) {
 ////////////////////////////////////////////////////////////////////////////////
 ///                            Compilation errors                            ///
 ////////////////////////////////////////////////////////////////////////////////
+
+///----------------------------------Labels----------------------------------///
+
+CompileError CompileError::EmptyLabel(size_t line) {
+    return {"label name must not be empty", line};
+}
+
+CompileError CompileError::LabelBeforeEntrypoint(
+    size_t end_line,
+    const std::string& latest_label,
+    size_t latest_label_line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(latest_label) << " is placed before the "
+       << std::quoted(syntax::kEntrypointDirective) << " directive (at line "
+       << end_line << "), but a label can only appear before a command";
+    return {ss.str(), latest_label_line};
+}
+
+CompileError CompileError::ConsecutiveLabels(const std::string& label,
+                                             size_t line,
+                                             const std::string& latest_label,
+                                             size_t latest_label_line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label)
+       << " is not separated from the previous one ("
+       << std::quoted(latest_label) << " in line " << latest_label_line
+       << ") by at least one command";
+    return {ss.str(), line};
+}
+
+CompileError CompileError::LabelRedefinition(const std::string& label,
+                                             size_t line,
+                                             size_t previous_definition_line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label) << " redefinition at line " << line
+       << ": previous definition was at line " << previous_definition_line;
+    return {ss.str(), line};
+}
+
+CompileError CompileError::FileEndsWithLabel(const std::string& label,
+                                             size_t line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label)
+       << " is the last non-comment word in file";
+    return {ss.str(), line};
+}
+
+CompileError CompileError::LabelStartsWithDigit(const std::string& label,
+                                                size_t line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label) << " starts with a digit";
+    return {ss.str(), line};
+}
+
+CompileError CompileError::InvalidLabelCharacter(char invalid,
+                                                 const std::string& label,
+                                                 size_t line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label) << " contains an invalid character: \'"
+       << invalid << "\'";
+    return {ss.str(), line};
+}
+
+CompileError CompileError::UndefinedLabel(const std::string& label,
+                                          size_t line) {
+    std::ostringstream ss;
+    ss << "label " << std::quoted(label) << " is not defined";
+    return {ss.str(), line};
+}
+
+///--------------------------------Entrypoint--------------------------------///
+
+CompileError CompileError::NoEntrypoint() {
+    return CompileError("did not encounter an entrypoint");
+}
+
+CompileError CompileError::SecondEntrypoint(size_t line,
+                                            size_t entrypoint_line) {
+    std::ostringstream ss;
+    ss << "encountered second entrypoint (previous one on line "
+       << entrypoint_line << ")";
+    return {ss.str(), line};
+}
+
+CompileError CompileError::EntrypointWithoutAddress(size_t line) {
+    return {"entrypoint address not specified", line};
+}
 
 ///---------------------------------Constants--------------------------------///
 
@@ -127,93 +216,6 @@ CompileError CompileError::UnknownCommand(const std::string& command,
                                           size_t line) {
     std::ostringstream ss;
     ss << "unknown command " << std::quoted(command);
-    return {ss.str(), line};
-}
-
-///--------------------------------Entrypoint--------------------------------///
-
-CompileError CompileError::NoEntrypoint() {
-    return CompileError("did not encounter an entrypoint");
-}
-
-CompileError CompileError::SecondEntrypoint(size_t line,
-                                            size_t entrypoint_line) {
-    std::ostringstream ss;
-    ss << "encountered second entrypoint (previous one on line "
-       << entrypoint_line << ")";
-    return {ss.str(), line};
-}
-
-CompileError CompileError::EntrypointWithoutAddress(size_t line) {
-    return {"entrypoint address not specified", line};
-}
-
-///----------------------------------Labels----------------------------------///
-
-CompileError CompileError::EmptyLabel(size_t line) {
-    return {"label name must not be empty", line};
-}
-
-CompileError CompileError::LabelBeforeEntrypoint(
-    size_t end_line,
-    const std::string& latest_label,
-    size_t latest_label_line) {
-    std::ostringstream ss;
-    ss << "label " << std::quoted(latest_label) << " is placed before the "
-       << std::quoted(syntax::kEntrypointDirective) << " directive (at line "
-       << end_line << "), but a label can only appear before a command";
-    return {ss.str(), latest_label_line};
-}
-
-CompileError CompileError::ConsecutiveLabels(const std::string& label,
-                                             size_t line,
-                                             const std::string& latest_label,
-                                             size_t latest_label_line) {
-    std::ostringstream ss;
-    ss << "label " << std::quoted(label)
-       << " is not separated from the previous one ("
-       << std::quoted(latest_label) << " in line " << latest_label_line
-       << ") by at least one command";
-    return {ss.str(), line};
-}
-
-CompileError CompileError::LabelRedefinition(const std::string& label,
-                                             size_t line,
-                                             size_t previous_definition_line) {
-    std::ostringstream ss;
-    ss << "label " << std::quoted(label) << " redefinition at line " << line
-       << ": previous definition was at line " << previous_definition_line;
-    return {ss.str(), line};
-}
-
-CompileError CompileError::FileEndsWithLabel(const std::string& label,
-                                             size_t line) {
-    std::ostringstream ss;
-    ss << "label " << std::quoted(label)
-       << " is the last non-comment word in file";
-    return {ss.str(), line};
-}
-
-CompileError CompileError::LabelStartsWithDigit(const std::string& label,
-                                                size_t line) {
-    std::ostringstream ss;
-    ss << "label " << std::quoted(label) << " starts with a digit";
-    return {ss.str(), line};
-}
-
-CompileError CompileError::InvalidLabelCharacter(char invalid,
-                                                 const std::string& label,
-                                                 size_t line) {
-    std::ostringstream ss;
-    ss << "label " << std::quoted(label) << " contains an invalid character: \'"
-       << invalid << "\'";
-    return {ss.str(), line};
-}
-
-CompileError CompileError::UndefinedLabel(const std::string& label,
-                                          size_t line) {
-    std::ostringstream ss;
-    ss << "label " << std::quoted(label) << " is not defined";
     return {ss.str(), line};
 }
 

@@ -6,19 +6,19 @@
 
     \hline
 
-    49 & \St{call} & \Ss{RR} & \RRcmd{call}{r0}{r5}{2} &
+    50 & \St{call} & \Ss{RR} & \RRcmd{call}{r0}{r5}{2} &
     Call the function located \newline
     at the address \St{$\text{r5} + \text{2}$} \\
 
     \hline
 
-    50 & \St{calli} & \Ss{J} & \St{calli\kern 0.5em 21913} &
+    51 & \St{calli} & \Ss{J} & \St{calli\kern 0.5em 21913} &
     Call the function located \newline
     at the address \St{21913} \\
 
     \hline
 
-    51 & \St{ret} & \Ss{J} & \St{ret\kern 0.35em 3} &
+    52 & \St{ret} & \Ss{J} & \St{ret\kern 0.35em 3} &
     Return and clear \St{3} arguments \\
 
 }
@@ -44,7 +44,7 @@ the \St{r15} register and executes the command, whose address is stored there.
 If at any point the \St{r15} register is corrupted and does not store
 a valid memory address
 (i.e.\ if the value stored in the \St{r15} register is greater or equal
-to $2^{20}$), the execution crashes with an unrecoverable error.
+to $2^{20}$), an execution error occurs.
 
 \vspace{-0.35cm}
 

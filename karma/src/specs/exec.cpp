@@ -43,11 +43,8 @@ void Write(const Data& data, const std::string& exec_path) {
     // code size (in bytes)
     write_word(get_segment_size(data.code));
 
-    // const size (in bytes)
+    // constants size (in bytes)
     write_word(get_segment_size(data.constants));
-
-    // data size (in bytes)
-    write_word(get_segment_size(data.data));
 
     // entrypoint address
     write_word(data.entrypoint);
@@ -68,11 +65,6 @@ void Write(const Data& data, const std::string& exec_path) {
 
     // constants
     for (cmd::Bin command : data.constants) {
-        write_word(command);
-    }
-
-    // data
-    for (cmd::Bin command : data.data) {
         write_word(command);
     }
 }
@@ -96,6 +88,12 @@ Data Read(const std::string& exec_path) {
     auto exec_size = static_cast<size_t>(binary.tellg());
     if (exec_size < kHeaderSize) {
         throw ExecFileError::TooSmallForHeader(exec_size);
+    }
+
+    // check that the combined code and constants segments sizes
+    // are not too big to fit into memory
+    if (exec_size - kHeaderSize > arch::kMemorySize) {
+        throw ExecFileError::TooBigForMemory(exec_size - kHeaderSize);
     }
 
     // reset input position indicator
@@ -125,17 +123,13 @@ Data Read(const std::string& exec_path) {
 
     Data data{};
 
-    // read the code, constants and data segments sizes (in bytes)
+    // read the code and constants segments sizes (in bytes)
     size_t code_size   = read_word();
     size_t consts_size = read_word();
-    size_t data_size   = read_word();
 
     // check that the exec file size equals the size specified by the header
-    if (exec_size != kHeaderSize + code_size + consts_size + data_size) {
-        throw ExecFileError::InvalidExecSize(exec_size,
-                                             code_size,
-                                             consts_size,
-                                             data_size);
+    if (exec_size != kHeaderSize + code_size + consts_size) {
+        throw ExecFileError::InvalidExecSize(exec_size, code_size, consts_size);
     }
 
     // read the address of the first instruction
@@ -171,9 +165,6 @@ Data Read(const std::string& exec_path) {
 
     // read constants
     read_segment(consts_size, data.constants);
-
-    // read data
-    read_segment(data_size, data.data);
 
     return data;
 }

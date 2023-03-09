@@ -22,10 +22,10 @@ struct InternalError : Error {
         : Error("internal executor error: " + message) {}
 
    public:
-    static InternalError UnknownCommandFormat(detail::specs::cmd::Format);
+    static InternalError UnprocessedCommandFormat(detail::specs::cmd::Format);
 
-    static InternalError UnknownCommandForFormat(detail::specs::cmd::Format,
-                                                 detail::specs::cmd::Code);
+    static InternalError UnprocessedCommandForFormat(detail::specs::cmd::Format,
+                                                     detail::specs::cmd::Code);
 };
 
 struct ExecutionError : Error {
@@ -34,6 +34,8 @@ struct ExecutionError : Error {
         : Error("execution error" + message) {}
 
    public:
+    static ExecutionError ExecPointerOutOfMemory(detail::specs::arch::Address);
+
     static ExecutionError UnknownCommand(detail::specs::cmd::Code);
 
     static ExecutionError UnknownSyscallCode(detail::specs::cmd::syscall::Code);

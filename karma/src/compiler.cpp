@@ -26,8 +26,6 @@ using errors::compiler::Error;
 using errors::compiler::InternalError;
 using errors::compiler::CompileError;
 
-namespace utils = detail::utils;
-
 namespace syntax = detail::specs::syntax;
 
 namespace cmd  = detail::specs::cmd;
@@ -395,7 +393,7 @@ bool Impl::TryProcessConstant() {
         }
 
         default: {
-            throw InternalError::UnknownConstantType(type, line_number_);
+            throw InternalError::UnprocessedConstantType(type, line_number_);
         }
     }
 
@@ -633,7 +631,7 @@ cmd::Bin Impl::MustParseCommand() {
         }
 
         default: {
-            throw InternalError::UnknownCommandFormat(format, line_number_);
+            throw InternalError::UnprocessedCommandFormat(format, line_number_);
         }
     }
 
@@ -771,7 +769,6 @@ void Impl::CompileImpl(std::istream& code, const std::string& exec_path) {
         .initial_stack = static_cast<arch::Word>(arch::kMemorySize - 1),
         .code          = code_,
         .constants     = constants_,
-        .data          = std::vector<arch::Word>(),
     };
 
     exec::Write(data, exec_path);

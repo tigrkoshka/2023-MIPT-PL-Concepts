@@ -24,10 +24,11 @@ struct ExecFileError : Error {
 
     static ExecFileError TooSmallForHeader(size_t size);
 
+    static ExecFileError TooBigForMemory(size_t size);
+
     static ExecFileError InvalidExecSize(size_t exec_size,
                                          size_t code_size,
-                                         size_t consts_size,
-                                         size_t data_size);
+                                         size_t consts_size);
 
     static ExecFileError NoTrailingZeroInIntro(const std::string& intro);
 
