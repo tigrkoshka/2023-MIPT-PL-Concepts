@@ -111,15 +111,15 @@ class Impl {
     void Compile(const std::string& src, const std::string& dst);
 
    private:
-    size_t line_number_{0};
+    size_t line_number_{1ull};
 
     std::istringstream curr_line_;
     std::string curr_word_;
 
     bool latest_word_was_label_{false};
 
-    detail::specs::arch::Address entrypoint_{0};
-    size_t entrypoint_line_{0};
+    detail::specs::arch::Address entrypoint_{0u};
+    size_t entrypoint_line_{0ull};
     bool seen_entrypoint_{false};
 
     std::vector<detail::specs::arch::Word> code_;

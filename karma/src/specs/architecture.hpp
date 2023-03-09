@@ -43,6 +43,7 @@ enum RegisterEnum : Register {
     R15,
 };
 
+static const Register kCallFrameRegister   = static_cast<Register>(R13);
 static const Register kStackRegister       = static_cast<Register>(R14);
 static const Register kInstructionRegister = static_cast<Register>(R15);
 

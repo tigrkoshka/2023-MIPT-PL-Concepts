@@ -3,12 +3,12 @@
 #include "executor.hpp"
 
 int main() {
-    karma::MustCompile("../docs/samples/01_hello_world.krm");
+    karma::MustCompile("../programs/04_factorial_loop.krm");
 
     karma::Executor executor;
-    executor.MustExecute("../docs/samples/01_hello_world.a");
+    executor.MustExecute("../programs/04_factorial_loop.a");
 
-    karma::MustDisassemble("../docs/samples/01_hello_world.a");
+    karma::MustDisassemble("../programs/04_factorial_loop.a");
 
     return 0;
 }

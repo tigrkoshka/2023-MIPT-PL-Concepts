@@ -1,0 +1,9 @@
+include 01_uint32.krm
+
+include 02_uint64.krm
+
+include 03_double.krm
+
+include 04_char.krm
+
+include 05_string.krm

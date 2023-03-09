@@ -76,7 +76,7 @@ void Executor::Jump(flags::Flag flag, args::Address dst) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-///                             Separate commands                            ///
+///                        Separate reusable commands                        ///
 ////////////////////////////////////////////////////////////////////////////////
 
 void Executor::Divide(arch::TwoWords lhs,
@@ -165,12 +165,40 @@ void Executor::Pop(args::Receiver recv, arch::Word mod) {
 }
 
 arch::Address Executor::Call(args::Address callee) {
+    // remember the return address to return from this function
     arch::Address ret = registers_[arch::kInstructionRegister];
 
+    // push the return address to the stack
     Push(ret);
+
+    // push the stack pointer before the function arguments
+    Push(registers_[arch::kCallFrameRegister]);
+
+    // store the stack pointer value before the function local variables
+    registers_[arch::kCallFrameRegister] = registers_[arch::kStackRegister];
+
+    // next executed instruction is the first one from the callee
     registers_[arch::kInstructionRegister] = callee;
 
     return ret;
+}
+
+void Executor::Return() {
+    // move the stack to before the function local variables
+    registers_[arch::kStackRegister] = registers_[arch::kCallFrameRegister];
+
+    // pop the value of the stack pointer before the function arguments
+    Pop(arch::kCallFrameRegister, 0);
+
+    // pop the return address from the stack
+    Pop(arch::kInstructionRegister, 0);
+
+    // move the stack to before the function arguments
+    registers_[arch::kStackRegister] = registers_[arch::kCallFrameRegister];
+
+    // restore the call frame register to the stack pointer value before
+    // the caller's local variables
+    Pop(arch::kCallFrameRegister, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -558,8 +586,7 @@ bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
         }
 
         case cmd::RET: {
-            Pop(arch::kInstructionRegister, 0);
-            registers_[arch::kStackRegister] += addr;
+            Return();
             break;
         }
 
@@ -613,6 +640,7 @@ bool Executor::ExecuteCommand(cmd::Bin command) {
 void Executor::ExecuteImpl(const std::string& exec_path) {
     exec::Data data = exec::Read(exec_path);
 
+    registers_[arch::kCallFrameRegister]   = data.initial_stack;
     registers_[arch::kInstructionRegister] = data.entrypoint;
     registers_[arch::kStackRegister]       = data.initial_stack;
 
@@ -624,7 +652,7 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
               data.constants.end(),
               memory_.begin() + static_cast<DiffT>(data.code.size()));
 
-    while(true) {
+    while (true) {
         arch::Address curr_address = registers_[arch::kInstructionRegister];
 
         if (curr_address >= memory_.size()) {

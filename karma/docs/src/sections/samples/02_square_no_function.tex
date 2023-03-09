@@ -9,7 +9,6 @@
     \qquad syscall r0 102 & \# print from \St{r0} to \St{stdout} (i.e.\ the lower bits) \\
     \qquad lc r0 10       & \# store the constant 10 (`\textbackslash n') to \St{r0}    \\
     \qquad syscall r0 105 & \# print `\textbackslash n' from \St{r0} to \St{stdout}     \\
-    \qquad lc r0 0        & \# clear \St{r0}                                            \\
     \qquad syscall r0 0   & \# exit the program with code \St{0}                        \\
     end main              & \# start execution from label main                          \\
 

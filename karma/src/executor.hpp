@@ -40,6 +40,7 @@ class Executor {
              detail::specs::arch::Word);
 
     detail::specs::cmd::args::Address Call(detail::specs::cmd::args::Address);
+    void Return();
 
     bool ExecuteRMCommand(detail::specs::cmd::Code,
                           detail::specs::cmd::args::Register,

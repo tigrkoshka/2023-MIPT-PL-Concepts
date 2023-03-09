@@ -10,14 +10,12 @@
     main:                       &                                                                             \\
     \qquad la r0 hello\_world   & \# load the address of the string to \St{r0}                                \\
     \qquad loop:                & \# a while loop                                                             \\
-    \qquad\qquad loadr r1 r0 0  & \# load the current character of the string into \St{r1}                    \\
     \qquad\qquad cmpi r1 0      & \# check if the current character is `\textbackslash 0'                     \\
     \qquad\qquad jeq out        & \# if we have encountered the `\textbackslash 0' character, break the cycle \\
-    \qquad\qquad syscall r1 105 & \# print the current character from \St{r1} to stdout                       \\
+    \qquad\qquad syscall r1 105 & \# print the current character from \St{r0} to stdout                       \\
     \qquad\qquad addi r0 1      & \# proceed to the next character                                            \\
     \qquad\qquad jmp loop       & \# continue the loop                                                        \\
     \qquad out:                 & \# out of the while loop                                                    \\
-    \qquad\qquad lc r0 0        & \# clear \St{r0}                                                            \\
     \qquad\qquad syscall r0 0   & \# exit the program with code \St{0}                                        \\
     end main                    & \# start execution from label main                                          \\
 

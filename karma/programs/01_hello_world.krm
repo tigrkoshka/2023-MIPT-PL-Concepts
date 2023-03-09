@@ -3,10 +3,9 @@ hello_world: string "Hello, world!\n"
 main:
     la r0 hello_world     # load the address of the string to r0
     loop:                 # a while loop
-        loadr r1 r0 0     # load the current character of the string
-        cmpi r1 0         # check if the current character is ‘\0’
+        cmpi r0 0         # check if the current character is ‘\0’
         jeq out           # if we have encountered the ‘\0’ character, break the cycle
-        syscall r1 105    # print the current character from r1 to stdout
+        syscall r0 105    # print the current character from r0 to stdout
         addi r0 1         # proceed to the next character
         jmp loop          # continue the loop
     out:                  # out of the while loop

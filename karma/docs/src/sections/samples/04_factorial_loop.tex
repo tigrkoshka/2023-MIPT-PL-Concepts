@@ -3,7 +3,7 @@
 \asmsample{
 
     fact:                    & \# a non-recursive function calculating the factorial of its argument \\
-    \qquad loadr r0 r14 2    & \# load the first (and only) argument to \St{r0}                      \\
+    \qquad loadr r0 r14 3    & \# load the first (and only) argument to \St{r0}                      \\
     \qquad mov r2 r0 0       & \# copy the argument to r2                                            \\
     \qquad lc r0 1           & \# initialise the result with \St{1}                                  \\
 
@@ -15,18 +15,19 @@
     \qquad\qquad jmp loop    & \# continue the loop                                                  \\
 
     \qquad out:              & \# out of the while loop                                              \\
-    \qquad\qquad ret 1       & \# return from function and remove the argument from the stack        \\
+    \qquad\qquad ret 0       & \# return from function and remove the argument from the stack        \\
 
     &                                                                                                \\
 
     main:                    &                                                                       \\
     \qquad syscall r0 100    & \# read an integer from \St{stdin} to \St{r0}                         \\
+    \qquad push r13 0        & \# push the stack pointer value before the caller's local variables   \\
+    \qquad mov r13 r14 0     & \# remember the stack pointer value before the function arguments     \\
     \qquad push r0 0         & \# put \St{r0+0} to the stack as the \St{fact} argument               \\
     \qquad calli fact        & \# call \St{fact}, the function will put the result to \St{r0}        \\
     \qquad syscall r0 102    & \# print \St{r0} to \St{stdout}                                       \\
     \qquad lc r0 10          & \# store the constant \St{10} (`\textbackslash n') to \St{r0}         \\
     \qquad syscall r0 105    & \# print `\textbackslash n' from \St{r0} to \St{stdout}               \\
-    \qquad lc r0 0           & \# clear \St{r0}                                                      \\
     \qquad syscall r0 0      & \# exit the program with code \St{0}                                  \\
     end main                 & \# start execution from label main                                    \\
 

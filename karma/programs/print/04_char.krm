@@ -1,0 +1,10 @@
+# accepts a single argument: the character to be printed
+print_char:
+    # load the character to be printed to r0
+    loadr r0 r14 3
+
+    # print the character
+    syscall r0 105
+
+    # return
+    ret 0
