@@ -1,37 +1,37 @@
-#include "disassembler.hpp"
+#include "impl.hpp"
 
 #include <exception>    // for exception
 #include <filesystem>   // for path
 #include <fstream>      // for ofstream
-#include <iostream>     // for ostream, cout
+#include <iostream>     // for cout
 #include <sstream>      // for ostringstream
-#include <string>       // for string, to_string
+#include <string>       // for string
 #include <type_traits>  // for make_signed_t
 
-#include "errors/disassembler_errors.hpp"
-#include "specs/architecture.hpp"
-#include "specs/commands.hpp"
-#include "specs/constants.hpp"
-#include "specs/exec.hpp"
-#include "utils/strings.hpp"
-#include "utils/types.hpp"
+#include "../exec/exec.hpp"
+#include "../specs/architecture.hpp"
+#include "../specs/commands.hpp"
+#include "../specs/constants.hpp"
+#include "../utils/strings.hpp"
+#include "../utils/types.hpp"
+#include "errors.hpp"
 
-namespace karma {
+namespace karma::disassembler::detail {
 
 using errors::disassembler::Error;
 using errors::disassembler::InternalError;
 using errors::disassembler::DisassembleError;
 
-namespace arch = detail::specs::arch;
+namespace utils = karma::detail::utils;
 
-namespace cmd  = detail::specs::cmd;
+namespace arch = karma::detail::specs::arch;
+
+namespace cmd  = karma::detail::specs::cmd;
 namespace args = cmd::args;
 
-namespace consts = detail::specs::consts;
+namespace consts = karma::detail::specs::consts;
 
-namespace exec = detail::specs::exec;
-
-namespace detail::disassembler {
+namespace exec = karma::detail::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                      Disassembling a constant value                      ///
@@ -372,26 +372,4 @@ void Impl::Disassemble(const std::string& exec_path, const std::string& dst) {
     }
 }
 
-}  // namespace detail::disassembler
-
-////////////////////////////////////////////////////////////////////////////////
-///                             Exported wrappers                            ///
-////////////////////////////////////////////////////////////////////////////////
-
-void MustDisassemble(const std::string& exec_path, std::ostream& out) {
-    detail::disassembler::Impl::MustDisassemble(exec_path, out);
-}
-
-void Disassemble(const std::string& exec_path, std::ostream& out) {
-    detail::disassembler::Impl::Disassemble(exec_path, out);
-}
-
-void MustDisassemble(const std::string& exec_path, const std::string& dst) {
-    detail::disassembler::Impl::MustDisassemble(exec_path, dst);
-}
-
-void Disassemble(const std::string& exec_path, const std::string& dst) {
-    detail::disassembler::Impl::Disassemble(exec_path, dst);
-}
-
-}  // namespace karma
+}  // namespace karma::disassembler::detail

@@ -1,4 +1,4 @@
-#include "disassembler_errors.hpp"
+#include "errors.hpp"
 
 #include <iomanip>  // for quoted
 #include <sstream>  // for ostringstream

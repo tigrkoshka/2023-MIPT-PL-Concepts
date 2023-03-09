@@ -6,7 +6,7 @@
 
 #include "../specs/commands.hpp"
 #include "../specs/constants.hpp"
-#include "error.hpp"
+#include "../utils/error.hpp"
 
 namespace karma::errors::compiler {
 

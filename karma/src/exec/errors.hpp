@@ -4,7 +4,7 @@
 #include <string>   // for string
 
 #include "../specs/architecture.hpp"
-#include "error.hpp"
+#include "../utils/error.hpp"
 
 namespace karma::errors::exec {
 

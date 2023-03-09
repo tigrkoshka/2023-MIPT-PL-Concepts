@@ -1,4 +1,4 @@
-#include "compiler_errors.hpp"
+#include "errors.hpp"
 
 #include <cstddef>  // for size_t
 #include <iomanip>  // for quoted

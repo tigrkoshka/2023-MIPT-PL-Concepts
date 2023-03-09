@@ -1,4 +1,4 @@
-#include "compiler.hpp"
+#include "impl.hpp"
 
 #include <algorithm>    // for min
 #include <cstddef>      // for size_t
@@ -11,123 +11,34 @@
 #include <type_traits>  // for make_unsigned_t
 #include <utility>      // for move
 
-#include "errors/compiler_errors.hpp"
-#include "specs/architecture.hpp"
-#include "specs/commands.hpp"
-#include "specs/constants.hpp"
-#include "specs/exec.hpp"
-#include "specs/syntax.hpp"
-#include "utils/strings.hpp"
-#include "utils/types.hpp"
+#include "../exec/exec.hpp"
+#include "../specs/architecture.hpp"
+#include "../specs/commands.hpp"
+#include "../specs/constants.hpp"
+#include "../specs/exec.hpp"
+#include "../specs/syntax.hpp"
+#include "../utils/strings.hpp"
+#include "../utils/types.hpp"
+#include "errors.hpp"
 
-namespace karma {
+namespace karma::compiler::detail {
 
 using errors::compiler::Error;
 using errors::compiler::InternalError;
 using errors::compiler::CompileError;
 
-namespace syntax = detail::specs::syntax;
+namespace utils = karma::detail::utils;
 
-namespace cmd  = detail::specs::cmd;
+namespace syntax = karma::detail::specs::syntax;
+
+namespace cmd  = karma::detail::specs::cmd;
 namespace args = cmd::args;
 
-namespace consts = detail::specs::consts;
+namespace consts = karma::detail::specs::consts;
 
-namespace arch = detail::specs::arch;
+namespace arch = karma::detail::specs::arch;
 
-namespace exec = detail::specs::exec;
-
-namespace detail::compiler {
-
-////////////////////////////////////////////////////////////////////////////////
-///                                  Labels                                  ///
-////////////////////////////////////////////////////////////////////////////////
-
-void Impl::Labels::CheckLabel(const std::string& label, size_t line) {
-    if (label.empty()) {
-        throw CompileError::EmptyLabel(line);
-    }
-
-    if (std::isdigit(label[0]) != 0) {
-        throw CompileError::LabelStartsWithDigit(label, line);
-    }
-
-    for (char symbol : label) {
-        if (!syntax::IsAllowedLabelChar(symbol)) {
-            throw CompileError::InvalidLabelCharacter(symbol, label, line);
-        }
-    }
-}
-
-void Impl::Labels::SetCodeSize(size_t code_size) {
-    code_size_ = code_size;
-}
-
-const std::string& Impl::Labels::GetLatest() const {
-    return latest_label_;
-}
-
-size_t Impl::Labels::GetLatestLine() const {
-    return latest_label_line_;
-}
-
-std::optional<size_t> Impl::Labels::TryGetDefinition(
-    const std::string& label) const {
-    if (commands_labels_.contains(label)) {
-        return commands_labels_.at(label).first;
-    }
-
-    if (constants_labels_.contains(label)) {
-        return code_size_ + constants_labels_.at(label).first;
-    }
-
-    return std::nullopt;
-}
-
-std::optional<size_t> Impl::Labels::TryGetDefinitionLine(
-    const std::string& label) const {
-    if (commands_labels_.contains(label)) {
-        return commands_labels_.at(label).second;
-    }
-
-    if (constants_labels_.contains(label)) {
-        return constants_labels_.at(label).second;
-    }
-
-    return std::nullopt;
-}
-
-void Impl::Labels::RecordLabelOccurrence(const std::string& label,
-                                         size_t line) {
-    latest_label_line_ = line;
-    latest_label_      = label;
-}
-
-void Impl::Labels::RecordCommandLabel(size_t definition) {
-    commands_labels_[latest_label_] = {definition, latest_label_line_};
-}
-
-void Impl::Labels::RecordConstantLabel(size_t definition) {
-    constants_labels_[latest_label_] = {definition, latest_label_line_};
-}
-
-void Impl::Labels::RecordEntrypointLabel(const std::string& label) {
-    entrypoint_label_ = label;
-}
-
-const std::optional<std::string>& Impl::Labels::TryGetEntrypointLabel() {
-    return entrypoint_label_;
-}
-
-void Impl::Labels::RecordUsage(const std::string& label,
-                               size_t line_number,
-                               size_t command_number) {
-    usages_[label].emplace_back(line_number, command_number);
-}
-
-const Impl::Labels::AllUsages& Impl::Labels::GetUsages() {
-    return usages_;
-}
+namespace exec = karma::detail::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Utils                                  ///
@@ -714,7 +625,7 @@ void Impl::FillLabels() {
 ///                                Prepare data                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-size_t Impl::FindCommentStart(const std::string& line) const {
+size_t Impl::FindCommentStart(const std::string& line) {
     size_t curr_start_pos = 0;
 
     while (true) {
@@ -783,7 +694,7 @@ void Impl::Compile(std::istream& code, const std::string& exec_path) {
         CompileImpl(code, exec_path);
     } catch (const Error& e) {
         std::cout << e.what() << std::endl;
-    } catch (const errors::Error& e) {
+    } catch (const karma::errors::Error& e) {
         std::cout << e.what() << std::endl;
     } catch (const std::exception& e) {
         std::cout << "compiler: unexpected exception: " << e.what()
@@ -808,7 +719,8 @@ void Impl::CompileImpl(const std::string& src, const std::string& dst) {
         std::filesystem::path src_path(src);
 
         std::filesystem::path dst_path = src_path.parent_path();
-        dst_path /= src_path.stem().replace_extension(exec::kDefaultExtension);
+        dst_path /= src_path.stem().replace_extension(
+            karma::detail::specs::exec::kDefaultExtension);
 
         real_dst = dst_path.string();
     }
@@ -835,30 +747,4 @@ void Impl::Compile(const std::string& src, const std::string& dst) {
     }
 }
 
-}  // namespace detail::compiler
-
-////////////////////////////////////////////////////////////////////////////////
-///                             Exported wrappers                            ///
-////////////////////////////////////////////////////////////////////////////////
-
-void MustCompile(std::istream& code, const std::string& exec_path) {
-    detail::compiler::Impl impl;
-    impl.MustCompile(code, exec_path);
-}
-
-void Compile(std::istream& code, const std::string& exec_path) {
-    detail::compiler::Impl impl;
-    impl.Compile(code, exec_path);
-}
-
-void MustCompile(const std::string& src, const std::string& dst) {
-    detail::compiler::Impl impl;
-    impl.MustCompile(src, dst);
-}
-
-void Compile(const std::string& src, const std::string& dst) {
-    detail::compiler::Impl impl;
-    impl.Compile(src, dst);
-}
-
-}  // namespace karma
+}  // namespace karma::compiler::detail

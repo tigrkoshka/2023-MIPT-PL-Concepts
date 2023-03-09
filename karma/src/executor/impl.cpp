@@ -1,4 +1,4 @@
-#include "executor.hpp"
+#include "impl.hpp"
 
 #include <algorithm>    // for copy
 #include <cmath>        // for floor
@@ -9,52 +9,52 @@
 #include <sstream>      // for ostringstream
 #include <type_traits>  // for make_signed_t
 
-#include "errors/executor_errors.hpp"
-#include "specs/architecture.hpp"
-#include "specs/exec.hpp"
-#include "specs/flags.hpp"
-#include "utils/types.hpp"
+#include "../exec/exec.hpp"
+#include "../specs/architecture.hpp"
+#include "../specs/flags.hpp"
+#include "../utils/types.hpp"
+#include "errors.hpp"
 
-namespace karma {
+namespace karma::executor::detail {
 
 using errors::executor::Error;
 using errors::executor::InternalError;
 using errors::executor::ExecutionError;
 
-namespace utils = detail::utils;
+namespace utils = karma::detail::utils;
 
-namespace flags = detail::specs::flags;
-namespace arch  = detail::specs::arch;
+namespace flags = karma::detail::specs::flags;
+namespace arch  = karma::detail::specs::arch;
 
-namespace cmd     = detail::specs::cmd;
+namespace cmd     = karma::detail::specs::cmd;
 namespace args    = cmd::args;
 namespace syscall = cmd::syscall;
 
-namespace exec = detail::specs::exec;
+namespace exec = karma::detail::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Utils                                  ///
 ////////////////////////////////////////////////////////////////////////////////
 
-arch::TwoWords Executor::GetTwoRegisters(args::Source lower) const {
+arch::TwoWords Impl::GetTwoRegisters(args::Source lower) const {
     return utils::types::Join(registers_[lower], registers_[lower + 1]);
 }
 
-void Executor::PutTwoRegisters(arch::TwoWords value, args::Receiver lower) {
+void Impl::PutTwoRegisters(arch::TwoWords value, args::Receiver lower) {
     auto [low, high] = utils::types::Split(value);
 
     registers_[lower]     = low;
     registers_[lower + 1] = high;
 }
 
-void Executor::CheckBitwiseRHS(arch::Word rhs, cmd::Code code) {
+void Impl::CheckBitwiseRHS(arch::Word rhs, cmd::Code code) {
     if (rhs >= sizeof(arch::Word) * utils::types::kByteSize) {
         throw ExecutionError::BitwiseRHSTooBig(rhs, code);
     }
 }
 
 template <std::totally_ordered T>
-void Executor::WriteComparisonToFlags(T lhs, T rhs) {
+void Impl::WriteComparisonToFlags(T lhs, T rhs) {
     auto cmp_res = lhs <=> rhs;
 
     if (cmp_res == 0) {
@@ -69,7 +69,7 @@ void Executor::WriteComparisonToFlags(T lhs, T rhs) {
     }
 }
 
-void Executor::Jump(flags::Flag flag, args::Address dst) {
+void Impl::Jump(flags::Flag flag, args::Address dst) {
     if ((flags_ & flag) != 0) {
         registers_[arch::kInstructionRegister] = dst;
     }
@@ -79,9 +79,7 @@ void Executor::Jump(flags::Flag flag, args::Address dst) {
 ///                        Separate reusable commands                        ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Executor::Divide(arch::TwoWords lhs,
-                      arch::TwoWords rhs,
-                      args::Receiver recv) {
+void Impl::Divide(arch::TwoWords lhs, arch::TwoWords rhs, args::Receiver recv) {
     if (rhs == 0) {
         throw ExecutionError::DivisionByZero(lhs, rhs);
     }
@@ -98,7 +96,7 @@ void Executor::Divide(arch::TwoWords lhs,
     registers_[recv + 1] = static_cast<arch::Word>(remainder);
 }
 
-bool Executor::Syscall(args::Register reg, syscall::Code code) {
+bool Impl::Syscall(args::Register reg, syscall::Code code) {
     switch (code) {
         case syscall::EXIT: {
             return false;
@@ -156,15 +154,15 @@ bool Executor::Syscall(args::Register reg, syscall::Code code) {
     return true;
 }
 
-void Executor::Push(arch::Word value) {
+void Impl::Push(arch::Word value) {
     memory_[registers_[arch::kStackRegister]--] = value;
 }
 
-void Executor::Pop(args::Receiver recv, arch::Word mod) {
+void Impl::Pop(args::Receiver recv, arch::Word mod) {
     registers_[recv] = memory_[++registers_[arch::kStackRegister]] + mod;
 }
 
-arch::Address Executor::Call(args::Address callee) {
+arch::Address Impl::Call(args::Address callee) {
     // remember the return address to return from this function
     arch::Address ret = registers_[arch::kInstructionRegister];
 
@@ -183,7 +181,7 @@ arch::Address Executor::Call(args::Address callee) {
     return ret;
 }
 
-void Executor::Return() {
+void Impl::Return() {
     // move the stack to before the function local variables
     registers_[arch::kStackRegister] = registers_[arch::kCallFrameRegister];
 
@@ -205,9 +203,9 @@ void Executor::Return() {
 ///                              Execute command                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-bool Executor::ExecuteRMCommand(cmd::Code code,
-                                args::Register reg,
-                                args::Address addr) {
+bool Impl::ExecuteRMCommand(cmd::Code code,
+                            args::Register reg,
+                            args::Address addr) {
     switch (code) {
         case cmd::LA: {
             registers_[reg] = addr;
@@ -244,10 +242,10 @@ bool Executor::ExecuteRMCommand(cmd::Code code,
     return true;
 }
 
-bool Executor::ExecuteRRCommand(cmd::Code code,
-                                args::Receiver recv,
-                                args::Source src,
-                                args::Modifier mod) {
+bool Impl::ExecuteRRCommand(cmd::Code code,
+                            args::Receiver recv,
+                            args::Source src,
+                            args::Modifier mod) {
     auto lhs_word = [this, recv]() -> arch::Word {
         return registers_[recv];
     };
@@ -424,9 +422,9 @@ bool Executor::ExecuteRRCommand(cmd::Code code,
     return true;
 }
 
-bool Executor::ExecuteRICommand(cmd::Code code,
-                                args::Register reg,
-                                args::Immediate imm) {
+bool Impl::ExecuteRICommand(cmd::Code code,
+                            args::Register reg,
+                            args::Immediate imm) {
     auto imm_word = [imm]() -> arch::Word {
         return static_cast<arch::Word>(imm);
     };
@@ -543,7 +541,7 @@ bool Executor::ExecuteRICommand(cmd::Code code,
     return true;
 }
 
-bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
+bool Impl::ExecuteJCommand(cmd::Code code, args::Address addr) {
     switch (code) {
         case cmd::JMP: {
             registers_[arch::kInstructionRegister] = addr;
@@ -598,7 +596,7 @@ bool Executor::ExecuteJCommand(cmd::Code code, args::Address addr) {
     return true;
 }
 
-bool Executor::ExecuteCommand(cmd::Bin command) {
+bool Impl::ExecuteCommand(cmd::Bin command) {
     registers_[arch::kInstructionRegister]++;
 
     auto code = cmd::GetCode(command);
@@ -637,7 +635,7 @@ bool Executor::ExecuteCommand(cmd::Bin command) {
 ///                              Execute binary                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Executor::ExecuteImpl(const std::string& exec_path) {
+void Impl::ExecuteImpl(const std::string& exec_path) {
     exec::Data data = exec::Read(exec_path);
 
     registers_[arch::kCallFrameRegister]   = data.initial_stack;
@@ -667,11 +665,11 @@ void Executor::ExecuteImpl(const std::string& exec_path) {
     }
 }
 
-void Executor::MustExecute(const std::string& exec_path) {
+void Impl::MustExecute(const std::string& exec_path) {
     ExecuteImpl(exec_path);
 }
 
-void Executor::Execute(const std::string& exec_path) {
+void Impl::Execute(const std::string& exec_path) {
     try {
         ExecuteImpl(exec_path);
     } catch (const Error& e) {
@@ -686,4 +684,4 @@ void Executor::Execute(const std::string& exec_path) {
     }
 }
 
-}  // namespace karma
+}  // namespace karma::executor::detail

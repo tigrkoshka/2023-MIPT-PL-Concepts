@@ -1,19 +1,18 @@
 #pragma once
 
+#include <cstddef>  // for size_t
 #include <ostream>  // for ostream
 #include <string>   // for string
 #include <vector>   // for vector
 
-#include "specs/architecture.hpp"
-#include "specs/commands.hpp"
+#include "../specs/architecture.hpp"
+#include "../specs/commands.hpp"
 
-namespace karma {
-
-namespace detail::disassembler {
+namespace karma::disassembler::detail {
 
 class Impl {
    private:
-    using Segment = std::vector<detail::specs::arch::Word>;
+    using Segment = std::vector<karma::detail::specs::arch::Word>;
 
    private:
     static std::string GetUint32Value(const Segment& constants, size_t& pos);
@@ -25,9 +24,9 @@ class Impl {
     static void DisassembleConstants(const Segment& constants,
                                      std::ostream& out);
 
-    static std::string GetRegister(detail::specs::cmd::args::Register);
+    static std::string GetRegister(karma::detail::specs::cmd::args::Register);
 
-    static std::string GetCommandString(detail::specs::cmd::Bin);
+    static std::string GetCommandString(karma::detail::specs::cmd::Bin);
 
     static void DisassembleCode(const Segment& code,
                                 size_t entrypoint,
@@ -52,14 +51,4 @@ class Impl {
                             const std::string& dst);
 };
 
-}  // namespace detail::disassembler
-
-void MustDisassemble(const std::string& exec_path, std::ostream& out);
-
-void Disassemble(const std::string& exec_path, std::ostream& out);
-
-void MustDisassemble(const std::string& exec_path, const std::string& dst = "");
-
-void Disassemble(const std::string& exec_path, const std::string& dst = "");
-
-}  // namespace karma
+}  // namespace karma::disassembler::detail

@@ -1,6 +1,9 @@
-add_subdirectory(errors)
 add_subdirectory(specs)
 add_subdirectory(utils)
+add_subdirectory(exec)
+add_subdirectory(compiler)
+add_subdirectory(executor)
+add_subdirectory(disassembler)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -16,12 +19,7 @@ ${CMAKE_CXX_FLAGS} \
 
 add_library(
         karma STATIC
-        ${errors_srcs}
-        ${specs_srcs}
-        ${utils_srcs}
-        compiler.cpp
-        executor.cpp
-        disassembler.cpp
+        karma.cpp
 )
 
-target_link_libraries(karma errors specs utils)
+target_link_libraries(karma compiler executor disassembler exec specs utils)
