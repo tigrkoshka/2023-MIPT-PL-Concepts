@@ -1,0 +1,52 @@
+\subsubsection{Function call commands}
+
+\cmdtable{Function call comands}{
+
+    \hline
+
+    50 & \St{call} & \Ss{RR} & \RRcmd{call}{r0}{r5}{2} &
+    Call the function located \newline
+    at the address \St{$\text{r5} + \text{2}$} \\
+
+    \hline
+
+    51 & \St{calli} & \Ss{J} & \St{calli\kern 0.5em 21913} &
+    Call the function located \newline
+    at the address \St{21913} \\
+
+    \hline
+
+    52 & \St{ret} & \Ss{J} & \St{ret\kern 0.35em 0} &
+    Return from the callee \\
+
+}
+
+\paragraph{\St{call}, \St{calli}}\
+
+These commands perform the transfer of control from the caller to the callee
+by executing the function call prologue and storing the address
+of the next instruction to be executed (i.e.\ the first instruction of the callee)
+to \St{r15}.
+The \St{call} command additionally stores a copy of the return address
+into the provided receiver register.
+
+For the \St{call} command the address of the next instruction to be executed
+is obtained from the specified operands in the
+\hyperlink{types:twos_complement}{common manner}.
+If this value does not represent a valid address,
+i.e.\ is greater or equal to $2^{20}$, an execution error occurs.
+
+For the \St{calli} command the address of the next instruction to be executed
+is specified by the 20-bit \textit{unsigned} memory address operand.
+Since any 20-bit unsigned value represents a valid memory address, no execution
+error can occur in this case.
+
+
+\vspace{-0.35cm}
+
+\paragraph{\St{ret}}\
+
+This command performs the transfer of control from the callee back to the caller
+by executing the function call epilogue, after which the \St{r15} register
+contains the return address (see \hyperlink{functions:return}{above} for details).
+The memory address operand is ignored.

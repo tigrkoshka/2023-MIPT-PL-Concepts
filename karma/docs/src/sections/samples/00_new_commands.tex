@@ -1,0 +1,20 @@
+\newcommand{\asmsample}[1]{
+        {
+        \renewcommand{\baselinestretch}{0.5}
+        \renewcommand{\arraystretch}{2}
+
+        \selectfont
+
+        \begin{table*}[h!]
+            \begin{tabular}{
+                    >{\fontfamily{qcr}\selectfont} m{6cm}
+                    >{}                          m{11cm}
+            }
+
+                #1
+
+            \end{tabular}
+        \end{table*}
+    }
+
+}

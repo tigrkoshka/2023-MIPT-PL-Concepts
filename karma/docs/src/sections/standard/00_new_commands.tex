@@ -1,0 +1,90 @@
+\newcommand{\cmdtable}[2]{
+        {
+        \vspace{-0.7cm}
+        \renewcommand{\arraystretch}{1.4}
+        \begin{table}[h!]
+            \centering
+            \caption{#1}
+            \vspace{2mm}
+            \centering
+            \begin{tabular}{|
+                    >{\centering\arraybackslash} m{1.0cm} |
+                    >{\centering\arraybackslash} m{1.8cm} |
+                    >{\centering\arraybackslash} m{1.3cm} |
+                    >{}                          m{3.8cm} |
+                    >{}                          m{4.8cm} |
+            }
+
+                \hline
+
+                Code & Name & Format & Syntax sample & Description \\
+
+                \hline
+
+                #2
+
+                \hline
+
+            \end{tabular}
+        \end{table}
+    }
+    \vspace{-0.5cm}
+}
+
+\newcommand{\cmdcellalign}[1]{
+    \vspace{-0.3cm}
+    \St{
+        \setlength{\mathindent}{0pt}
+        \setlength{\abovedisplayskip}{0pt}
+        \setlength{\belowdisplayskip}{0pt}
+        \setlength{\abovedisplayshortskip}{0pt}
+        \setlength{\belowdisplayshortskip}{0pt}
+        \[
+            \begin{aligned}
+                #1
+            \end{aligned}
+        \]
+    }
+    \vspace{-0.1cm}
+}
+
+\newcommand{\RMcmd}[3]{
+    \St{
+        \makebox[1.40cm][l]{#1}
+        \makebox[0.45cm][l]{#2}
+        \makebox[0.45cm][l]{#3}
+    }
+}
+
+\newcommand{\RRcmd}[4]{
+    \St{
+        \makebox[0.85cm][l]{#1}
+        \makebox[0.45cm][l]{#2}
+        \makebox[0.45cm][l]{#3}
+        \makebox[0.20cm][l]{#4}
+    }
+}
+
+\newcommand{\LongRRcmd}[4]{
+    \St{
+        \makebox[1.40cm][l]{#1}
+        \makebox[0.45cm][l]{#2}
+        \makebox[0.45cm][l]{#3}
+        \makebox[0.20cm][l]{#4}
+    }
+}
+
+\newcommand{\RIcmd}[3]{
+    \St{
+        \makebox[0.85cm][l]{#1}
+        \makebox[0.45cm][l]{#2}
+        \makebox[0.45cm][l]{#3}
+    }
+}
+
+\newcommand{\Jcmd}[2]{
+    \St{
+        \makebox[0.85cm][l]{#1}
+        \makebox[0.45cm][l]{#2}
+    }
+}

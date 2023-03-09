@@ -1,0 +1,89 @@
+\subsubsection{Introduction: calling conventions}
+
+This section defines the rules by which the execution of one part of the code
+(\textit{caller}) can be delayed until another part (\textit{callee})
+is executed.
+The callee is often also referred to as a \textit{subprogram} or
+a \textit{function}, and the delay process is called a \textit{function call}.
+The process of passing the execution from the callee back to the caller
+is often referred to as the \textit{return from the function}.
+
+For the functions to be meaningful they need to accept \textit{arguments},
+i.e.\ values passed from the caller to the callee for the latter to perform
+computations dependant on these values.
+The arguments of a function are often
+also referred to as \textit{parameters}.
+
+The functions often need to calculate some values for the caller to use later.
+In such cases these values are called the \textit{return parameters}
+of the function and need to be somehow passed to the caller.
+
+The function call procedure inevitably leads to a number of questions that
+need to be resolved, such as:
+
+\begin{itemize}
+    \item Where the arguments are placed? \\
+    Options include in the registers, on the stack, a mix of both,
+    or in another memory structures
+
+    \item In what order are the arguments passed? \\
+    Options include first-to-last, last-to-first, or something more complex
+
+    \item Whether and how metadata describing the arguments is passed? \\
+    The metadata may include the number of arguments, the description
+    of their position, or some other technical information.
+
+    \item How the functions that take a variable number of arguments
+    (\textit{variadic functions}) are handled? \\
+    Options include passing the number of arguments as one an argument
+    itself placed in an obvious position, placing the variable arguments
+    in an array in the memory and passing the pointer to it, or keeping
+    track of the number of arguments in a separate register
+
+    \item How return parameters are delivered from the callee to the caller? \\
+    Options include in the registers, on the stack, a mix of both,
+    or in another memory structures
+
+    \item How the task of setting up for and cleaning up after
+    a function call is divided between the caller and the callee? \\
+    This question refers to the arguments passed to the caller,
+    the caller's \textit{local variables}, i.e.\ the values it places
+    in the registers, on the stack and in the memory, and the additional
+    values (if any) used internally for the function call itself.
+
+    \item Which registers are guaranteed to have the same value
+    when the callee returns as they did when the callee was called? \\
+    Such registers (if any) are called \textit{saved} or \textit{preserved}
+    as opposed to the \textit{volatile} registers, which are the rest of them.
+    These registers usually have a utility purpose helping to resolve the other
+    questions
+\end{itemize}
+
+The set of answers to these questions together with the description
+of the function call procedure is called the \textit{calling convention}.
+There are a number of viable and widely used calling conventions.
+Each of them has its advantages and drawbacks, and the choice of the one most
+suitable for a specific case is often based on the computer architecture
+and the presumed programming process: whether the programs are written
+in the assembler language or some higher level languages to be later
+compiled into the assembler or the byte code.
+
+Note that a calling convention is exactly that -- a convention.
+Nothing on the architecture or the syntax level prevents one from not following
+it during their code development.
+However, that is considered a bad practice as it can lead to confusion and
+unexpected results for the code user.
+
+Almost all calling conventions use the term \textit{stack frame}, which
+is a part of the stack related to a specific function.
+The function's stack frame usually includes its arguments, the address
+of the caller instruction to be executed first after the return from
+the callee (the \textit{return address)} and the function's local variables.
+It may or may not include additional utility purpose values.
+
+There are two more terms used when describing a calling convention:
+the \textit{prologue} and the \textit{epilogue} of a function call. \\
+The prologue is a set of internal technical instructions performed
+when calling a subprogram before the subprogram execution. \\
+The epilogue is a set of such instructions performed
+when returning from a function before continuing the caller execution.

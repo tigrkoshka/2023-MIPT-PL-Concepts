@@ -1,0 +1,63 @@
+\hypertarget{functions:call}{
+    \subsubsection{Function call procedure}
+}
+
+\vspace{-0.2cm}
+
+Before calling any function, the assembler code must \textit{explicitly}
+do the following;
+
+\begin{itemize}
+    \item Push the current value of the \St{r13} register
+    (i.e.\ the stack pointer before the caller's local variables)
+    to the stack \\
+    \St{
+        \makebox[0.85cm][l]{push}
+        \makebox[0.6cm][l]{r13}
+        \makebox[0.45cm][l]{0}
+    }
+
+    \item Set the \St{r13} register to the current stack pointer value
+    (i.e.\ the value before the function arguments)\\
+    \St{
+        \makebox[0.60cm][l]{mov}
+        \makebox[0.60cm][l]{r13}
+        \makebox[0.60cm][l]{r14}
+        \makebox[0.20cm][l]{0}
+    }
+
+    \item Push the arguments for the function to be called to the stack
+    last-to-first as described \hyperlink{karma:call:basic}{above}
+
+\end{itemize}
+
+The prologue of a function call does the following
+
+\begin{itemize}
+    \item Pushes the return address (i.e.\ the address of the next
+    caller instruction, which is stored in the \St{r15} register)
+    to the stack \\
+    As if with a \hspace{-0.1cm}\St{
+        \makebox[0.85cm][l]{push}
+        \makebox[0.60cm][l]{r15}
+        \makebox[0.45cm][l]{0}
+    }
+
+    \item Pushes the current value of the \St{r13} register (i.e.\ the value
+    explicitly stored by the assembler code, which is the stack pointer value
+    before the subprogram arguments) to the stack \\
+    As if with a \hspace{-0.1cm}\St{
+        \makebox[0.85cm][l]{push}
+        \makebox[0.60cm][l]{r13}
+        \makebox[0.45cm][l]{0}
+    }
+
+    \item Sets the \St{r13} register to the current stack pointer value
+    (i.e.\ the value before the function local variables) \\
+    As if with a \hspace{-0.1cm}\St{
+        \makebox[0.60cm][l]{mov}
+        \makebox[0.60cm][l]{r13}
+        \makebox[0.60cm][l]{r14}
+        \makebox[0.20cm][l]{0}
+    }
+\end{itemize}

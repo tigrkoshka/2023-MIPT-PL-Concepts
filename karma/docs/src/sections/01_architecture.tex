@@ -19,7 +19,8 @@ Their usage is described in Table 1.
         \vspace{2mm}
         \begin{tabular}{| c | c |}
             \hline
-            \St{r0}-\St{r13} & Free usage                  \\
+            \St{r0} -- \St{r12} & Free usage                  \\
+            	\St{r13}         & Call frame pointer          \\
             \St{r14}         & Stack head pointer          \\
             \St{r15}         & Instruction pointer         \\
             \St{flags}       & Comparison operation result \\
@@ -32,6 +33,6 @@ Their usage is described in Table 1.
 
 The usage of the \St{r14} register is described in
 the \hyperlink{cmd:stack}{Stack-related commands} section, the aim of
-the \St{r15} register is discussed in the \hyperlink{cmd:calls}{Function calls}
+the \St{r13} and the \St{r15} registers is discussed in the \hyperlink{cmd:calls}{Function calls}
 section, and the usage of the \St{flags} register is detailed in
 the \hyperlink{cmd:flags}{Comparisons and jumps} section.

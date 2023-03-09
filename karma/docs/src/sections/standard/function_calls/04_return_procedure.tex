@@ -1,0 +1,56 @@
+\hypertarget{functions:return}{
+	\subsubsection{Return from a function procedure}
+}
+
+\vspace{-0.2cm}
+
+Neither the callee nor the caller need to perform explicit action
+on a return from a function.
+Everything is done automatically by the epilogue.
+The epilogue undoes the actions performed during the function call procedure.
+Specifically, it does the following:
+
+\begin{itemize}
+    \item Sets the stack pointer to the current value of the \St{r13} register
+    (i.e.\ removes the local variables of the callee from the stack) \\
+    As if with a \hspace{-0.1cm}\St{
+        \makebox[0.60cm][l]{mov}
+        \makebox[0.60cm][l]{r14}
+        \makebox[0.60cm][l]{r13}
+        \makebox[0.20cm][l]{0}
+    }
+
+    \item Pops a value from the stack to the \St{r13} register
+    (that is the value of the stack pointer before the function arguments) \\
+    As if with a \hspace{-0.1cm}\St{
+        \makebox[0.60cm][l]{pop}
+        \makebox[0.60cm][l]{r13}
+        \makebox[0.45cm][l]{0}
+    }
+
+    \item Pops a value from the stack to the \St{r15} register
+    (that is the address of the next caller's instruction to be executed) \\
+    As if with a \hspace{-0.1cm}\St{
+        \makebox[0.60cm][l]{pop}
+        \makebox[0.60cm][l]{r15}
+        \makebox[0.45cm][l]{0}
+    }
+
+    \item Sets the stack pointer to the current value of the \St{r13} register
+    (i.e.\ removes the function arguments from the stack) \\
+    As if with a \hspace{-0.1cm}\St{
+        \makebox[0.60cm][l]{mov}
+        \makebox[0.60cm][l]{r14}
+        \makebox[0.60cm][l]{r13}
+        \makebox[0.20cm][l]{0}
+    }
+
+    \item Pops a value from the stack to the \St{r13} register
+    (that is the value of the stack pointer before the caller's local
+    variables) \\
+    As if with a \hspace{-0.1cm}\St{
+        \makebox[0.60cm][l]{pop}
+        \makebox[0.60cm][l]{r13}
+        \makebox[0.45cm][l]{0}
+    }
+\end{itemize}

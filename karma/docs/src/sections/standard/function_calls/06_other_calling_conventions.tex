@@ -1,0 +1,66 @@
+\subsubsection{Notes and other calling conventions}
+
+\vspace{-0.2cm}
+
+The suggested calling convention has two drawbacks.
+
+The main one is that a programmer must explicitly manage the \St{r13} register
+before pushing the function's arguments to the stack
+(see \hyperlink{functions:call}{above} for details).
+
+Another one is that the \St{r13} register does not have one consistent semantics.
+Instead, it has two semantics (see \hyperlink{r13}{above} for details),
+one of which is only used during the function call procedure.
+This also leads to push its value to the stack twice during the function call
+procedure (see \hyperlink{functions:call}{above} for details).
+
+These drawbacks, however, allow for a major advantage of the \St{Karma} calling
+convention.
+The advantage is that there is no need for the programmer to manually clear
+the stack from the function arguments or local variables.
+It is done automatically by the epilogue
+(see \hyperlink{functions:return}{above} for details).
+Neither is there a need for any argument metadata, which optimises the stack
+usage.
+
+Other calling conventions may manage the removal of the function arguments
+and local variables from the stack in one of the following manners:
+
+\begin{itemize}
+    \item Passing the responsibility of removing the function arguments
+    to the caller, which must clear the stack after the return from
+    the function by explicitly moving the stack pointer.
+    In this case the \St{r13} register is usually solely used for automatic
+    removal of the local variables.
+
+    \item Interpreting the memory address operand of the \St{ret} command
+    as the number of arguments to be removed from the stack.
+    Like the previous case, in this one the \St{r13} register is also usually
+    solely used for automatic removal of the local variables.
+    However, this approach has a problem with variadic functions, because when
+    writing a variadic function one does not know the exact number of arguments
+    that will be passed to it to pass this number as the operand to the \St{ret}
+    command.
+    One of the possible solutions of this issue may be to pass the number
+    of arguments as the first parameter of all variadic functions and
+    to introduce a special value for the \St{ret} operand (e.g.\ \St{-1})
+    to be interpreted as an instruction to treat the first argument as
+    the number of arguments and increment the stack pointer
+    by the respective value.
+
+    \item Passing the responsibility of removing the function local variables
+    to the callee, which must clear the stack before the return
+    by explicitly moving the stack pointer.
+    In this case the \St{r13} register is usually solely used for automatic
+    removal of the function arguments.
+\end{itemize}
+
+These other calling conventions may sometimes optimise the stack usage,
+but are mainly meant for the cases when the programmer writes the code in some
+higher level languages to be then compiled to assembler.
+In such a case, the compiler can substitute the correct value to increment
+the stack pointer by knowing at compile time the number of function arguments
+and local variables.
+In our case, however, when the code is written directly in assembler, such
+an approach is bugprone because a single invalid stack pointer increment
+will lead to the stack corruption and unexpected behaviour.
