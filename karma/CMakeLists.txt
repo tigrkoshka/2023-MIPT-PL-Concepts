@@ -21,7 +21,7 @@ ${CMAKE_CXX_FLAGS} \
 find_library(KARMA_LIB karma lib)
 
 # find the include path
-find_path (KARMA_INCLUDES karma.hpp src)
+find_path (KARMA_INCLUDES karma.hpp include)
 
 # enable inclusion relative to the include directory
 include_directories(${KARMA_INCLUDES})
