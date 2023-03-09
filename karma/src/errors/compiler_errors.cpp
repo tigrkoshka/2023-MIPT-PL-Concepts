@@ -85,7 +85,7 @@ CompileError CompileError::CharNoStartQuote(const std::string& value,
                                             size_t line) {
     std::ostringstream ss;
     ss << "char constant value must start with a single quote, instead got: "
-       << std::quoted(value);
+       << value;
     return {ss.str(), line};
 }
 
@@ -93,7 +93,7 @@ CompileError CompileError::CharNoEndQuote(const std::string& value,
                                           size_t line) {
     std::ostringstream ss;
     ss << "char constant value must end with a single quote, instead got: "
-       << std::quoted(value);
+       << value;
     return {ss.str(), line};
 }
 
@@ -101,7 +101,7 @@ CompileError CompileError::StringTooSmallForQuotes(const std::string& value,
                                                    size_t line) {
     std::ostringstream ss;
     ss << "a string constant must be surrounded by double quotes, instead got: "
-       << std::quoted(value);
+       << value;
     return {ss.str(), line};
 }
 
@@ -109,7 +109,7 @@ CompileError CompileError::StringNoStartQuote(const std::string& value,
                                               size_t line) {
     std::ostringstream ss;
     ss << "string constant value must start with a double quote, instead got: "
-       << std::quoted(value);
+       << value;
     return {ss.str(), line};
 }
 
@@ -117,7 +117,7 @@ CompileError CompileError::StringNoEndQuote(const std::string& value,
                                             size_t line) {
     std::ostringstream ss;
     ss << "string constant value must end with a double quote, instead got: "
-       << std::quoted(value);
+       << value;
     return {ss.str(), line};
 }
 
@@ -136,7 +136,6 @@ CompileError CompileError::NoEntrypoint() {
     return CompileError("did not encounter an entrypoint");
 }
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 CompileError CompileError::SecondEntrypoint(size_t line,
                                             size_t entrypoint_line) {
     std::ostringstream ss;

@@ -12,18 +12,12 @@ namespace karma::detail::specs::arch {
 ///                        Architecture-defined types                        ///
 ////////////////////////////////////////////////////////////////////////////////
 
-inline namespace types {
-
 using Word     = uint32_t;
 using TwoWords = uint64_t;
 using Double   = double;  // TODO: std::float64_t in C++23 (supported by GCC@13)
-using Char     = unsigned char;
 
 static const size_t kWordSize = sizeof(Word);
 static const Word kMaxWord    = std::numeric_limits<Word>::max();
-static const Char kMaxChar    = std::numeric_limits<Char>::max();
-
-}  // namespace types
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                 Registers                                ///

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>         // for numeric_limits
 #include <string>         // for string
 #include <tuple>          // for tuple
 #include <type_traits>    // for make_signed_t
@@ -82,6 +83,7 @@ enum Code : Bin {
     // Data transfer
 
     LC,
+    LA,
     MOV,
     LOAD,
     LOAD2,
@@ -123,6 +125,10 @@ using JArgs  = std::tuple<Address>;
 }  // namespace args
 
 namespace syscall {
+
+using Char = unsigned char;
+
+static const Char kMaxChar = std::numeric_limits<Char>::max();
 
 enum Code : cmd::args::Immediate {
     EXIT        = 0,

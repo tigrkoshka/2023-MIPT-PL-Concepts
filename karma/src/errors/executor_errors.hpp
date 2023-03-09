@@ -39,8 +39,8 @@ struct ExecutionError : Error {
     static ExecutionError UnknownSyscallCode(detail::specs::cmd::syscall::Code);
 
     template <typename T>
-        requires std::is_same_v<T, detail::specs::arch::types::TwoWords> ||
-                 std::is_same_v<T, detail::specs::arch::types::Double>
+        requires std::is_same_v<T, detail::specs::arch::TwoWords> ||
+                 std::is_same_v<T, detail::specs::arch::Double>
     static ExecutionError DivisionByZero(T dividend, T divisor) {
         std::ostringstream ss;
         ss << "a division by zero occurred when dividing " << dividend << " by "
@@ -49,15 +49,15 @@ struct ExecutionError : Error {
     }
 
     static ExecutionError QuotientOverflow(
-        detail::specs::arch::types::TwoWords dividend,
-        detail::specs::arch::types::TwoWords divisor);
+        detail::specs::arch::TwoWords dividend,
+        detail::specs::arch::TwoWords divisor);
 
-    static ExecutionError BitwiseRHSTooBig(detail::specs::arch::types::Word,
+    static ExecutionError BitwiseRHSTooBig(detail::specs::arch::Word,
                                            detail::specs::cmd::Code);
 
-    static ExecutionError DtoiOverflow(detail::specs::arch::types::Double);
+    static ExecutionError DtoiOverflow(detail::specs::arch::Double);
 
-    static ExecutionError InvalidPutCharValue(detail::specs::arch::types::Word);
+    static ExecutionError InvalidPutCharValue(detail::specs::arch::Word);
 
     static ExecutionError AddressOutsideOfMemory(
         detail::specs::cmd::args::Address);

@@ -122,8 +122,8 @@ class Impl {
     size_t entrypoint_line_{0};
     bool seen_entrypoint_{false};
 
-    std::vector<detail::specs::arch::types::Word> code_;
-    std::vector<detail::specs::arch::types::Word> constants_;
+    std::vector<detail::specs::arch::Word> code_;
+    std::vector<detail::specs::arch::Word> constants_;
 
     Labels labels_;
 };

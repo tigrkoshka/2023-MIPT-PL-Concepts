@@ -34,7 +34,7 @@ struct ExecFileError : Error {
     static ExecFileError InvalidIntroString(const std::string& intro);
 
     static ExecFileError InvalidProcessorID(
-        detail::specs::arch::types::Word processor_id);
+        detail::specs::arch::Word processor_id);
 };
 
 }  // namespace karma::errors::exec

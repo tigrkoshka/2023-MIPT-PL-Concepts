@@ -13,16 +13,13 @@ namespace karma {
 
 class Executor {
    private:
-    static detail::specs::arch::Double ToDbl(detail::specs::arch::TwoWords);
-    static detail::specs::arch::TwoWords ToUll(detail::specs::arch::Double);
-
     [[nodiscard]] detail::specs::arch::TwoWords GetTwoRegisters(
         detail::specs::cmd::args::Source) const;
 
     void PutTwoRegisters(detail::specs::arch::TwoWords,
                          detail::specs::cmd::args::Receiver);
 
-    static void CheckBitwiseRHS(detail::specs::arch::types::Word,
+    static void CheckBitwiseRHS(detail::specs::arch::Word,
                                 detail::specs::cmd::Code);
 
     template <std::totally_ordered T>
@@ -30,17 +27,17 @@ class Executor {
 
     void Jump(detail::specs::flags::Flag, detail::specs::cmd::args::Address);
 
-    void Divide(detail::specs::arch::types::TwoWords,
-                detail::specs::arch::types::TwoWords,
+    void Divide(detail::specs::arch::TwoWords,
+                detail::specs::arch::TwoWords,
                 detail::specs::cmd::args::Receiver);
 
     bool Syscall(detail::specs::cmd::args::Register,
                  detail::specs::cmd::syscall::Code);
 
-    void Push(detail::specs::arch::types::Word);
+    void Push(detail::specs::arch::Word);
 
     void Pop(detail::specs::cmd::args::Receiver,
-             detail::specs::arch::types::Word);
+             detail::specs::arch::Word);
 
     detail::specs::cmd::args::Address Call(detail::specs::cmd::args::Address);
 
@@ -77,11 +74,11 @@ class Executor {
     Executor& operator=(const Executor&) = delete;
 
    private:
-    std::vector<detail::specs::arch::types::Word> memory_;
+    std::vector<detail::specs::arch::Word> memory_;
 
     std::vector<detail::specs::arch::Register> registers_;
 
-    detail::specs::arch::types::Word flags_{0};
+    detail::specs::arch::Word flags_{0};
 };
 
 }  // namespace karma

@@ -1,0 +1,22 @@
+sqr:                      # a function calculating the square with one argument on the stack
+    loadr r0 r14 2        # load the first (and only) argument to r0
+    mov r2 r0 0           # copy from r0 to r2
+    mul r0 r2 0           # a pair of registers (r0,r1) contains the square
+    ret 1                 # return from function and remove the argument from the stack
+
+intout:                   # a function printing its argument and ‘\n’
+    load r0 r14 1         # load the first (and only) argument to r0
+    syscall r0 102        # print r0 to stdout
+    lc r0 10              # store the constant 10 (‘\n’) to r0
+    syscall r0 105        # print ‘\n’ from r0 to stdout
+    ret 1                 # return from function and remove the argument from the stack
+
+main:
+    syscall r0 100        # read an integer from stdin to r0
+    push r0 0             # put r0+0 to the stack as the sqr argument
+    calli sqr             # call sqr, the function will put the result to r0
+    push r0 0             # prepare the result of sqr to be passed to intout
+    calli intout          # call intout with the prepared argument
+    lc r0 0               # clear r0
+    syscall r0 0          # exit the program with code 0
+end main                  # start execution from label main

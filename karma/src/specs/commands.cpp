@@ -157,6 +157,7 @@ const std::unordered_map<Code, Format> kCodeToFormat = {
  // Data transfer
 
     {LC,      RI},
+    {LA,      RM},
     {MOV,     RR},
     {LOAD,    RM},
     {LOAD2,   RM},
@@ -239,6 +240,7 @@ const std::unordered_map<std::string, Code> kNameToCode = {
  // Data transfer
 
     {"lc",      LC     },
+    {"la",      LA     },
     {"mov",     MOV    },
     {"load",    LOAD   },
     {"load2",   LOAD2  },

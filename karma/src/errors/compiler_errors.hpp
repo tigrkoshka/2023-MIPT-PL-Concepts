@@ -78,7 +78,6 @@ struct CompileError : Error {
 
     static CompileError NoEntrypoint();
 
-    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     static CompileError SecondEntrypoint(size_t line, size_t entrypoint_line);
 
     static CompileError EntrypointWithoutAddress(size_t line);

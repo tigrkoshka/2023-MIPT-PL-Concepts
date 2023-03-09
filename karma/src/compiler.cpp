@@ -18,12 +18,13 @@
 #include "specs/exec.hpp"
 #include "specs/syntax.hpp"
 #include "utils/strings.hpp"
+#include "utils/types.hpp"
 
 namespace karma {
 
-using errors::compiler::CompileError;
 using errors::compiler::Error;
 using errors::compiler::InternalError;
+using errors::compiler::CompileError;
 
 namespace utils = detail::utils;
 
@@ -34,8 +35,7 @@ namespace args = cmd::args;
 
 namespace consts = detail::specs::consts;
 
-namespace arch  = detail::specs::arch;
-namespace types = arch::types;
+namespace arch = detail::specs::arch;
 
 namespace exec = detail::specs::exec;
 
@@ -229,7 +229,8 @@ void Impl::ProcessUint32Constant() {
         // not that if a user specified a negative value, after the static cast
         // we will have interpreted it correctly, because taking a number
         // modulo 2^32 is still correct if we have taken it modulo 2^64 first
-        auto value = static_cast<types::Word>(std::stoull(curr_word_, &pos, 0));
+        auto value =
+            static_cast<consts::UInt32>(std::stoull(curr_word_, &pos, 0));
 
         if (pos != curr_word_.size()) {
             throw CompileError::InvalidValue(consts::UINT32,
@@ -250,7 +251,7 @@ void Impl::ProcessUint64Constant() {
         size_t pos{};
 
         // there is no function specifically for uint32_t values
-        types::TwoWords value = std::stoull(curr_word_, &pos, 0);
+        consts::UInt64 value = std::stoull(curr_word_, &pos, 0);
 
         if (pos != curr_word_.size()) {
             throw CompileError::InvalidValue(consts::UINT64,
@@ -258,11 +259,9 @@ void Impl::ProcessUint64Constant() {
                                              line_number_);
         }
 
-        auto low_bits  = static_cast<types::Word>(value);
-        auto high_bits = static_cast<types::Word>(value >> types::kWordSize);
-
-        constants_.push_back(low_bits);
-        constants_.push_back(high_bits);
+        auto [low, high] = utils::types::Split(value);
+        constants_.push_back(low);
+        constants_.push_back(high);
     } catch (...) {
         throw CompileError::InvalidValue(consts::UINT64,
                                          curr_word_,
@@ -274,7 +273,7 @@ void Impl::ProcessDoubleConstant() {
     try {
         size_t pos{};
 
-        types::Double value = std::stod(curr_word_, &pos);
+        consts::Double value = std::stod(curr_word_, &pos);
 
         if (pos != curr_word_.size()) {
             throw CompileError::InvalidValue(consts::DOUBLE,
@@ -282,13 +281,9 @@ void Impl::ProcessDoubleConstant() {
                                              line_number_);
         }
 
-        auto as_words = *reinterpret_cast<types::TwoWords*>(&value);
-
-        auto low_bits  = static_cast<types::Word>(as_words);
-        auto high_bits = static_cast<types::Word>(as_words >> types::kWordSize);
-
-        constants_.push_back(low_bits);
-        constants_.push_back(high_bits);
+        auto [low, high] = utils::types::Split(utils::types::ToUll(value));
+        constants_.push_back(low);
+        constants_.push_back(high);
     } catch (...) {
         throw CompileError::InvalidValue(consts::DOUBLE,
                                          curr_word_,
@@ -319,7 +314,7 @@ void Impl::ProcessCharConstant() {
                                          line_number_);
     }
 
-    constants_.push_back(static_cast<types::Word>(curr_word_[0]));
+    constants_.push_back(static_cast<arch::Word>(curr_word_[0]));
 }
 
 void Impl::ProcessStringConstant() {
@@ -339,10 +334,10 @@ void Impl::ProcessStringConstant() {
 
     utils::strings::Unescape(curr_word_);
 
-    for (char symbol : curr_word_) {
-        constants_.push_back(static_cast<types::Word>(symbol));
+    for (consts::Char symbol : curr_word_) {
+        constants_.push_back(static_cast<arch::Word>(symbol));
     }
-    constants_.push_back(0u);
+    constants_.push_back(static_cast<arch::Word>(consts::kStringEnd));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -773,7 +768,7 @@ void Impl::CompileImpl(std::istream& code, const std::string& exec_path) {
 
     exec::Data data{
         .entrypoint    = entrypoint_,
-        .initial_stack = static_cast<types::Word>(arch::kMemorySize - 1),
+        .initial_stack = static_cast<arch::Word>(arch::kMemorySize - 1),
         .code          = code_,
         .constants     = constants_,
         .data          = std::vector<arch::Word>(),

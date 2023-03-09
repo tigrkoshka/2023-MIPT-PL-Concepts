@@ -8,7 +8,7 @@
 
 namespace karma::errors::exec {
 
-namespace types = detail::specs::arch;
+namespace arch = detail::specs::arch;
 
 namespace exec = detail::specs::exec;
 
@@ -57,7 +57,7 @@ ExecFileError ExecFileError::InvalidIntroString(const std::string& intro) {
     return ExecFileError{ss.str()};
 }
 
-ExecFileError ExecFileError::InvalidProcessorID(types::Word processor_id) {
+ExecFileError ExecFileError::InvalidProcessorID(arch::Word processor_id) {
     std::ostringstream ss;
     ss << "exec file is built for processor with ID " << processor_id
        << ", current processor ID: " << exec::kProcessorID;

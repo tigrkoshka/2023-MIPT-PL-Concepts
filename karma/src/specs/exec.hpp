@@ -18,7 +18,7 @@ const size_t kMetaInfoEndPos   = 40ull;
 const size_t kHeaderSize       = 512ll;
 const size_t kCodeSegmentPos   = kHeaderSize;
 
-static const arch::types::Word kProcessorID = 239ull;
+static const arch::Word kProcessorID = 239ull;
 
 struct Data {
     specs::arch::Address entrypoint;

@@ -11,7 +11,6 @@
 namespace karma::errors::executor {
 
 namespace arch  = detail::specs::arch;
-namespace types = arch::types;
 
 namespace cmd     = detail::specs::cmd;
 namespace args    = cmd::args;
@@ -53,30 +52,30 @@ ExecutionError ExecutionError::UnknownSyscallCode(syscall::Code code) {
     return ExecutionError{ss.str()};
 }
 
-ExecutionError ExecutionError::QuotientOverflow(types::TwoWords dividend,
-                                                types::TwoWords divisor) {
+ExecutionError ExecutionError::QuotientOverflow(arch::TwoWords dividend,
+                                                arch::TwoWords divisor) {
     std::ostringstream ss;
     ss << "a quotient overflow occurred when dividing " << dividend << " by "
        << divisor;
     return ExecutionError{ss.str()};
 }
 
-ExecutionError ExecutionError::BitwiseRHSTooBig(types::Word rhs,
+ExecutionError ExecutionError::BitwiseRHSTooBig(arch::Word rhs,
                                                 cmd::Code code) {
     std::ostringstream ss;
     ss << "the right hand side of a bitwise operation (code " << code
        << ") must be less than the bit size of a machine word ("
-       << sizeof(types::Word) * utils::types::kByteSize << "), got: " << rhs;
+       << arch::kWordSize * utils::types::kByteSize << "), got: " << rhs;
     return ExecutionError{ss.str()};
 }
 
-ExecutionError ExecutionError::DtoiOverflow(types::Double value) {
+ExecutionError ExecutionError::DtoiOverflow(arch::Double value) {
     std::ostringstream ss;
     ss << "a word overflow occurred when casting " << value << " to integer";
     return ExecutionError{ss.str()};
 }
 
-ExecutionError ExecutionError::InvalidPutCharValue(types::Word value) {
+ExecutionError ExecutionError::InvalidPutCharValue(arch::Word value) {
     std::ostringstream ss;
     ss << "the value in the register for the PUTCHAR syscall is " << value
        << ", which is an invalid char, because it is greater than 255";

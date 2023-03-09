@@ -1,8 +1,9 @@
 #pragma once
 
-#include <string>   // for string, to_string
+#include <string>  // for string, to_string
 
 #include "../specs/commands.hpp"
+#include "../specs/constants.hpp"
 #include "error.hpp"
 
 namespace karma::errors::disassembler {
@@ -21,6 +22,8 @@ struct InternalError : Error {
    public:
     static InternalError FailedToOpen(const std::string& path);
 
+    static InternalError UnprocessedConstantType(const std::string& type);
+
     static InternalError CommandNameNotFound(detail::specs::cmd::Code);
 
     static InternalError RegisterNameNotFound(
@@ -35,6 +38,16 @@ struct DisassembleError : Error {
         : Error("disassembling error: " + message) {}
 
    public:
+    static DisassembleError UnknownConstantType(detail::specs::consts::Type);
+
+    static DisassembleError ConstantNoValue(
+        size_t start,
+        detail::specs::consts::Type expected,
+        size_t index,
+        size_t constants_size);
+
+    static DisassembleError NoTrailingZeroInString(size_t start);
+
     static DisassembleError UnknownCommand(detail::specs::cmd::Code);
 };
 

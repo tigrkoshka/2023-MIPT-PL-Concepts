@@ -6,9 +6,17 @@
 #include <stdexcept>    // for overflow_error
 #include <type_traits>  // for make_[un]signed_t
 
+#include "../specs/architecture.hpp"
+
 namespace karma::detail::utils::types {
 
 const size_t kByteSize = 8ull;
+
+specs::arch::Double ToDbl(specs::arch::TwoWords);
+specs::arch::TwoWords ToUll(specs::arch::Double);
+
+std::pair<specs::arch::Word, specs::arch::Word> Split(specs::arch::TwoWords);
+specs::arch::TwoWords Join(specs::arch::Word low, specs::arch::Word high);
 
 /**
  * @brief

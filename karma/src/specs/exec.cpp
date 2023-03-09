@@ -15,8 +15,6 @@ namespace karma::detail::specs::exec {
 
 using errors::exec::ExecFileError;
 
-namespace types = arch::types;
-
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Write                                  ///
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,7 +27,7 @@ void Write(const Data& data, const std::string& exec_path) {
         throw ExecFileError::FailedToOpen();
     }
 
-    auto write_word = [&binary](types::Word word) {
+    auto write_word = [&binary](arch::Word word) {
         binary.write(reinterpret_cast<char*>(&word), 4);
     };
 
@@ -37,9 +35,9 @@ void Write(const Data& data, const std::string& exec_path) {
     binary << "ThisIsKarmaExec" << '\0';
 
     auto get_segment_size =
-        [](const std::vector<types::Word>& vec) -> arch::Word {
-        return static_cast<types::Word>(vec.size()) *
-               static_cast<types::Word>(types::kWordSize);
+        [](const std::vector<arch::Word>& vec) -> arch::Word {
+        return static_cast<arch::Word>(vec.size()) *
+               static_cast<arch::Word>(arch::kWordSize);
     };
 
     // code size (in bytes)
@@ -55,7 +53,7 @@ void Write(const Data& data, const std::string& exec_path) {
     write_word(data.entrypoint);
 
     // initial stack pointer
-    write_word(static_cast<types::Word>(arch::kMemorySize - 1));
+    write_word(static_cast<arch::Word>(arch::kMemorySize - 1));
 
     // target processor ID
     write_word(kProcessorID);
@@ -65,6 +63,16 @@ void Write(const Data& data, const std::string& exec_path) {
 
     // code
     for (cmd::Bin command : data.code) {
+        write_word(command);
+    }
+
+    // constants
+    for (cmd::Bin command : data.constants) {
+        write_word(command);
+    }
+
+    // data
+    for (cmd::Bin command : data.data) {
         write_word(command);
     }
 }
@@ -93,8 +101,8 @@ Data Read(const std::string& exec_path) {
     // reset input position indicator
     binary.seekg(0);
 
-    auto read_word = [&binary]() -> types::Word {
-        types::Word word{};
+    auto read_word = [&binary]() -> arch::Word {
+        arch::Word word{};
         binary.read(reinterpret_cast<char*>(&word), 4);
         return word;
     };
@@ -137,7 +145,7 @@ Data Read(const std::string& exec_path) {
     data.initial_stack = read_word();
 
     // read the target processor ID
-    types::Word processor_id = read_word();
+    arch::Word processor_id = read_word();
     if (processor_id != kProcessorID) {
         throw ExecFileError::InvalidProcessorID(processor_id);
     }
@@ -146,11 +154,11 @@ Data Read(const std::string& exec_path) {
     binary.seekg(kCodeSegmentPos);
 
     // segments sizes is denoted in bytes, so we need to divide
-    // it by types::kWordSize to get the number of machine words
+    // it by arch::kWordSize to get the number of machine words
 
     auto read_segment = [&read_word](size_t byte_size,
-                                     std::vector<types::Word>& dst) {
-        size_t words_size = byte_size / types::kWordSize;
+                                     std::vector<arch::Word>& dst) {
+        size_t words_size = byte_size / arch::kWordSize;
         dst.reserve(words_size);
 
         for (size_t i = 0; i < words_size; ++i) {

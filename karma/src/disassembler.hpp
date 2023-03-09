@@ -2,7 +2,9 @@
 
 #include <ostream>  // for ostream
 #include <string>   // for string
+#include <vector>   // for vector
 
+#include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 
 namespace karma {
@@ -11,9 +13,25 @@ namespace detail::disassembler {
 
 class Impl {
    private:
+    using Segment = std::vector<detail::specs::arch::Word>;
+
+   private:
+    static std::string GetUint32Value(const Segment& constants, size_t& pos);
+    static std::string GetUint64Value(const Segment& constants, size_t& pos);
+    static std::string GetDoubleValue(const Segment& constants, size_t& pos);
+    static std::string GetCharValue(const Segment& constants, size_t& pos);
+    static std::string GetStringValue(const Segment& constants, size_t& pos);
+
+    static void DisassembleConstants(const Segment& constants,
+                                     std::ostream& out);
+
     static std::string GetRegister(detail::specs::cmd::args::Register);
 
-    static std::string GetCommandStringFromBin(detail::specs::cmd::Bin);
+    static std::string GetCommandString(detail::specs::cmd::Bin);
+
+    static void DisassembleCode(const Segment& code,
+                                size_t entrypoint,
+                                std::ostream& out);
 
     static void DisassembleImpl(const std::string& exec_path,
                                 std::ostream& out);

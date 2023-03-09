@@ -4,6 +4,8 @@
 #include <string>         // for string
 #include <unordered_map>  // for unordered_map
 
+#include "map.hpp"
+
 namespace karma::detail::utils::strings {
 
 const std::string kWhitespaces = " \t\n\v\f\r";
@@ -35,35 +37,65 @@ const std::unordered_map<char, char> kEscapeSequences{
     {'#',  '#' },
 };
 
-void Unescape(std::string& str) {
-    size_t curr_pos = 0;
+const std::unordered_map<char, char> kUnescapeSequences =
+    map::Revert(kEscapeSequences);
 
-    for (auto it = str.begin(); it != str.end(); ++it, ++curr_pos) {
-        char curr = *it;
-        if (curr != '\\') {
-            str[curr_pos] = curr;
+std::string Escape(const std::string& str, size_t start, size_t end) {
+    size_t end_pos = end;
+    if (end_pos == std::string::npos) {
+        end_pos = str.size();
+    }
+
+    std::string res;
+    res.reserve(str.size());
+
+    for (size_t curr_pos = start; curr_pos < end_pos; ++curr_pos) {
+        if (!kUnescapeSequences.contains(str[curr_pos])) {
+            res += str[curr_pos];
             continue;
         }
 
-        ++it;
+        res += '\\';
+        res += kUnescapeSequences.at(str[curr_pos]);
+    }
 
-        if (it == str.end()) {
-            str[curr_pos] = '\\';
+    return res;
+}
+
+void Unescape(std::string& str, size_t start, size_t end) {
+    size_t end_pos = end;
+    if (end_pos == std::string::npos) {
+        end_pos = str.size();
+    }
+
+    size_t write_pos = 0;
+
+    for (size_t curr_pos = start; curr_pos < end_pos; ++curr_pos, ++write_pos) {
+        char curr = str[curr_pos];
+        if (curr != '\\') {
+            str[write_pos] = curr;
+            continue;
+        }
+
+        ++curr_pos;
+
+        if (curr_pos == end_pos) {
+            str[write_pos] = '\\';
             break;
         }
 
-        curr = *it;
+        curr = str[curr_pos];
 
         if (!kEscapeSequences.contains(curr)) {
-            str[curr_pos++] = '\\';
-            str[curr_pos]   = curr;
+            str[write_pos++] = '\\';
+            str[write_pos]   = curr;
             continue;
         }
 
-        str[curr_pos] = kEscapeSequences.at(curr);
+        str[write_pos] = kEscapeSequences.at(curr);
     }
 
-    str = str.substr(0, curr_pos);
+    str = str.substr(0, write_pos);
 }
 
 }  // namespace karma::detail::utils::strings
