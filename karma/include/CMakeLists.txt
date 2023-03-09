@@ -34,10 +34,7 @@ add_subdirectory(executor)
 add_subdirectory(disassembler)
 
 # add the karma STATIC library target
-add_library(
-        karma STATIC
-        karma.cpp
-)
+add_library(karma STATIC karma)
 
 # link the OBJECT sub-libraries to the karma SOURCE library
 # see https://cmake.org/pipermail/cmake/2018-September/068263.html
