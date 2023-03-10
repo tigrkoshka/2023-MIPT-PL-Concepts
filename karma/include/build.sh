@@ -10,4 +10,4 @@ cmake --build "${SCRIPT_DIR}/build" -j 9 &&
 [ -d "${SCRIPT_DIR}/../lib" ] || mkdir -- "${SCRIPT_DIR}/../lib" &&
 
 # move the archive to the lib directory
-mv -- "${SCRIPT_DIR}/build/libkarma.a" "${SCRIPT_DIR}/../lib/libkarma.a"
+cp "${SCRIPT_DIR}/build/libkarma.a" "${SCRIPT_DIR}/../lib/libkarma.a"
