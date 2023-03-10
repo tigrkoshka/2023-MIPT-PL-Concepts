@@ -2,7 +2,7 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-"${SCRIPT_DIR}/include/build.sh" &&
+"${SCRIPT_DIR}/../include/build.sh" &&
 
 # create an executable
 cmake -S "${SCRIPT_DIR}" -B "${SCRIPT_DIR}/build" &&

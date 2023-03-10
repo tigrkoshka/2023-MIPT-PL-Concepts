@@ -2,26 +2,24 @@
 
 namespace karma::detail::utils::types {
 
-namespace arch = specs::arch;
-
-arch::Double ToDbl(arch::TwoWords ull) {
-    return *reinterpret_cast<arch::Double*>(&ull);
+double ToDbl(uint64_t ull) {
+    return reinterpret_cast<double&>(ull);
 }
 
-arch::TwoWords ToUll(arch::Double dbl) {
-    return *reinterpret_cast<arch::TwoWords*>(&dbl);
+uint64_t ToUll(double dbl) {
+    return reinterpret_cast<uint64_t&>(dbl);
 }
 
-std::pair<arch::Word, arch::Word> Split(arch::TwoWords ull) {
+std::pair<uint32_t, uint32_t> Split(uint64_t ull) {
     return {
-        static_cast<arch::Word>(ull),
-        static_cast<arch::Word>(ull >> arch::kWordSize),
+        static_cast<uint32_t>(ull),
+        static_cast<uint32_t>(ull >> sizeof(uint32_t) * kByteSize),
     };
 }
 
-arch::TwoWords Join(arch::Word low, arch::Word high) {
-    return (static_cast<arch::TwoWords>(high) << arch::kWordSize) +
-           static_cast<arch::TwoWords>(low);
+uint64_t Join(uint32_t low, uint32_t high) {
+    return (static_cast<uint64_t>(high) << sizeof(uint32_t) * kByteSize) +
+           static_cast<uint64_t>(low);
 }
 
 }  // namespace karma::detail::utils::types

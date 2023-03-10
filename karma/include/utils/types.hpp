@@ -1,23 +1,23 @@
 #pragma once
 
+#include <climits>      // for CHAR_BIT
 #include <concepts>     // for [un]signed_integral
 #include <cstddef>      // for size_t
+#include <cstdint>      // for uint32_t, uint64_t
 #include <sstream>      // for ostringstream
 #include <stdexcept>    // for overflow_error
 #include <type_traits>  // for make_[un]signed_t
 #include <utility>      // for pair
 
-#include "specs/architecture.hpp"
-
 namespace karma::detail::utils::types {
 
-const size_t kByteSize = 8ull;
+const size_t kByteSize = CHAR_BIT;
 
-specs::arch::Double ToDbl(specs::arch::TwoWords);
-specs::arch::TwoWords ToUll(specs::arch::Double);
+double ToDbl(uint64_t);
+uint64_t ToUll(double);
 
-std::pair<specs::arch::Word, specs::arch::Word> Split(specs::arch::TwoWords);
-specs::arch::TwoWords Join(specs::arch::Word low, specs::arch::Word high);
+std::pair<uint32_t, uint32_t> Split(uint64_t);
+uint64_t Join(uint32_t low, uint32_t high);
 
 /**
  * @brief
