@@ -18,10 +18,10 @@ ${CMAKE_CXX_FLAGS} \
 ")
 
 # find the archived library
-find_library(KARMA_LIB karma ../lib)
+find_library(KARMA_LIB karma ${CMAKE_CURRENT_SOURCE_DIR}/../lib)
 
 # find the include path
-find_path(KARMA_INCLUDES karma ../include)
+find_path(KARMA_INCLUDES karma ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 # enable inclusion relative to the include directory
 include_directories(${KARMA_INCLUDES})
@@ -31,3 +31,10 @@ add_executable(karma_play main.cpp)
 
 # link the archived library to the executable target
 target_link_libraries(karma_play PUBLIC ${KARMA_LIB})
+
+# place the resulting executable file in the current directory
+# instead of in the build directory produced by cmake
+set_target_properties(
+        karma_play
+        PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+)

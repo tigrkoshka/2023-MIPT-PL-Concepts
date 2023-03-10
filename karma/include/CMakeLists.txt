@@ -40,3 +40,10 @@ add_library(karma STATIC karma)
 # see https://cmake.org/pipermail/cmake/2018-September/068263.html
 # for explanation on combining several libraries into one
 target_link_libraries(karma compiler executor disassembler exec specs utils)
+
+# place the resulting library archive in the karma/lib directory
+# instead of in the build directory produced by cmake
+set_target_properties(
+        karma
+        PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../lib"
+)
