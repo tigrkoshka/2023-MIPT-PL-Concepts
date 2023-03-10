@@ -1,9 +1,8 @@
 #pragma once
 
-#include <concepts>   // for totally_ordered
-#include <stdexcept>  // for runtime_error
-#include <string>     // for string
-#include <vector>     // for vector
+#include <concepts>  // for totally_ordered
+#include <string>    // for string
+#include <vector>    // for vector
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"

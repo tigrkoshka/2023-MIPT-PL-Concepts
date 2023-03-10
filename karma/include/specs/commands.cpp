@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "architecture.hpp"
 #include "utils/map.hpp"
 #include "utils/types.hpp"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>         // for string
+#include <string>  // for string
 
 namespace karma::detail::specs::syntax {
 

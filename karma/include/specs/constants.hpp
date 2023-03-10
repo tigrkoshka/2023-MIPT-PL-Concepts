@@ -27,7 +27,7 @@ using String = std::string;
 // 15 was chosen, because empirically double errors when dealing with constants
 // start when precision is 17 (leave one extra precision point as a guarantee)
 static const int kDoublePrecision = 15;
-static const Char kStringEnd = '\0';
+static const Char kStringEnd      = '\0';
 
 extern const std::unordered_map<Type, std::string> kTypeToName;
 extern const std::unordered_map<std::string, Type> kNameToType;

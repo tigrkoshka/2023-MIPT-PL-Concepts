@@ -1,18 +1,14 @@
 #pragma once
 
-#include <cstddef>        // for size_t
-#include <cstdint>        // for int32_t
-#include <istream>        // for istream
-#include <sstream>        // for istringstream
-#include <string>         // for string
-#include <unordered_map>  // for unordered_map
-#include <utility>        // for pair
-#include <vector>         // for vector
-
-#include "specs/architecture.hpp"
-#include "specs/commands.hpp"
+#include <cstddef>  // for size_t
+#include <istream>  // for istream
+#include <sstream>  // for istringstream
+#include <string>   // for string
+#include <vector>   // for vector
 
 #include "labels.hpp"
+#include "specs/architecture.hpp"
+#include "specs/commands.hpp"
 
 namespace karma::compiler::detail {
 

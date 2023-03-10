@@ -1,12 +1,12 @@
 #include "labels.hpp"
 
-#include <cstddef>        // for size_t
-#include <optional>       // for optional
-#include <string>         // for string
-
-#include "specs/syntax.hpp"
+#include <cctype>    // for is_digit
+#include <cstddef>   // for size_t
+#include <optional>  // for optional
+#include <string>    // for string
 
 #include "errors.hpp"
+#include "specs/syntax.hpp"
 
 namespace karma::compiler::detail {
 

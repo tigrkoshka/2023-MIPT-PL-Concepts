@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstddef>    // for size_t
-#include <string>     // for string
+#include <cstddef>  // for size_t
+#include <string>   // for string
 
 #include "architecture.hpp"
 

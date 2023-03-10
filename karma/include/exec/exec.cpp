@@ -2,16 +2,15 @@
 
 #include <cstddef>  // for size_t
 #include <fstream>  // for ofstream
-#include <iomanip>  // for quoted
-#include <iosfwd>   // for string, ostringstream
+#include <iosfwd>   // for ostringstream
 #include <sstream>  // for ostringstream
+#include <string>   // for string
 #include <vector>   // for vector
 
+#include "errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/exec.hpp"
-
-#include "errors.hpp"
 
 namespace karma::detail::exec {
 

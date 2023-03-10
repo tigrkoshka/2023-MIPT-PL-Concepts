@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>  // for runtime_error
+#include <string>     // for string
 
 namespace karma::errors {
 

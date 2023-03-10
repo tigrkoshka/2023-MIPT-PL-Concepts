@@ -3,19 +3,20 @@
 #include <exception>    // for exception
 #include <filesystem>   // for path
 #include <fstream>      // for ofstream
+#include <iomanip>      // for setprecision
 #include <iostream>     // for cout
 #include <sstream>      // for ostringstream
 #include <string>       // for string
 #include <type_traits>  // for make_signed_t
 
+#include "errors.hpp"
 #include "exec/exec.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/constants.hpp"
+#include "utils/error.hpp"
 #include "utils/strings.hpp"
 #include "utils/types.hpp"
-
-#include "errors.hpp"
 
 namespace karma::disassembler::detail {
 

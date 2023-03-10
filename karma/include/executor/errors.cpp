@@ -1,6 +1,5 @@
 #include "errors.hpp"
 
-#include <iomanip>  // for quoted
 #include <sstream>  // for ostringstream
 #include <string>   // for string
 

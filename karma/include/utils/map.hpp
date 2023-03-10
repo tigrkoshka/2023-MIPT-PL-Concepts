@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>       // for convertible_to
+#include <cstddef>        // for size_t
 #include <functional>     // for hash
 #include <unordered_map>  // for unordered_map
 

@@ -2,25 +2,27 @@
 
 #include <algorithm>    // for min
 #include <cstddef>      // for size_t
+#include <cstdint>      // for int32_t
 #include <exception>    // for exception
 #include <filesystem>   // for path
 #include <fstream>      // for ifstream
 #include <iostream>     // for cout, ios
+#include <optional>     // for optional
 #include <stdexcept>    // for invalid_argument, out_of_range
 #include <string>       // for string, stoull, stod
 #include <type_traits>  // for make_unsigned_t
 #include <utility>      // for move
 
+#include "errors.hpp"
 #include "exec/exec.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/constants.hpp"
 #include "specs/exec.hpp"
 #include "specs/syntax.hpp"
+#include "utils/error.hpp"
 #include "utils/strings.hpp"
 #include "utils/types.hpp"
-
-#include "errors.hpp"
 
 namespace karma::compiler::detail {
 

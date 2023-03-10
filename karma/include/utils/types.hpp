@@ -5,6 +5,7 @@
 #include <sstream>      // for ostringstream
 #include <stdexcept>    // for overflow_error
 #include <type_traits>  // for make_[un]signed_t
+#include <utility>      // for pair
 
 #include "specs/architecture.hpp"
 

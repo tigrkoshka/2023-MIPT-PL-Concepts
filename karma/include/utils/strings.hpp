@@ -1,6 +1,7 @@
 #pragma once
 
-#include <string>  // for string
+#include <cstddef>  // for size_t
+#include <string>   // for string
 
 namespace karma::detail::utils::strings {
 
