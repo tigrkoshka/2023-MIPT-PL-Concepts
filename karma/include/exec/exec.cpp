@@ -31,7 +31,7 @@ void Write(const Data& data, const std::string& exec_path) {
 
     // check that the file was found
     if (binary.fail()) {
-        throw ExecFileError::FailedToOpen();
+        throw ExecFileError::FailedToOpen(exec_path);
     }
 
     auto write_word = [&binary](arch::Word word) {
@@ -88,19 +88,20 @@ Data Read(const std::string& exec_path) {
 
     // check that the file was found
     if (binary.fail()) {
-        throw ExecFileError::FailedToOpen();
+        throw ExecFileError::FailedToOpen(exec_path);
     }
 
     // check that the exec size is not too small to contain a valid header
     auto exec_size = static_cast<size_t>(binary.tellg());
     if (exec_size < exec::kHeaderSize) {
-        throw ExecFileError::TooSmallForHeader(exec_size);
+        throw ExecFileError::TooSmallForHeader(exec_size, exec_path);
     }
 
     // check that the combined code and constants segments sizes
     // are not too big to fit into memory
     if (exec_size - exec::kHeaderSize > arch::kMemorySize) {
-        throw ExecFileError::TooBigForMemory(exec_size - exec::kHeaderSize);
+        throw ExecFileError::TooBigForMemory(exec_size - exec::kHeaderSize,
+                                             exec_path);
     }
 
     // reset input position indicator
@@ -120,12 +121,12 @@ Data Read(const std::string& exec_path) {
     // check that the introductory string is valid
     if (intro.back() != '\0') {
         intro.resize(intro.size() - 1);
-        throw ExecFileError::NoTrailingZeroInIntro(intro);
+        throw ExecFileError::NoTrailingZeroInIntro(intro, exec_path);
     }
 
     intro.resize(intro.size() - 1);
     if (intro != exec::kIntroString) {
-        throw ExecFileError::InvalidIntroString(intro);
+        throw ExecFileError::InvalidIntroString(intro, exec_path);
     }
 
     Data data{};
@@ -136,7 +137,10 @@ Data Read(const std::string& exec_path) {
 
     // check that the exec file size equals the size specified by the header
     if (exec_size != exec::kHeaderSize + code_size + consts_size) {
-        throw ExecFileError::InvalidExecSize(exec_size, code_size, consts_size);
+        throw ExecFileError::InvalidExecSize(exec_size,
+                                             code_size,
+                                             consts_size,
+                                             exec_path);
     }
 
     // read the address of the first instruction
@@ -148,7 +152,7 @@ Data Read(const std::string& exec_path) {
     // read the target processor ID
     arch::Word processor_id = read_word();
     if (processor_id != exec::kProcessorID) {
-        throw ExecFileError::InvalidProcessorID(processor_id);
+        throw ExecFileError::InvalidProcessorID(processor_id, exec_path);
     }
 
     // jump to the code segment

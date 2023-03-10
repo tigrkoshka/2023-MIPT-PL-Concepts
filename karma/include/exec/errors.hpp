@@ -16,26 +16,30 @@ struct Error : errors::Error {
 
 struct ExecFileError : Error {
    private:
-    explicit ExecFileError(const std::string& message)
-        : Error("exec file error: " + message) {}
+    ExecFileError(const std::string& message, const std::string& path)
+        : Error(path + ": exec file error: " + message) {}
 
    public:
-    static ExecFileError FailedToOpen();
+    static ExecFileError FailedToOpen(const std::string& path);
 
-    static ExecFileError TooSmallForHeader(size_t size);
+    static ExecFileError TooSmallForHeader(size_t size,
+                                           const std::string& path);
 
-    static ExecFileError TooBigForMemory(size_t size);
+    static ExecFileError TooBigForMemory(size_t size, const std::string& path);
 
     static ExecFileError InvalidExecSize(size_t exec_size,
                                          size_t code_size,
-                                         size_t consts_size);
+                                         size_t consts_size,
+                                         const std::string& path);
 
-    static ExecFileError NoTrailingZeroInIntro(const std::string& intro);
+    static ExecFileError NoTrailingZeroInIntro(const std::string& intro,
+                                               const std::string& path);
 
-    static ExecFileError InvalidIntroString(const std::string& intro);
+    static ExecFileError InvalidIntroString(const std::string& intro,
+                                            const std::string& path);
 
     static ExecFileError InvalidProcessorID(
-        detail::specs::arch::Word processor_id);
+        detail::specs::arch::Word processor_id, const std::string& path);
 };
 
 }  // namespace karma::errors::exec
