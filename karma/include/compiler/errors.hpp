@@ -3,7 +3,9 @@
 #include <cstddef>  // for size_t
 #include <cstdint>  // for int32_t
 #include <string>   // for string, to_string
+#include <utility>  // for exchange
 
+#include "labels.hpp"
 #include "specs/commands.hpp"
 #include "specs/constants.hpp"
 #include "utils/error.hpp"
@@ -17,167 +19,157 @@ struct Error : errors::Error {
 };
 
 struct InternalError : Error {
+    // TODO: maybe like in compile error
+
+   private:
+    using Where = const std::string&;
+
    private:
     explicit InternalError(const std::string& message)
         : Error("internal compiler error: " + message) {}
 
-    InternalError(const std::string& message, size_t line)
-        : Error("internal compiler error at line " + std::to_string(line) +
-                ": " + message) {}
+    InternalError(const std::string& message, Where where)
+        : Error("internal compiler error " + where + ": " + message) {}
 
    public:
+    static InternalError RepeatedOpenFile(const std::string& path);
+    static InternalError CloseUnopenedFile(const std::string& path);
+
+    // TODO: this is not an internal error
     static InternalError FailedToOpen(const std::string& path);
 
-    static InternalError FormatNotFound(detail::specs::cmd::Code, size_t line);
+    static InternalError FormatNotFound(detail::specs::cmd::Code, Where);
 
     static InternalError UnprocessedCommandFormat(detail::specs::cmd::Format,
-                                                  size_t line);
+                                                  Where);
 
     static InternalError UnprocessedConstantType(detail::specs::consts::Type,
-                                                 size_t line);
+                                                 Where);
 
-    static InternalError EmptyWord(size_t line);
+    static InternalError EmptyWord(Where);
 };
 
 struct CompileError : Error {
+    // TODO: maybe major rethink
+
+   private:
+    struct TokenInfo {
+       public:
+        TokenInfo(const std::string& value, const std::string& where)
+            : value_(std::move(value)),
+              where_(std::move(where)) {}
+
+        std::string Value() {
+            if (std::exchange(value_used_, true)) {
+                throw std::runtime_error("token value reuse in compile error");
+            }
+
+            return std::move(value_);
+        }
+
+        std::string Where() {
+            if (std::exchange(where_used_, true)) {
+                throw std::runtime_error("token where reuse in compile error");
+            }
+
+            return std::move(where_);
+        }
+
+       private:
+        std::string value_;
+        bool value_used_{false};
+
+        std::string where_;
+        bool where_used_{false};
+    };
+
+   private:
+    using Where     = const std::string&;
+    using Token     = TokenInfo&&;
+    using Label     = Token;
+    using Value     = Token;
+    using Command   = Token;
+    using Register  = Token;
+    using Address   = Token;
+    using Immediate = Token;
+    using Extra     = Token;
+
    private:
     explicit CompileError(const std::string& message)
         : Error("compile error: " + message) {}
 
-    CompileError(const std::string& message, size_t line)
-        : Error("compile error at line " + std::to_string(line) + ": " +
+    CompileError(const std::string& message, Where where)
+        : Error("compile error " + static_cast<std::string>(where) + ": " +
                 message) {}
 
    public:
+    // includes
+
+    static CompileError IncludeNoFilename(Where);
+
     // labels
 
-    static CompileError EmptyLabel(size_t line);
-
-    static CompileError LabelBeforeEntrypoint(size_t end_line,
-                                              const std::string& latest_label,
-                                              size_t latest_label_line);
-
-    static CompileError ConsecutiveLabels(const std::string& label,
-                                          size_t line,
-                                          const std::string& latest_label,
-                                          size_t latest_label_line);
-
-    static CompileError LabelRedefinition(const std::string& label,
-                                          size_t line,
-                                          size_t previous_definition_line);
-
-    static CompileError FileEndsWithLabel(const std::string& label,
-                                          size_t line);
-
-    static CompileError LabelStartsWithDigit(const std::string& label,
-                                             size_t line);
-
-    static CompileError InvalidLabelCharacter(char invalid,
-                                              const std::string& label,
-                                              size_t line);
-
-    static CompileError UndefinedLabel(const std::string& label, size_t line);
+    static CompileError EmptyLabel(Where);
+    static CompileError LabelBeforeEntrypoint(Where entry, Label label);
+    static CompileError ConsecutiveLabels(Label curr, Label prev);
+    static CompileError LabelRedefinition(Label label, Where previous_pos);
+    static CompileError FileEndsWithLabel(Label label);
+    static CompileError LabelStartsWithDigit(Label label);
+    static CompileError InvalidLabelCharacter(char invalid, Label label);
+    static CompileError UndefinedLabel(Label label);
 
     // entrypoint
 
     static CompileError NoEntrypoint();
-
-    static CompileError SecondEntrypoint(size_t line, size_t entrypoint_line);
-
-    static CompileError EntrypointWithoutAddress(size_t line);
+    static CompileError SecondEntrypoint(Where curr, Where prev);
+    static CompileError EntrypointWithoutAddress(Where);
 
     // constants
 
-    static CompileError EmptyConstantValue(detail::specs::consts::Type type,
-                                           size_t line);
+    static CompileError EmptyConstValue(detail::specs::consts::Type, Where);
+    static CompileError InvalidConstValue(detail::specs::consts::Type, Value);
 
-    static CompileError InvalidValue(detail::specs::consts::Type type,
-                                     const std::string& value,
-                                     size_t line);
+    static CompileError CharTooSmallForQuotes(Value);
+    static CompileError CharNoStartQuote(Value);
+    static CompileError CharNoEndQuote(Value);
 
-    static CompileError CharTooSmallForQuotes(const std::string& value,
-                                              size_t line);
+    static CompileError StringTooSmallForQuotes(Value);
+    static CompileError StringNoStartQuote(Value);
+    static CompileError StringNoEndQuote(Value);
 
-    static CompileError CharNoStartQuote(const std::string& value, size_t line);
+    // arguments parsing
 
-    static CompileError CharNoEndQuote(const std::string& value, size_t line);
+    static CompileError UnknownCommand(Command);
 
-    static CompileError StringTooSmallForQuotes(const std::string& value,
-                                                size_t line);
+    static CompileError UnknownRegister(Register);
 
-    static CompileError StringNoStartQuote(const std::string& value,
-                                           size_t line);
+    static CompileError AddressNegative(Address);
+    static CompileError AddressOutOfMemory(Address);
 
-    static CompileError StringNoEndQuote(const std::string& value, size_t line);
+    static CompileError ImmediateNotANumber(Immediate);
+    static CompileError ImmediateLessThanMin(int32_t min, Immediate);
+    static CompileError ImmediateMoreThanMax(int32_t max, Immediate);
+    static CompileError ImmediateOutOfRange(Immediate);
 
-    // command
+    // missing arguments
 
-    static CompileError UnknownCommand(const std::string& command, size_t line);
+    static CompileError RMNoRegister(Where);
+    static CompileError RMNoAddress(Where);
 
-    // register
+    static CompileError RRNoReceiver(Where);
+    static CompileError RRNoSource(Where);
+    static CompileError RRNoModifier(Where);
 
-    static CompileError UnknownRegister(const std::string& reg, size_t line);
+    static CompileError RINoRegister(Where);
+    static CompileError RINoImmediate(Where);
 
-    // address
+    static CompileError JNoAddress(Where);
 
-    static CompileError AddressNegative(const std::string& address,
-                                        size_t line);
+    // extra words
 
-    static CompileError AddressOutOfMemory(const std::string& address,
-                                           size_t line);
-
-    // immediate
-
-    static CompileError ImmediateNotANumber(const std::string& immediate,
-                                            size_t line);
-
-    static CompileError ImmediateLessThanMin(int32_t min,
-                                             const std::string& immediate,
-                                             size_t line);
-
-    static CompileError ImmediateMoreThanMax(int32_t max,
-                                             const std::string& immediate,
-                                             size_t line);
-
-    static CompileError ImmediateOutOfRange(const std::string& immediate,
-                                            size_t line);
-
-    // RM
-
-    static CompileError RMCommandNoRegister(size_t line);
-
-    static CompileError RMCommandNoAddress(size_t line);
-
-    // RR
-
-    static CompileError RRCommandNoReceiver(size_t line);
-
-    static CompileError RRCommandNoSource(size_t line);
-
-    static CompileError RRCommandNoModifier(size_t line);
-
-    // RI
-
-    static CompileError RICommandNoRegister(size_t line);
-
-    static CompileError RICommandNoImmediate(size_t line);
-
-    // J
-
-    static CompileError JCommandNoAddress(size_t line);
-
-    // Extra words
-
-    static CompileError ExtraWordsAfterEntrypoint(const std::string& extra,
-                                                  size_t line);
-
-    static CompileError ExtraWordsAfterConstant(detail::specs::consts::Type typ,
-                                                const std::string& extra,
-                                                size_t line);
-
-    static CompileError ExtraWordsAfterCommand(detail::specs::cmd::Format fmt,
-                                               const std::string& extra,
-                                               size_t line);
+    static CompileError ExtraAfterEntrypoint(Extra);
+    static CompileError ExtraAfterConstant(detail::specs::consts::Type, Extra);
+    static CompileError ExtraAfterCommand(detail::specs::cmd::Format, Extra);
 };
 
 }  // namespace karma::errors::compiler

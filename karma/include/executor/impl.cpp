@@ -15,7 +15,7 @@
 #include "specs/architecture.hpp"
 #include "specs/flags.hpp"
 #include "utils/error.hpp"
-#include "utils/types.hpp"
+#include "utils/type_conversions.hpp"
 
 namespace karma::executor::detail {
 

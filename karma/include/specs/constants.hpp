@@ -7,8 +7,8 @@
 
 namespace karma::detail::specs::consts {
 
-static const char kCharQuote   = '\'';
-static const char kStringQuote = '\"';
+constexpr char kCharQuote   = '\'';
+constexpr char kStringQuote = '\"';
 
 enum Type : arch::Word {
     UINT32,
@@ -26,8 +26,8 @@ using String = std::string;
 
 // 15 was chosen, because empirically double errors when dealing with constants
 // start when precision is 17 (leave one extra precision point as a guarantee)
-static const int kDoublePrecision = 15;
-static const Char kStringEnd      = '\0';
+constexpr int32_t kDoublePrecision = 15;
+constexpr Char kStringEnd          = '\0';
 
 extern const std::unordered_map<Type, std::string> kTypeToName;
 extern const std::unordered_map<std::string, Type> kNameToType;

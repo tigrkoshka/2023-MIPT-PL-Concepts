@@ -16,7 +16,7 @@
 #include "specs/constants.hpp"
 #include "utils/error.hpp"
 #include "utils/strings.hpp"
-#include "utils/types.hpp"
+#include "utils/type_conversions.hpp"
 
 namespace karma::disassembler::detail {
 

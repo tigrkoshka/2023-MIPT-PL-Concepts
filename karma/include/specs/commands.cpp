@@ -5,15 +5,15 @@
 
 #include "architecture.hpp"
 #include "utils/map.hpp"
-#include "utils/types.hpp"
+#include "utils/type_conversions.hpp"
 
 namespace karma::detail::specs::cmd {
 
-const arch::Word kCodeShift    = 24u;
-const arch::Word kRegisterMask = 0xfu;
-const arch::Word kRecvShift    = 20u;
-const arch::Word kSrcShift     = 16u;
-const arch::Word kAddressMask  = 0xfffffu;
+constexpr arch::Word kCodeShift    = 24u;
+constexpr arch::Word kRegisterMask = 0xfu;
+constexpr arch::Word kRecvShift    = 20u;
+constexpr arch::Word kSrcShift     = 16u;
+constexpr arch::Word kAddressMask  = 0xfffffu;
 
 Code GetCode(Bin command) {
     return static_cast<cmd::Code>(command >> kCodeShift);

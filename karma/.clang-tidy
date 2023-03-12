@@ -11,8 +11,6 @@ Checks: >
   -bugprone-dynamic-static-initializers,
   -bugprone-easily-swappable-parameters,
 
-  -cppcoreguidelines-pro-type-reinterpret-cast,
-
   -fuchsia-default-arguments-calls,
   -fuchsia-default-arguments-declarations,
 
@@ -27,6 +25,7 @@ Checks: >
 
   -llvmlibc-callee-namespace,
   -llvmlibc-implementation-in-namespace,
+  -llvmlibc-restrict-system-libc-headers,
 
   -modernize-use-trailing-return-type,
   -readability-redundant-access-specifiers,

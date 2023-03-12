@@ -13,8 +13,8 @@ enum Flag : arch::Register {
     LESS_OR_EQUAL    = 0b100000u,
 };
 
-static const arch::Register kEqual   = EQUAL | GREATER_OR_EQUAL | LESS_OR_EQUAL;
-static const arch::Register kGreater = NOT_EQUAL | GREATER | GREATER_OR_EQUAL;
-static const arch::Register kLess    = NOT_EQUAL | LESS | LESS_OR_EQUAL;
+constexpr arch::Register kEqual   = EQUAL | GREATER_OR_EQUAL | LESS_OR_EQUAL;
+constexpr arch::Register kGreater = NOT_EQUAL | GREATER | GREATER_OR_EQUAL;
+constexpr arch::Register kLess    = NOT_EQUAL | LESS | LESS_OR_EQUAL;
 
 }  // namespace karma::detail::specs::flags

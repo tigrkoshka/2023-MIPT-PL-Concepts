@@ -4,11 +4,13 @@
 
 namespace karma::detail::specs::syntax {
 
-static const char8_t kCommentSep = '#';
-static const char8_t kLabelEnd   = ':';
+constexpr char8_t kCommentSep        = '#';
+constexpr char8_t kDisableCommentSep = '\\';
+constexpr char8_t kLabelEnd          = ':';
 
 bool IsAllowedLabelChar(char);
 
-static const std::string kEntrypointDirective = "end";
+const std::string kIncludeDirective    = "include";
+const std::string kEntrypointDirective = "end";
 
 }  // namespace karma::detail::specs::syntax

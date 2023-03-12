@@ -7,54 +7,56 @@
 #include <utility>        // for pair
 #include <vector>         // for vector
 
+#include "file.hpp"
+#include "utils/traits.hpp"
+
 namespace karma::compiler::detail {
 
-class Labels {
+class Labels : karma::detail::utils::traits::NonCopyableMovable {
    private:
-    // definition, definition_line
-    using Definition = std::pair<size_t, size_t>;
-
-    // label -> definition
+    // definition, where
+    using Definition  = std::pair<size_t, std::string>;
     using Definitions = std::unordered_map<std::string, Definition>;
 
-    // line_number, position in code of the command which uses the label
-    using Usages = std::vector<std::pair<size_t, size_t>>;
+    // number of command in file
+    using FileUsages = std::vector<size_t>;
+    using Usages     = std::unordered_map<const File*, FileUsages>;
+    using AllUsages  = std::unordered_map<std::string, Usages>;
 
-    // label -> LabelUsage
-    using AllUsages = std::unordered_map<std::string, Usages>;
+    // label -> usage sample (line description from File.Where)
+    using UsageSamples = std::unordered_map<std::string, std::string>;
 
    public:
-    static void CheckLabel(const std::string& label, size_t line);
+    static void CheckLabel(const std::string& label, const std::string& pos);
 
     void SetCodeSize(size_t code_size);
 
-    const std::string& GetLatest() const;
-    size_t GetLatestLine() const;
-
     std::optional<size_t> TryGetDefinition(const std::string& label) const;
-    std::optional<size_t> TryGetDefinitionLine(const std::string& label) const;
+    std::optional<std::string> TryGetPos(const std::string& label) const;
 
-    void RecordLabelOccurrence(const std::string& label, size_t line);
-    void RecordCommandLabel(size_t definition);
-    void RecordConstantLabel(size_t definition);
+    void RecordCommandLabel(const std::string& label,
+                            size_t definition,
+                            const std::string& pos);
+    void RecordConstantLabel(const std::string& label,
+                             size_t definition,
+                             const std::string& pos);
 
     void RecordEntrypointLabel(const std::string& label);
-    const std::optional<std::string>& TryGetEntrypointLabel();
+    std::optional<std::string> TryGetEntrypointLabel() const;
 
     void RecordUsage(const std::string& label,
-                     size_t line_number,
+                     const File* file,
                      size_t command_number);
-    const AllUsages& GetUsages();
+    const AllUsages& GetUsages() const;
+    std::string GetUsageSample(const std::string& label) const;
 
    private:
-    std::string latest_label_;
-    size_t latest_label_line_{0};
-
     Definitions commands_labels_;
     Definitions constants_labels_;
     std::optional<std::string> entrypoint_label_;
 
     AllUsages usages_;
+    UsageSamples usage_samples_;
 
     size_t code_size_{};
 };

@@ -3,5 +3,8 @@ add_library(
         error.cpp
         map.cpp
         strings.cpp
-        types.cpp
+        type_conversions.cpp
+        generator.cpp
+        concepts.cpp
+        traits.cpp
 )

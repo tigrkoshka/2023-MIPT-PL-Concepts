@@ -24,6 +24,7 @@ SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARG
 # enable including files by their relative path to the current directory
 # instead of by the relative path to the file where the inclusion happens
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories(/usr/local/opt/gcc@12/include/c++/12)
 
 # build OBJECT sub-libraries
 add_subdirectory(specs)

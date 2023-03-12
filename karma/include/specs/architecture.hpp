@@ -16,8 +16,8 @@ using Word     = uint32_t;
 using TwoWords = uint64_t;
 using Double   = double;  // TODO: std::float64_t in C++23 (supported by GCC@13)
 
-static const size_t kWordSize = sizeof(Word);
-static const Word kMaxWord    = std::numeric_limits<Word>::max();
+constexpr size_t kWordSize = sizeof(Word);
+constexpr Word kMaxWord    = std::numeric_limits<Word>::max();
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                 Registers                                ///
@@ -43,20 +43,21 @@ enum RegisterEnum : Register {
     R15,
 };
 
-static const Register kCallFrameRegister   = static_cast<Register>(R13);
-static const Register kStackRegister       = static_cast<Register>(R14);
-static const Register kInstructionRegister = static_cast<Register>(R15);
+constexpr size_t kNRegisters = 16ull;
+
+constexpr Register kCallFrameRegister   = static_cast<Register>(R13);
+constexpr Register kStackRegister       = static_cast<Register>(R14);
+constexpr Register kInstructionRegister = static_cast<Register>(R15);
 
 extern const std::unordered_map<std::string, Register> kRegisterNameToNum;
 extern const std::unordered_map<Register, std::string> kRegisterNumToName;
-
-static const size_t kNRegisters = 16ull;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                  Memory                                  ///
 ////////////////////////////////////////////////////////////////////////////////
 
-using Address                   = Word;
-static const size_t kMemorySize = 1ull << 20ull;
+using Address = Word;
+
+constexpr size_t kMemorySize = 1ull << 20ull;
 
 }  // namespace karma::detail::specs::arch

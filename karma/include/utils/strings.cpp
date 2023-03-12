@@ -47,7 +47,7 @@ std::string Escape(const std::string& str, size_t start, size_t end) {
     }
 
     std::string res;
-    res.reserve(str.size());
+    res.reserve(end_pos - start);
 
     for (size_t curr_pos = start; curr_pos < end_pos; ++curr_pos) {
         if (!kUnescapeSequences.contains(str[curr_pos])) {

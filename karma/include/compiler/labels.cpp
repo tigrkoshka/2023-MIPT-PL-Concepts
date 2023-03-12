@@ -14,32 +14,24 @@ using errors::compiler::CompileError;
 
 namespace syntax = karma::detail::specs::syntax;
 
-void Labels::CheckLabel(const std::string& label, size_t line) {
+void Labels::CheckLabel(const std::string& label, const std::string& pos) {
     if (label.empty()) {
-        throw CompileError::EmptyLabel(line);
+        throw CompileError::EmptyLabel(pos);
     }
 
     if (std::isdigit(label[0]) != 0) {
-        throw CompileError::LabelStartsWithDigit(label, line);
+        throw CompileError::LabelStartsWithDigit({label, pos});
     }
 
     for (char symbol : label) {
         if (!syntax::IsAllowedLabelChar(symbol)) {
-            throw CompileError::InvalidLabelCharacter(symbol, label, line);
+            throw CompileError::InvalidLabelCharacter(symbol, {label, pos});
         }
     }
 }
 
 void Labels::SetCodeSize(size_t code_size) {
     code_size_ = code_size;
-}
-
-const std::string& Labels::GetLatest() const {
-    return latest_label_;
-}
-
-size_t Labels::GetLatestLine() const {
-    return latest_label_line_;
 }
 
 std::optional<size_t> Labels::TryGetDefinition(const std::string& label) const {
@@ -54,8 +46,7 @@ std::optional<size_t> Labels::TryGetDefinition(const std::string& label) const {
     return std::nullopt;
 }
 
-std::optional<size_t> Labels::TryGetDefinitionLine(
-    const std::string& label) const {
+std::optional<std::string> Labels::TryGetPos(const std::string& label) const {
     if (commands_labels_.contains(label)) {
         return commands_labels_.at(label).second;
     }
@@ -67,35 +58,42 @@ std::optional<size_t> Labels::TryGetDefinitionLine(
     return std::nullopt;
 }
 
-void Labels::RecordLabelOccurrence(const std::string& label, size_t line) {
-    latest_label_line_ = line;
-    latest_label_      = label;
+void Labels::RecordCommandLabel(const std::string& label,
+                                size_t definition,
+                                const std::string& pos) {
+    commands_labels_[label] = {definition, pos};
 }
 
-void Labels::RecordCommandLabel(size_t definition) {
-    commands_labels_[latest_label_] = {definition, latest_label_line_};
-}
-
-void Labels::RecordConstantLabel(size_t definition) {
-    constants_labels_[latest_label_] = {definition, latest_label_line_};
+void Labels::RecordConstantLabel(const std::string& label,
+                                 size_t definition,
+                                 const std::string& pos) {
+    constants_labels_[label] = {definition, pos};
 }
 
 void Labels::RecordEntrypointLabel(const std::string& label) {
     entrypoint_label_ = label;
 }
 
-const std::optional<std::string>& Labels::TryGetEntrypointLabel() {
+std::optional<std::string> Labels::TryGetEntrypointLabel() const {
     return entrypoint_label_;
 }
 
 void Labels::RecordUsage(const std::string& label,
-                         size_t line_number,
+                         const File* file,
                          size_t command_number) {
-    usages_[label].emplace_back(line_number, command_number);
+    usages_[label][file].push_back(command_number);
+
+    if (!usage_samples_.contains(label)) {
+        usage_samples_[label] = file->Where();
+    }
 }
 
-const Labels::AllUsages& Labels::GetUsages() {
+const Labels::AllUsages& Labels::GetUsages() const {
     return usages_;
+}
+
+std::string Labels::GetUsageSample(const std::string& label) const {
+    return usage_samples_.at(label);
 }
 
 }  // namespace karma::compiler::detail

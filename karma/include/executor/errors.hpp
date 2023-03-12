@@ -7,6 +7,7 @@
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/error.hpp"
+#include "utils/concepts.hpp"
 
 namespace karma::errors::executor {
 
@@ -40,9 +41,7 @@ struct ExecutionError : Error {
 
     static ExecutionError UnknownSyscallCode(detail::specs::cmd::syscall::Code);
 
-    template <typename T>
-        requires std::is_same_v<T, detail::specs::arch::TwoWords> ||
-                 std::is_same_v<T, detail::specs::arch::Double>
+    template <detail::utils::concepts::IntOrFloat T>
     static ExecutionError DivisionByZero(T dividend, T divisor) {
         std::ostringstream ss;
         ss << "a division by zero occurred when dividing " << dividend << " by "

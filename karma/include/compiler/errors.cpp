@@ -11,6 +11,9 @@
 
 namespace karma::errors::compiler {
 
+using IE = InternalError;
+using CE = CompileError;
+
 namespace cmd = detail::specs::cmd;
 
 namespace consts = detail::specs::consts;
@@ -21,341 +24,320 @@ namespace syntax = detail::specs::syntax;
 ///                              Internal errors                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-InternalError InternalError::FailedToOpen(const std::string& path) {
+IE IE::RepeatedOpenFile(const std::string& path) {
+    std::ostringstream ss;
+    ss << "attempt to open file " << std::quoted(path)
+       << ", which was already opened";
+    return IE{ss.str()};
+}
+
+IE IE::CloseUnopenedFile(const std::string& path) {
+    std::ostringstream ss;
+    ss << "attempt to close file " << std::quoted(path)
+       << ", which was not opened";
+    return IE{ss.str()};
+}
+
+IE IE::FailedToOpen(const std::string& path) {
     std::ostringstream ss;
     ss << "failed to open " << std::quoted(path);
-    return InternalError{ss.str()};
+    return IE{ss.str()};
 }
 
-InternalError InternalError::FormatNotFound(cmd::Code command_code,
-                                            size_t line) {
+IE IE::FormatNotFound(cmd::Code command_code, Where where) {
     std::ostringstream ss;
     ss << "did not find format for command with code " << command_code;
-    return {ss.str(), line};
+    return {ss.str(), where};
 }
 
-InternalError InternalError::UnprocessedCommandFormat(cmd::Format format,
-                                                      size_t line) {
+IE IE::UnprocessedCommandFormat(cmd::Format format, Where where) {
     std::ostringstream ss;
     ss << "processing for command format " << cmd::kFormatToString.at(format)
        << " is not implemented";
-    return {ss.str(), line};
+    return {ss.str(), where};
 }
 
-InternalError InternalError::UnprocessedConstantType(consts::Type type,
-                                                     size_t line) {
+IE IE::UnprocessedConstantType(consts::Type type, Where where) {
     std::ostringstream ss;
     ss << "processing for constant type " << consts::kTypeToName.at(type)
        << " is not implemented";
-    return {ss.str(), line};
+    return {ss.str(), where};
 }
 
-InternalError InternalError::EmptyWord(size_t line) {
-    return {"the current word is empty", line};
+IE IE::EmptyWord(Where where) {
+    return {"the current word is empty", where};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                            Compilation errors                            ///
 ////////////////////////////////////////////////////////////////////////////////
 
+///---------------------------------Includes---------------------------------///
+
+CE CE::IncludeNoFilename(Where where) {
+    return {"filename not specified for the include directive", where};
+}
+
 ///----------------------------------Labels----------------------------------///
 
-CompileError CompileError::EmptyLabel(size_t line) {
-    return {"label name must not be empty", line};
+CE CE::EmptyLabel(Where where) {
+    return {"label name must not be empty", where};
 }
 
-CompileError CompileError::LabelBeforeEntrypoint(
-    size_t end_line,
-    const std::string& latest_label,
-    size_t latest_label_line) {
+CE CE::LabelBeforeEntrypoint(Where entry, Label label) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(latest_label) << " is placed before the "
-       << std::quoted(syntax::kEntrypointDirective) << " directive (at line "
-       << end_line << "), but a label can only appear before a command";
-    return {ss.str(), latest_label_line};
+    ss << "label " << std::quoted(label.Value()) << " is placed before the "
+       << std::quoted(syntax::kEntrypointDirective) << " directive " << entry;
+    return {ss.str(), label.Where()};
 }
 
-CompileError CompileError::ConsecutiveLabels(const std::string& label,
-                                             size_t line,
-                                             const std::string& latest_label,
-                                             size_t latest_label_line) {
+CE CE::ConsecutiveLabels(Label curr, Label prev) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label)
-       << " is not separated from the previous one ("
-       << std::quoted(latest_label) << " in line " << latest_label_line
-       << ") by at least one command";
-    return {ss.str(), line};
+    ss << "label " << std::quoted(curr.Value())
+       << " is not separated from the previous one by at least one command or "
+       << "constant, the previous label: " << std::quoted(prev.Value())
+       << prev.Where();
+    return {ss.str(), curr.Where()};
 }
 
-CompileError CompileError::LabelRedefinition(const std::string& label,
-                                             size_t line,
-                                             size_t previous_definition_line) {
+CE CE::LabelRedefinition(Label label, Where previous_pos) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label) << " redefinition at line " << line
-       << ": previous definition was at line " << previous_definition_line;
-    return {ss.str(), line};
+    ss << "label " << std::quoted(label.Value())
+       << " redefinition, previous definition was " << previous_pos;
+    return {ss.str(), label.Where()};
 }
 
-CompileError CompileError::FileEndsWithLabel(const std::string& label,
-                                             size_t line) {
+CE CE::FileEndsWithLabel(Label label) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label)
+    ss << "label " << std::quoted(label.Value())
        << " is the last non-comment word in file";
-    return {ss.str(), line};
+    return {ss.str(), label.Where()};
 }
 
-CompileError CompileError::LabelStartsWithDigit(const std::string& label,
-                                                size_t line) {
+CE CE::LabelStartsWithDigit(Label label) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label) << " starts with a digit";
-    return {ss.str(), line};
+    ss << "label " << std::quoted(label.Value()) << " starts with a digit";
+    return {ss.str(), label.Where()};
 }
 
-CompileError CompileError::InvalidLabelCharacter(char invalid,
-                                                 const std::string& label,
-                                                 size_t line) {
+CE CE::InvalidLabelCharacter(char invalid, Label label) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label) << " contains an invalid character: \'"
-       << invalid << "\'";
-    return {ss.str(), line};
+    ss << "label " << std::quoted(label.Value())
+       << " contains an invalid character: \'" << invalid << "\'";
+    return {ss.str(), label.Where()};
 }
 
-CompileError CompileError::UndefinedLabel(const std::string& label,
-                                          size_t line) {
+CE CE::UndefinedLabel(Label label) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label) << " is not defined";
-    return {ss.str(), line};
+    ss << "label " << std::quoted(label.Value()) << " is not defined";
+    return {ss.str(), label.Where()};
 }
 
 ///--------------------------------Entrypoint--------------------------------///
 
-CompileError CompileError::NoEntrypoint() {
+CE CE::NoEntrypoint() {
     return CompileError("did not encounter an entrypoint");
 }
 
-CompileError CompileError::SecondEntrypoint(size_t line,
-                                            size_t entrypoint_line) {
+CE CE::SecondEntrypoint(Where curr, Where prev) {
     std::ostringstream ss;
-    ss << "encountered second entrypoint (previous one on line "
-       << entrypoint_line << ")";
-    return {ss.str(), line};
+    ss << "encountered second entrypoint, previous one " << prev;
+    return {ss.str(), curr};
 }
 
-CompileError CompileError::EntrypointWithoutAddress(size_t line) {
-    return {"entrypoint address not specified", line};
+CE CE::EntrypointWithoutAddress(Where where) {
+    return {"entrypoint address not specified", where};
 }
 
 ///---------------------------------Constants--------------------------------///
 
-CompileError CompileError::EmptyConstantValue(consts::Type type, size_t line) {
+CE CE::EmptyConstValue(consts::Type type, Where where) {
     std::ostringstream ss;
     ss << "empty value for a constant of type " << consts::kTypeToName.at(type);
-    return {ss.str(), line};
+    return {ss.str(), where};
 }
 
-CompileError CompileError::InvalidValue(consts::Type type,
-                                        const std::string& value,
-                                        size_t line) {
+CE CE::InvalidConstValue(consts::Type type, Value value) {
     std::ostringstream ss;
     ss << "invalid value for " << consts::kTypeToName.at(type) << " constant "
-       << std::quoted(value);
-    return {ss.str(), line};
+       << std::quoted(value.Value());
+    return {ss.str(), value.Where()};
 }
 
-CompileError CompileError::CharTooSmallForQuotes(const std::string& value,
-                                                 size_t line) {
+CE CE::CharTooSmallForQuotes(Value value) {
     std::ostringstream ss;
     ss << "a char constant must be surrounded by single quotes, instead got: "
-       << std::quoted(value);
-    return {ss.str(), line};
+       << std::quoted(value.Value());
+    return {ss.str(), value.Where()};
 }
 
-CompileError CompileError::CharNoStartQuote(const std::string& value,
-                                            size_t line) {
+CE CE::CharNoStartQuote(Value value) {
     std::ostringstream ss;
     ss << "char constant value must start with a single quote, instead got: "
-       << value;
-    return {ss.str(), line};
+       << value.Value();
+    return {ss.str(), value.Where()};
 }
 
-CompileError CompileError::CharNoEndQuote(const std::string& value,
-                                          size_t line) {
+CE CE::CharNoEndQuote(Value value) {
     std::ostringstream ss;
     ss << "char constant value must end with a single quote, instead got: "
-       << value;
-    return {ss.str(), line};
+       << value.Value();
+    return {ss.str(), value.Where()};
 }
 
-CompileError CompileError::StringTooSmallForQuotes(const std::string& value,
-                                                   size_t line) {
+CE CE::StringTooSmallForQuotes(Value value) {
     std::ostringstream ss;
     ss << "a string constant must be surrounded by double quotes, instead got: "
-       << value;
-    return {ss.str(), line};
+       << value.Value();
+    return {ss.str(), value.Where()};
 }
 
-CompileError CompileError::StringNoStartQuote(const std::string& value,
-                                              size_t line) {
+CE CE::StringNoStartQuote(Value value) {
     std::ostringstream ss;
     ss << "string constant value must start with a double quote, instead got: "
-       << value;
-    return {ss.str(), line};
+       << value.Value();
+    return {ss.str(), value.Where()};
 }
 
-CompileError CompileError::StringNoEndQuote(const std::string& value,
-                                            size_t line) {
+CE CE::StringNoEndQuote(Value value) {
     std::ostringstream ss;
     ss << "string constant value must end with a double quote, instead got: "
-       << value;
-    return {ss.str(), line};
+       << value.Value();
+    return {ss.str(), value.Where()};
 }
 
 ///----------------------------------Command---------------------------------///
 
-CompileError CompileError::UnknownCommand(const std::string& command,
-                                          size_t line) {
+CE CE::UnknownCommand(Command command) {
     std::ostringstream ss;
-    ss << "unknown command " << std::quoted(command);
-    return {ss.str(), line};
+    ss << "unknown command " << std::quoted(command.Value());
+    return {ss.str(), command.Where()};
 }
 
 ///---------------------------------Register---------------------------------///
 
-CompileError CompileError::UnknownRegister(const std::string& reg,
-                                           size_t line) {
+CE CE::UnknownRegister(Register reg) {
     std::ostringstream ss;
-    ss << "unknown register " << std::quoted(reg);
-    return {ss.str(), line};
+    ss << "unknown register " << std::quoted(reg.Value());
+    return {ss.str(), reg.Where()};
 }
 
 ///----------------------------------Address---------------------------------///
 
-CompileError CompileError::AddressNegative(const std::string& address,
-                                           size_t line) {
+CE CE::AddressNegative(Address address) {
     std::ostringstream ss;
-    ss << "the address operand " << std::quoted(address, ')')
+    ss << "the address operand " << std::quoted(address.Value(), ')')
        << " must not be negative";
-    return {ss.str(), line};
+    return {ss.str(), address.Where()};
 }
 
-CompileError CompileError::AddressOutOfMemory(const std::string& address,
-                                              size_t line) {
+CE CE::AddressOutOfMemory(Address address) {
     std::ostringstream ss;
-    ss << "the address operand " << std::quoted(address, ')')
+    ss << "the address operand " << std::quoted(address.Value(), ')')
        << " exceeds the memory size";
-    return {ss.str(), line};
+    return {ss.str(), address.Where()};
 }
 
 ///---------------------------------Immediate--------------------------------///
 
-CompileError CompileError::ImmediateNotANumber(const std::string& immediate,
-                                               size_t line) {
+CE CE::ImmediateNotANumber(Immediate immediate) {
     std::ostringstream ss;
-    ss << "the immediate operand is not a number: " << std::quoted(immediate);
-    return {ss.str(), line};
+    ss << "the immediate operand is not a number: "
+       << std::quoted(immediate.Value());
+    return {ss.str(), immediate.Where()};
 }
 
-CompileError CompileError::ImmediateLessThanMin(int32_t min,
-                                                const std::string& immediate,
-                                                size_t line) {
+CE CE::ImmediateLessThanMin(int32_t min, Immediate immediate) {
     std::ostringstream ss;
     ss << "the immediate operand is less than the allowed minimum (" << min
-       << "): " << immediate;
-    return {ss.str(), line};
+       << "): " << immediate.Value();
+    return {ss.str(), immediate.Where()};
 }
 
-CompileError CompileError::ImmediateMoreThanMax(int32_t max,
-                                                const std::string& immediate,
-                                                size_t line) {
+CE CE::ImmediateMoreThanMax(int32_t max, Immediate immediate) {
     std::ostringstream ss;
     ss << "the immediate operand is less than the allowed maximum (" << max
-       << "): " << immediate;
-    return {ss.str(), line};
+       << "): " << immediate.Value();
+    return {ss.str(), immediate.Where()};
 }
 
-CompileError CompileError::ImmediateOutOfRange(const std::string& immediate,
-                                               size_t line) {
+CE CE::ImmediateOutOfRange(Immediate immediate) {
     std::ostringstream ss;
-    ss << "the immediate operand is out of range " << immediate;
-    return {ss.str(), line};
+    ss << "the immediate operand is out of range " << immediate.Value();
+    return {ss.str(), immediate.Where()};
 }
 
 ///------------------------------------RM------------------------------------///
 
-CompileError CompileError::RMCommandNoRegister(size_t line) {
-    return {"register not specified for RM format command", line};
+CE CE::RMNoRegister(Where where) {
+    return {"register not specified for RM format command", where};
 }
 
-CompileError CompileError::RMCommandNoAddress(size_t line) {
-    return {"memory address not specified for RM format command", line};
+CE CE::RMNoAddress(Where where) {
+    return {"memory address not specified for RM format command", where};
 }
 
 ///------------------------------------RR------------------------------------///
 
-CompileError CompileError::RRCommandNoReceiver(size_t line) {
-    return {"receiver register not specified for RR format command", line};
+CE CE::RRNoReceiver(Where where) {
+    return {"receiver register not specified for RR format command", where};
 }
 
-CompileError CompileError::RRCommandNoSource(size_t line) {
-    return {"source register not specified for RR format command", line};
+CE CE::RRNoSource(Where where) {
+    return {"source register not specified for RR format command", where};
 }
 
-CompileError CompileError::RRCommandNoModifier(size_t line) {
+CE CE::RRNoModifier(Where where) {
     return {
         "source modifier operand not specified for RR format command, "
         "specify 0 for no modification",
-        line,
+        where,
     };
 }
 
 ///------------------------------------RI------------------------------------///
 
-CompileError CompileError::RICommandNoRegister(size_t line) {
-    return {"register not specified for RI format command", line};
+CE CE::RINoRegister(Where where) {
+    return {"register not specified for RI format command", where};
 }
 
-CompileError CompileError::RICommandNoImmediate(size_t line) {
-    return {"immediate operand not specified for RI format command", line};
+CE CE::RINoImmediate(Where where) {
+    return {"immediate operand not specified for RI format command", where};
 }
 
 ///-------------------------------------J------------------------------------///
 
-CompileError CompileError::JCommandNoAddress(size_t line) {
-    return {"memory address not specified for J format command", line};
+CE CE::JNoAddress(Where where) {
+    return {"memory address not specified for J format command", where};
 }
 
 ///--------------------------------Extra words-------------------------------///
 
-CompileError CompileError::ExtraWordsAfterEntrypoint(const std::string& extra,
-                                                     size_t line) {
+CE CE::ExtraAfterEntrypoint(Extra extra) {
     std::ostringstream ss;
     ss << "the line starts with a valid "
        << std::quoted(syntax::kEntrypointDirective)
        << " directive, but has unexpected words at the end (starting from "
-       << std::quoted(extra) << ")";
-    return {ss.str(), line};
+       << std::quoted(extra.Value()) << ")";
+    return {ss.str(), extra.Where()};
 }
 
-CompileError CompileError::ExtraWordsAfterConstant(consts::Type type,
-                                                   const std::string& extra,
-                                                   size_t line) {
+CE CE::ExtraAfterConstant(consts::Type type, Extra extra) {
     std::ostringstream ss;
     ss << "the line starts with a valid constant (type "
        << consts::kTypeToName.at(type)
        << "), but has unexpected words at the end (starting from "
-       << std::quoted(extra) << ")";
-    return {ss.str(), line};
+       << std::quoted(extra.Value()) << ")";
+    return {ss.str(), extra.Where()};
 }
 
-CompileError CompileError::ExtraWordsAfterCommand(cmd::Format fmt,
-                                                  const std::string& extra,
-                                                  size_t line) {
+CE CE::ExtraAfterCommand(cmd::Format fmt, Extra extra) {
     std::ostringstream ss;
     ss << "the line starts with a valid command (format "
        << cmd::kFormatToString.at(fmt)
        << "), but has unexpected words at the end (starting from "
-       << std::quoted(extra) << ")";
-    return {ss.str(), line};
+       << std::quoted(extra.Value()) << ")";
+    return {ss.str(), extra.Where()};
 }
 
 }  // namespace karma::errors::compiler
