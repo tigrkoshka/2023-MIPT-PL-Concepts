@@ -18,17 +18,20 @@ class Impl : karma::detail::utils::traits::NonCopyableMovable {
     using FilesDataMap = std::unordered_map<const File*, ExecData*>;
 
    private:
-    void ProcessFile();
     void FillLabels(const FilesDataMap& files_data);
     karma::detail::exec::Data PrepareExecData(const Files& files);
 
    public:
+    Impl()
+        : labels_(std::make_shared<Labels>()),
+          entrypoint_(std::make_shared<Entrypoint>()){};
+
     void MustCompile(const std::string& src, const std::string& dst);
     void Compile(const std::string& src, const std::string& dst);
 
    private:
-    Labels labels_;
-    Entrypoint entrypoint_;
+    std::shared_ptr<Labels> labels_;
+    std::shared_ptr<Entrypoint> entrypoint_;
 };
 
 }  // namespace karma::compiler::detail

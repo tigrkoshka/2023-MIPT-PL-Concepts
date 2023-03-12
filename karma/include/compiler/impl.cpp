@@ -35,11 +35,11 @@ namespace exec = karma::detail::exec;
 ////////////////////////////////////////////////////////////////////////////////
 
 void Impl::FillLabels(const FilesDataMap& files_data) {
-    for (const auto& [label, usages] : labels_.GetUsages()) {
-        std::optional<size_t> definition_opt = labels_.TryGetDefinition(label);
+    for (const auto& [label, usages] : labels_->GetUsages()) {
+        std::optional<size_t> definition_opt = labels_->TryGetDefinition(label);
         if (!definition_opt) {
             throw CompileError::UndefinedLabel(
-                {label, labels_.GetUsageSample(label)});
+                {label, labels_->GetUsageSample(label)});
         }
 
         auto definition = static_cast<args::Address>(*definition_opt);
@@ -52,14 +52,14 @@ void Impl::FillLabels(const FilesDataMap& files_data) {
         }
     }
 
-    if (std::optional<std::string> entry = labels_.TryGetEntrypointLabel()) {
-        std::optional<size_t> definition = labels_.TryGetDefinition(*entry);
+    if (std::optional<std::string> entry = labels_->TryGetEntrypointLabel()) {
+        std::optional<size_t> definition = labels_->TryGetDefinition(*entry);
         if (!definition) {
             throw CompileError::UndefinedLabel(
-                {*entry, *entrypoint_.TryGetPos()});
+                {*entry, *entrypoint_->TryGetPos()});
         }
 
-        entrypoint_.SetAddress(static_cast<args::Address>(*definition));
+        entrypoint_->SetAddress(static_cast<args::Address>(*definition));
     }
 }
 
@@ -68,18 +68,15 @@ void Impl::FillLabels(const FilesDataMap& files_data) {
 ////////////////////////////////////////////////////////////////////////////////
 
 exec::Data Impl::PrepareExecData(const Files& files) {
-    std::shared_ptr<Labels> labels_shared(&labels_);
-    std::shared_ptr<Entrypoint> entrypoint_shared(&entrypoint_);
-
     // TODO: multithreading
 
     std::vector<ExecData> files_data(files.size());
     for (size_t i = 0; i < files.size(); ++i) {
-        FileCompiler file_compiler{files[i], labels_shared, entrypoint_shared};
+        FileCompiler file_compiler{files[i], labels_, entrypoint_};
         files_data[i] = std::move(file_compiler).PrepareData();
     }
 
-    if (!entrypoint_.Seen()) {
+    if (!entrypoint_->Seen()) {
         throw CompileError::NoEntrypoint();
     }
 
@@ -93,13 +90,15 @@ exec::Data Impl::PrepareExecData(const Files& files) {
         code_size += data.Code().size();
     }
 
-    labels_.SetCodeSize(code_size);
+    labels_->SetCodeSize(code_size);
 
     FillLabels(files_data_map);
 
     exec::Data exec_data{
-        .entrypoint    = *entrypoint_.TryGetAddress(),
+        .entrypoint    = *entrypoint_->TryGetAddress(),
         .initial_stack = static_cast<arch::Word>(arch::kMemorySize - 1),
+        .code          = std::vector<arch::Word>(),
+        .constants     = std::vector<arch::Word>(),
     };
 
     for (const auto& data : files_data) {

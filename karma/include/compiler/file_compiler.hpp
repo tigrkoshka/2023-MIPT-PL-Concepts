@@ -58,7 +58,7 @@ class FileCompiler : karma::detail::utils::traits::NonCopyableMovable {
 
     karma::detail::specs::cmd::Bin MustParseCommand();
 
-    void ProcessCurrLine();
+    void ProcessCurrLine(bool is_first_line = false);
 
    public:
     FileCompiler(const std::unique_ptr<File>& file,

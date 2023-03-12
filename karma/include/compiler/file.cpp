@@ -17,6 +17,7 @@
 namespace karma::compiler::detail {
 
 using karma::errors::compiler::InternalError;
+using karma::errors::compiler::CompileError;
 
 namespace utils = karma::detail::utils;
 
@@ -65,7 +66,7 @@ void File::Open() {
     stream_ = std::ifstream(path_);
 
     if (stream_.fail()) {
-        throw InternalError::FailedToOpen(path_);
+        throw CompileError::FailedToOpen(path_);
     }
 
     line_ = 1;
@@ -112,10 +113,12 @@ std::string File::Where() const {
     std::ostringstream where;
     where << "at line " << LineNum() << " in ";
 
+    auto x = FromRoot();
+
     auto get_path = [](const File* file) -> std::string {
         return file->Path();
     };
-    auto pipeline = FromRoot() | std::views::transform(get_path);
+    auto pipeline = x | std::views::transform(get_path);
 
     std::ostream_iterator<std::string> dst{where, "\n included from "};
     std::ranges::copy(pipeline, dst);

@@ -38,12 +38,6 @@ IE IE::CloseUnopenedFile(const std::string& path) {
     return IE{ss.str()};
 }
 
-IE IE::FailedToOpen(const std::string& path) {
-    std::ostringstream ss;
-    ss << "failed to open " << std::quoted(path);
-    return IE{ss.str()};
-}
-
 IE IE::FormatNotFound(cmd::Code command_code, Where where) {
     std::ostringstream ss;
     ss << "did not find format for command with code " << command_code;
@@ -72,6 +66,14 @@ IE IE::EmptyWord(Where where) {
 ///                            Compilation errors                            ///
 ////////////////////////////////////////////////////////////////////////////////
 
+///-----------------------------------File-----------------------------------///
+
+CE CE::FailedToOpen(const std::string& path) {
+    std::ostringstream ss;
+    ss << "failed to open " << std::quoted(path);
+    return CE{ss.str()};
+}
+
 ///---------------------------------Includes---------------------------------///
 
 CE CE::IncludeNoFilename(Where where) {
@@ -86,51 +88,51 @@ CE CE::EmptyLabel(Where where) {
 
 CE CE::LabelBeforeEntrypoint(Where entry, Label label) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label.Value()) << " is placed before the "
+    ss << "label " << std::quoted(label.value) << " is placed before the "
        << std::quoted(syntax::kEntrypointDirective) << " directive " << entry;
-    return {ss.str(), label.Where()};
+    return {ss.str(), label.where};
 }
 
 CE CE::ConsecutiveLabels(Label curr, Label prev) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(curr.Value())
+    ss << "label " << std::quoted(curr.value)
        << " is not separated from the previous one by at least one command or "
-       << "constant, the previous label: " << std::quoted(prev.Value())
-       << prev.Where();
-    return {ss.str(), curr.Where()};
+       << "constant, the previous label: " << std::quoted(prev.value)
+       << prev.where;
+    return {ss.str(), curr.where};
 }
 
 CE CE::LabelRedefinition(Label label, Where previous_pos) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label.Value())
+    ss << "label " << std::quoted(label.value)
        << " redefinition, previous definition was " << previous_pos;
-    return {ss.str(), label.Where()};
+    return {ss.str(), label.where};
 }
 
 CE CE::FileEndsWithLabel(Label label) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label.Value())
+    ss << "label " << std::quoted(label.value)
        << " is the last non-comment word in file";
-    return {ss.str(), label.Where()};
+    return {ss.str(), label.where};
 }
 
 CE CE::LabelStartsWithDigit(Label label) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label.Value()) << " starts with a digit";
-    return {ss.str(), label.Where()};
+    ss << "label " << std::quoted(label.value) << " starts with a digit";
+    return {ss.str(), label.where};
 }
 
 CE CE::InvalidLabelCharacter(char invalid, Label label) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label.Value())
+    ss << "label " << std::quoted(label.value)
        << " contains an invalid character: \'" << invalid << "\'";
-    return {ss.str(), label.Where()};
+    return {ss.str(), label.where};
 }
 
 CE CE::UndefinedLabel(Label label) {
     std::ostringstream ss;
-    ss << "label " << std::quoted(label.Value()) << " is not defined";
-    return {ss.str(), label.Where()};
+    ss << "label " << std::quoted(label.value) << " is not defined";
+    return {ss.str(), label.where};
 }
 
 ///--------------------------------Entrypoint--------------------------------///
@@ -160,82 +162,82 @@ CE CE::EmptyConstValue(consts::Type type, Where where) {
 CE CE::InvalidConstValue(consts::Type type, Value value) {
     std::ostringstream ss;
     ss << "invalid value for " << consts::kTypeToName.at(type) << " constant "
-       << std::quoted(value.Value());
-    return {ss.str(), value.Where()};
+       << std::quoted(value.value);
+    return {ss.str(), value.where};
 }
 
 CE CE::CharTooSmallForQuotes(Value value) {
     std::ostringstream ss;
     ss << "a char constant must be surrounded by single quotes, instead got: "
-       << std::quoted(value.Value());
-    return {ss.str(), value.Where()};
+       << std::quoted(value.value);
+    return {ss.str(), value.where};
 }
 
 CE CE::CharNoStartQuote(Value value) {
     std::ostringstream ss;
     ss << "char constant value must start with a single quote, instead got: "
-       << value.Value();
-    return {ss.str(), value.Where()};
+       << value.value;
+    return {ss.str(), value.where};
 }
 
 CE CE::CharNoEndQuote(Value value) {
     std::ostringstream ss;
     ss << "char constant value must end with a single quote, instead got: "
-       << value.Value();
-    return {ss.str(), value.Where()};
+       << value.value;
+    return {ss.str(), value.where};
 }
 
 CE CE::StringTooSmallForQuotes(Value value) {
     std::ostringstream ss;
     ss << "a string constant must be surrounded by double quotes, instead got: "
-       << value.Value();
-    return {ss.str(), value.Where()};
+       << value.value;
+    return {ss.str(), value.where};
 }
 
 CE CE::StringNoStartQuote(Value value) {
     std::ostringstream ss;
     ss << "string constant value must start with a double quote, instead got: "
-       << value.Value();
-    return {ss.str(), value.Where()};
+       << value.value;
+    return {ss.str(), value.where};
 }
 
 CE CE::StringNoEndQuote(Value value) {
     std::ostringstream ss;
     ss << "string constant value must end with a double quote, instead got: "
-       << value.Value();
-    return {ss.str(), value.Where()};
+       << value.value;
+    return {ss.str(), value.where};
 }
 
 ///----------------------------------Command---------------------------------///
 
 CE CE::UnknownCommand(Command command) {
     std::ostringstream ss;
-    ss << "unknown command " << std::quoted(command.Value());
-    return {ss.str(), command.Where()};
+    ss << "unknown command " << std::quoted(command.value);
+    return {ss.str(), command.where};
 }
 
 ///---------------------------------Register---------------------------------///
 
 CE CE::UnknownRegister(Register reg) {
     std::ostringstream ss;
-    ss << "unknown register " << std::quoted(reg.Value());
-    return {ss.str(), reg.Where()};
+    ss << "unknown register " << std::quoted(reg.value);
+    return {ss.str(), reg.where};
 }
 
 ///----------------------------------Address---------------------------------///
 
 CE CE::AddressNegative(Address address) {
     std::ostringstream ss;
-    ss << "the address operand " << std::quoted(address.Value(), ')')
+    ss << "the address operand " << std::quoted(address.value, ')')
        << " must not be negative";
-    return {ss.str(), address.Where()};
+    return {ss.str(), address.where};
 }
 
 CE CE::AddressOutOfMemory(Address address) {
     std::ostringstream ss;
-    ss << "the address operand " << std::quoted(address.Value(), ')')
+    ss << "the address operand " << std::quoted(address.value, ')')
        << " exceeds the memory size";
-    return {ss.str(), address.Where()};
+    return {ss.str(), address.where};
 }
 
 ///---------------------------------Immediate--------------------------------///
@@ -243,28 +245,28 @@ CE CE::AddressOutOfMemory(Address address) {
 CE CE::ImmediateNotANumber(Immediate immediate) {
     std::ostringstream ss;
     ss << "the immediate operand is not a number: "
-       << std::quoted(immediate.Value());
-    return {ss.str(), immediate.Where()};
+       << std::quoted(immediate.value);
+    return {ss.str(), immediate.where};
 }
 
 CE CE::ImmediateLessThanMin(int32_t min, Immediate immediate) {
     std::ostringstream ss;
     ss << "the immediate operand is less than the allowed minimum (" << min
-       << "): " << immediate.Value();
-    return {ss.str(), immediate.Where()};
+       << "): " << immediate.value;
+    return {ss.str(), immediate.where};
 }
 
 CE CE::ImmediateMoreThanMax(int32_t max, Immediate immediate) {
     std::ostringstream ss;
     ss << "the immediate operand is less than the allowed maximum (" << max
-       << "): " << immediate.Value();
-    return {ss.str(), immediate.Where()};
+       << "): " << immediate.value;
+    return {ss.str(), immediate.where};
 }
 
 CE CE::ImmediateOutOfRange(Immediate immediate) {
     std::ostringstream ss;
-    ss << "the immediate operand is out of range " << immediate.Value();
-    return {ss.str(), immediate.Where()};
+    ss << "the immediate operand is out of range " << immediate.value;
+    return {ss.str(), immediate.where};
 }
 
 ///------------------------------------RM------------------------------------///
@@ -318,8 +320,8 @@ CE CE::ExtraAfterEntrypoint(Extra extra) {
     ss << "the line starts with a valid "
        << std::quoted(syntax::kEntrypointDirective)
        << " directive, but has unexpected words at the end (starting from "
-       << std::quoted(extra.Value()) << ")";
-    return {ss.str(), extra.Where()};
+       << std::quoted(extra.value) << ")";
+    return {ss.str(), extra.where};
 }
 
 CE CE::ExtraAfterConstant(consts::Type type, Extra extra) {
@@ -327,8 +329,8 @@ CE CE::ExtraAfterConstant(consts::Type type, Extra extra) {
     ss << "the line starts with a valid constant (type "
        << consts::kTypeToName.at(type)
        << "), but has unexpected words at the end (starting from "
-       << std::quoted(extra.Value()) << ")";
-    return {ss.str(), extra.Where()};
+       << std::quoted(extra.value) << ")";
+    return {ss.str(), extra.where};
 }
 
 CE CE::ExtraAfterCommand(cmd::Format fmt, Extra extra) {
@@ -336,8 +338,8 @@ CE CE::ExtraAfterCommand(cmd::Format fmt, Extra extra) {
     ss << "the line starts with a valid command (format "
        << cmd::kFormatToString.at(fmt)
        << "), but has unexpected words at the end (starting from "
-       << std::quoted(extra.Value()) << ")";
-    return {ss.str(), extra.Where()};
+       << std::quoted(extra.value) << ")";
+    return {ss.str(), extra.where};
 }
 
 }  // namespace karma::errors::compiler

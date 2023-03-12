@@ -19,8 +19,6 @@ struct Error : errors::Error {
 };
 
 struct InternalError : Error {
-    // TODO: maybe like in compile error
-
    private:
     using Where = const std::string&;
 
@@ -35,9 +33,6 @@ struct InternalError : Error {
     static InternalError RepeatedOpenFile(const std::string& path);
     static InternalError CloseUnopenedFile(const std::string& path);
 
-    // TODO: this is not an internal error
-    static InternalError FailedToOpen(const std::string& path);
-
     static InternalError FormatNotFound(detail::specs::cmd::Code, Where);
 
     static InternalError UnprocessedCommandFormat(detail::specs::cmd::Format,
@@ -50,42 +45,18 @@ struct InternalError : Error {
 };
 
 struct CompileError : Error {
-    // TODO: maybe major rethink
-
    private:
-    struct TokenInfo {
-       public:
-        TokenInfo(const std::string& value, const std::string& where)
-            : value_(std::move(value)),
-              where_(std::move(where)) {}
+    struct Token {
+        Token(const std::string& value, const std::string& where)
+            : value(value),
+              where(where) {}
 
-        std::string Value() {
-            if (std::exchange(value_used_, true)) {
-                throw std::runtime_error("token value reuse in compile error");
-            }
-
-            return std::move(value_);
-        }
-
-        std::string Where() {
-            if (std::exchange(where_used_, true)) {
-                throw std::runtime_error("token where reuse in compile error");
-            }
-
-            return std::move(where_);
-        }
-
-       private:
-        std::string value_;
-        bool value_used_{false};
-
-        std::string where_;
-        bool where_used_{false};
+        std::string value;
+        std::string where;
     };
 
    private:
     using Where     = const std::string&;
-    using Token     = TokenInfo&&;
     using Label     = Token;
     using Value     = Token;
     using Command   = Token;
@@ -99,10 +70,13 @@ struct CompileError : Error {
         : Error("compile error: " + message) {}
 
     CompileError(const std::string& message, Where where)
-        : Error("compile error " + static_cast<std::string>(where) + ": " +
-                message) {}
+        : Error("compile error " + where + ": " + message) {}
 
    public:
+    // file
+
+    static CompileError FailedToOpen(const std::string& path);
+
     // includes
 
     static CompileError IncludeNoFilename(Where);

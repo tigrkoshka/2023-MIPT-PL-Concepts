@@ -568,8 +568,8 @@ cmd::Bin FileCompiler::MustParseCommand() {
 ///                               Line parsing                               ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void FileCompiler::ProcessCurrLine() {
-    if (!file_->GetToken(curr_token_)) {
+void FileCompiler::ProcessCurrLine(bool is_first_line) {
+    if (!is_first_line && !file_->GetToken(curr_token_)) {
         return;
     }
 
@@ -597,9 +597,14 @@ ExecData FileCompiler::PrepareData() && {
 
     SkipIncludes();
 
+    // process the line for which the first token
+    // was already acquired in the line above
+    ProcessCurrLine(true);
+
+    // process the rest of the file
     while (file_->NextLine()) {
         ProcessCurrLine();
-    }
+    };
 
     if (latest_word_was_label_) {
         throw CompileError::FileEndsWithLabel(
@@ -607,6 +612,8 @@ ExecData FileCompiler::PrepareData() && {
     }
 
     file_->Close();
+
+    return std::move(data_);
 }
 
 }  // namespace karma::compiler::detail
