@@ -6,6 +6,7 @@
 #include <iostream>    // for cout
 #include <memory>      // for shared_ptr
 #include <optional>    // for optional
+#include <ranges>      // for ranges
 #include <string>      // for string
 #include <vector>      // for vector
 
@@ -17,12 +18,15 @@
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/exec.hpp"
+#include "utils/vector.hpp"
 
 namespace karma::compiler::detail {
 
 using errors::compiler::Error;
 using errors::compiler::InternalError;
 using errors::compiler::CompileError;
+
+namespace utils = karma::detail::utils;
 
 namespace arch = karma::detail::specs::arch;
 
@@ -71,23 +75,19 @@ exec::Data Impl::PrepareExecData(const Files& files) {
     // TODO: multithreading
 
     std::vector<ExecData> files_data(files.size());
+    FilesDataMap files_data_map;
+    size_t code_size = 0;
     for (size_t i = 0; i < files.size(); ++i) {
         FileCompiler file_compiler{files[i], labels_, entrypoint_};
-        files_data[i] = std::move(file_compiler).PrepareData();
+
+        files_data[i]                  = std::move(file_compiler).PrepareData();
+        files_data_map[files[i].get()] = &files_data[i];
+
+        code_size += files_data[i].Code().size();
     }
 
     if (!entrypoint_->Seen()) {
         throw CompileError::NoEntrypoint();
-    }
-
-    FilesDataMap files_data_map;
-    for (size_t i = 0; i < files.size(); ++i) {
-        files_data_map[files[i].get()] = &files_data[i];
-    }
-
-    size_t code_size = 0;
-    for (const auto& data : files_data) {
-        code_size += data.Code().size();
     }
 
     labels_->SetCodeSize(code_size);
@@ -102,12 +102,8 @@ exec::Data Impl::PrepareExecData(const Files& files) {
     };
 
     for (const auto& data : files_data) {
-        exec_data.code.insert(exec_data.code.end(),
-                              data.Code().begin(),
-                              data.Code().end());
-        exec_data.constants.insert(exec_data.constants.end(),
-                                   data.Constants().begin(),
-                                   data.Constants().end());
+        utils::vector::Append(exec_data.code, data.Code());
+        utils::vector::Append(exec_data.constants, data.Constants());
     }
 
     return exec_data;

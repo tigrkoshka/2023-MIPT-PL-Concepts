@@ -129,7 +129,7 @@ Data Read(const std::string& exec_path) {
         throw ExecFileError::InvalidIntroString(intro, exec_path);
     }
 
-    Data data{};
+    Data data;
 
     // read the code and constants segments sizes (in bytes)
     size_t code_size   = read_word();
@@ -161,21 +161,20 @@ Data Read(const std::string& exec_path) {
     // segments sizes is denoted in bytes, so we need to divide
     // it by arch::kWordSize to get the number of machine words
 
-    auto read_segment = [&read_word](size_t byte_size,
-                                     std::vector<arch::Word>& dst) {
-        size_t words_size = byte_size / arch::kWordSize;
-        dst.reserve(words_size);
-
-        for (size_t i = 0; i < words_size; ++i) {
-            dst.push_back(read_word());
+    auto read_segment = [&read_word](size_t byte_size) {
+        std::vector<arch::Word> dst(byte_size / arch::kWordSize);
+        for (size_t i = 0; i < dst.size(); ++i) {
+            dst[i] = read_word();
         }
+
+        return dst;
     };
 
     // read code
-    read_segment(code_size, data.code);
+    data.code = read_segment(code_size);
 
     // read constants
-    read_segment(consts_size, data.constants);
+    data.constants = read_segment(consts_size);
 
     return data;
 }

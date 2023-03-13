@@ -117,10 +117,25 @@ using Immediate = std::make_signed_t<arch::Word>;
 constexpr arch::Word kModSize = 16u;
 constexpr arch::Word kImmSize = 20u;
 
-using RMArgs = std::tuple<arch::Register, Address>;
-using RRArgs = std::tuple<Receiver, Source, Modifier>;
-using RIArgs = std::tuple<arch::Register, Immediate>;
-using JArgs  = std::tuple<Address>;
+struct RMArgs {
+    Register reg;
+    Address addr;
+};
+
+struct RRArgs {
+    Receiver recv;
+    Source src;
+    Modifier mod;
+};
+
+struct RIArgs {
+    Register reg;
+    Immediate imm;
+};
+
+struct JArgs {
+    Address addr;
+};
 
 }  // namespace args
 

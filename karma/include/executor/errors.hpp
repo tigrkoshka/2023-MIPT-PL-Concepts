@@ -2,7 +2,6 @@
 
 #include <sstream>      // for ostringstream
 #include <string>       // for string, to_string
-#include <type_traits>  // for is_same_v
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"

@@ -57,7 +57,3 @@ settings are used for a particular execution.
 #### Minor:
 
 * `registers_` -> `std::array<arch::Register, arch::kRegisters>`
-* `syscall r0 0` returns the exit code from `r0`:
-  * add to docs
-  * fix the programs (in docs too) to clear the `r0` register before `syscall`
-  * `Execute` returns the exit code
