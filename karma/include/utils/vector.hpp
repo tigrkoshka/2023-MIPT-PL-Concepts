@@ -18,9 +18,12 @@ template <typename T, typename... Args>
 void CopyToBegin(std::vector<T>& dst, const Args&... srcs) {
     typename std::vector<T>::iterator::difference_type start = 0;
 
-    ((std::copy(srcs.begin(), srcs.end(), dst.begin() + start),
-      start += srcs.size()),
-     ...);
+    auto copy_and_advance = [&dst, &start](const std::vector<T>& src) {
+        std::copy(src.begin(), src.end(), dst.begin() + start);
+        start += src.size();
+    };
+
+    (copy_and_advance(srcs), ...);
 }
 
 }  // namespace karma::detail::utils::vector
