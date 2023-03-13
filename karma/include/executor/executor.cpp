@@ -1,7 +1,8 @@
 #include "executor.hpp"
 
-#include <memory>  // for make_shared
-#include <string>  // for string
+#include <cstdint>   // for uint32_t
+#include <memory>    // for make_unique
+#include <string>    // for string
 
 #include "impl.hpp"
 
@@ -12,12 +13,12 @@ Executor::Executor()
 
 Executor::~Executor() = default;
 
-void Executor::MustExecute(const std::string& exec_path) {
-    impl_->MustExecute(exec_path);
+uint32_t Executor::MustExecute(const std::string& exec_path) {
+    return impl_->MustExecute(exec_path);
 }
 
-void Executor::Execute(const std::string& exec_path) {
-    impl_->Execute(exec_path);
+uint32_t Executor::Execute(const std::string& exec_path) {
+    return impl_->Execute(exec_path);
 }
 
 }  // namespace karma

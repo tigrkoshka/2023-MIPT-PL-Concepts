@@ -9,5 +9,6 @@ main:
         addi r0 1         # proceed to the next character
         jmp loop          # continue the loop
     out:                  # out of the while loop
-        lc r0 0           # clear r0
+        lc r0 0           # set return code to 0
+        syscall r0 0      # exit the program with code 0 from r0
 end main

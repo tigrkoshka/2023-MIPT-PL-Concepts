@@ -1,16 +1,23 @@
 #pragma once
 
 #include <concepts>  // for totally_ordered
+#include <cstdint>   // for uint32_t
+#include <optional>  // for optional
 #include <string>    // for string
 #include <vector>    // for vector
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/flags.hpp"
+#include "utils/traits.hpp"
 
 namespace karma::executor::detail {
 
-class Impl {
+class Impl : karma::detail::utils::traits::NonCopyableMovable {
+   private:
+    using RetCode = uint32_t;
+    using MaybeRetCode = std::optional<uint32_t>;
+
    private:
     [[nodiscard]] karma::detail::specs::arch::TwoWords GetTwoRegisters(
         karma::detail::specs::cmd::args::Source) const;
@@ -31,8 +38,8 @@ class Impl {
                 karma::detail::specs::arch::TwoWords,
                 karma::detail::specs::cmd::args::Receiver);
 
-    bool Syscall(karma::detail::specs::cmd::args::Register,
-                 karma::detail::specs::cmd::syscall::Code);
+    MaybeRetCode Syscall(karma::detail::specs::cmd::args::Register,
+                       karma::detail::specs::cmd::syscall::Code);
 
     void Push(karma::detail::specs::arch::Word);
 
@@ -43,29 +50,29 @@ class Impl {
         karma::detail::specs::cmd::args::Address);
     void Return();
 
-    bool ExecuteRMCommand(karma::detail::specs::cmd::Code,
-                          karma::detail::specs::cmd::args::Register,
-                          karma::detail::specs::cmd::args::Address);
+    MaybeRetCode ExecuteRMCommand(karma::detail::specs::cmd::Code,
+                                karma::detail::specs::cmd::args::Register,
+                                karma::detail::specs::cmd::args::Address);
 
-    bool ExecuteRRCommand(karma::detail::specs::cmd::Code,
-                          karma::detail::specs::cmd::args::Receiver,
-                          karma::detail::specs::cmd::args::Source,
-                          karma::detail::specs::cmd::args::Modifier);
+    MaybeRetCode ExecuteRRCommand(karma::detail::specs::cmd::Code,
+                                karma::detail::specs::cmd::args::Receiver,
+                                karma::detail::specs::cmd::args::Source,
+                                karma::detail::specs::cmd::args::Modifier);
 
-    bool ExecuteRICommand(karma::detail::specs::cmd::Code,
-                          karma::detail::specs::cmd::args::Register,
-                          karma::detail::specs::cmd::args::Immediate);
+    MaybeRetCode ExecuteRICommand(karma::detail::specs::cmd::Code,
+                                karma::detail::specs::cmd::args::Register,
+                                karma::detail::specs::cmd::args::Immediate);
 
-    bool ExecuteJCommand(karma::detail::specs::cmd::Code,
-                         karma::detail::specs::cmd::args::Address);
+    MaybeRetCode ExecuteJCommand(karma::detail::specs::cmd::Code,
+                               karma::detail::specs::cmd::args::Address);
 
-    bool ExecuteCommand(karma::detail::specs::cmd::Bin);
+    MaybeRetCode ExecuteCommand(karma::detail::specs::cmd::Bin);
 
-    void ExecuteImpl(const std::string& exec_path);
+    RetCode ExecuteImpl(const std::string& exec_path);
 
    public:
-    void MustExecute(const std::string& exec_path);
-    void Execute(const std::string& exec_path);
+    RetCode MustExecute(const std::string& exec_path);
+    RetCode Execute(const std::string& exec_path);
 
     Impl()
         : memory_(karma::detail::specs::arch::kMemorySize),

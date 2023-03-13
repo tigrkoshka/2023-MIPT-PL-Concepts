@@ -33,7 +33,8 @@
     \qquad syscall r0 102 & \# print \St{r0} to \St{stdout}                                       \\
     \qquad lc r0 10       & \# store the constant \St{10} (`\textbackslash n') to \St{r0}         \\
     \qquad syscall r0 105 & \# print `\textbackslash n' from \St{r0} to \St{stdout}               \\
-    \qquad syscall r0 0   & \# exit the program with code \St{0}                                  \\
+    \qquad lc r0 0        & \# set return code to \St{0}                                          \\
+    \qquad syscall r0 0   & \# exit the program with code \St{0} from \St{r0}                     \\
     end main              & \# start execution from label main                                    \\
 
 }

@@ -1,10 +1,14 @@
+#include <iostream>
+
 #include <karma>
 
 int main() {
     karma::compiler::MustCompile("../programs/04_factorial_loop.krm");
 
     karma::Executor executor;
-    executor.MustExecute("../programs/04_factorial_loop.a");
+    uint32_t ret_code = executor.MustExecute("../programs/04_factorial_loop.a");
+
+    std::cout << "executable returned code " << ret_code;
 
     karma::disassembler::MustDisassemble("../programs/04_factorial_loop.a");
 

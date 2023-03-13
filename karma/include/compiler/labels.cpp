@@ -6,6 +6,7 @@
 #include <string>    // for string
 
 #include "errors.hpp"
+#include "file.hpp"
 #include "specs/syntax.hpp"
 
 namespace karma::compiler::detail {

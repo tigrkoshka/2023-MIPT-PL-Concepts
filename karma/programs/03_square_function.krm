@@ -19,5 +19,6 @@ main:
     calli sqr             # call sqr, the function will put the result to r0
     push r0 0             # prepare the result of sqr to be passed to intout
     calli intout          # call intout with the prepared argument
-    syscall r0 0          # exit the program with code 0
+    lc r0 0               # set return code to 0
+    syscall r0 0          # exit the program with code 0 from r0
 end main                  # start execution from label main

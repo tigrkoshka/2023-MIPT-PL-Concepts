@@ -27,7 +27,8 @@
     \qquad calli sqr      & \# call \St{sqr}, the function will put the result to \St{r0}       \\
     \qquad push r0 0      & \# prepare the result of \St{sqr} to be passed to \St{intout}       \\
     \qquad calli intout   & \# call \St{intout} with the prepared argument                      \\
-    \qquad syscall r0 0   & \# exit the program with code \St{0}                                \\
+    \qquad lc r0 0        & \# set return code to \St{0}                                        \\
+    \qquad syscall r0 0   & \# exit the program with code \St{0} from \St{r0}                   \\
     end main              & \# start execution from label main                                  \\
 
 }

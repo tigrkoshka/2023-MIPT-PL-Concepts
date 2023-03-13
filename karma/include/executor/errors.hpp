@@ -6,8 +6,8 @@
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
-#include "utils/error.hpp"
 #include "utils/concepts.hpp"
+#include "utils/error.hpp"
 
 namespace karma::errors::executor {
 

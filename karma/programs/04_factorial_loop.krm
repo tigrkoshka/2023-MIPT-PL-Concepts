@@ -20,5 +20,6 @@ main:
     syscall r0 102        # print r0 to stdout
     lc r0 10              # store the constant 10 ('\n') to r0
     syscall r0 105        # print '\n' from r0 to stdout
-    syscall r0 0          # exit the program with code 0
+    lc r0 0               # set return code to 0
+    syscall r0 0          # exit the program with code 0 from r0
 end main                  # start execution from label main

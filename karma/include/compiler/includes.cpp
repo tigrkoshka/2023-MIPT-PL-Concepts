@@ -23,7 +23,7 @@ using karma::errors::compiler::CompileError;
 
 namespace syntax = karma::detail::specs::syntax;
 
-class Manager : karma::detail::utils::traits::NonCopyableMovable {
+class IncludesManager : karma::detail::utils::traits::NonCopyableMovable {
    private:
     Includes GetCurrIncludes() {
         std::string token;
@@ -93,7 +93,7 @@ class Manager : karma::detail::utils::traits::NonCopyableMovable {
 };
 
 Files GetFiles(const std::string& root_path) {
-    return Manager().GetFiles(root_path);
+    return IncludesManager().GetFiles(root_path);
 }
 
 }  // namespace karma::compiler::detail

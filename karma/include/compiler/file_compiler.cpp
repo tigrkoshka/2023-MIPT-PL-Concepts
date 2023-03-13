@@ -6,6 +6,7 @@
 #include <stdexcept>    // for invalid_argument, out_of_range
 #include <string>       // for string, stoull, stod
 #include <type_traits>  // for make_unsigned_t
+#include <utility>      // for exchange
 
 #include "errors.hpp"
 #include "exec_data.hpp"

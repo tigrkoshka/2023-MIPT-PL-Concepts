@@ -1,9 +1,7 @@
 #pragma once
 
-#include <cstddef>  // for size_t
 #include <cstdint>  // for int32_t
 #include <string>   // for string, to_string
-#include <utility>  // for exchange
 
 #include "labels.hpp"
 #include "specs/commands.hpp"
@@ -46,8 +44,8 @@ struct InternalError : Error {
 
 struct CompileError : Error {
    private:
-    struct Token {
-        Token(const std::string& value, const std::string& where)
+    struct TokenImpl {
+        TokenImpl(const std::string& value, const std::string& where)
             : value(value),
               where(where) {}
 
@@ -57,6 +55,7 @@ struct CompileError : Error {
 
    private:
     using Where     = const std::string&;
+    using Token     = const TokenImpl&;
     using Label     = Token;
     using Value     = Token;
     using Command   = Token;

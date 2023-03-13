@@ -5,10 +5,11 @@
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
+#include "utils/traits.hpp"
 
 namespace karma::detail::exec {
 
-struct Data {
+struct Data : karma::detail::utils::traits::NonCopyableMovable {
     specs::arch::Address entrypoint;
     specs::arch::Address initial_stack;
 

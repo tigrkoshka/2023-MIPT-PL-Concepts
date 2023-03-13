@@ -2,8 +2,9 @@
 
 #include <cstddef>  // for size_t
 #include <memory>   // for unique_ptr, shred_ptr
-#include <utility>
-#include <vector>  // for vector
+#include <string>   // for string
+#include <utility>  // for move
+#include <vector>   // for vector
 
 #include "entrypoint.hpp"
 #include "exec_data.hpp"

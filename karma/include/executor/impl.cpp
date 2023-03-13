@@ -6,6 +6,7 @@
 #include <csignal>      // for sigset_t, sigfillset, sigwait
 #include <exception>    // for exception
 #include <iostream>     // for cout
+#include <optional>     // for nullopt
 #include <sstream>      // for ostringstream
 #include <string>       // for string
 #include <type_traits>  // for make_signed_t
@@ -59,15 +60,15 @@ template <std::totally_ordered T>
 void Impl::WriteComparisonToFlags(T lhs, T rhs) {
     auto cmp_res = lhs <=> rhs;
 
-    if (cmp_res == 0) {
-        flags_ = flags::kEqual;
+    if (cmp_res < 0) {
+        flags_ = flags::kLess;
     } else if (cmp_res > 0) {
         flags_ = flags::kGreater;
     } else {
-        // condition "cmp_res < 0" is true
+        // condition "cmp_res == 0" is true
         // because lhs and rhs are comparable
         // because of the template type constraint
-        flags_ = flags::kLess;
+        flags_ = flags::kEqual;
     }
 }
 
@@ -98,10 +99,10 @@ void Impl::Divide(arch::TwoWords lhs, arch::TwoWords rhs, args::Receiver recv) {
     registers_[recv + 1] = static_cast<arch::Word>(remainder);
 }
 
-bool Impl::Syscall(args::Register reg, syscall::Code code) {
+Impl::MaybeRetCode Impl::Syscall(args::Register reg, syscall::Code code) {
     switch (code) {
         case syscall::EXIT: {
-            return false;
+            return registers_[reg];
         }
 
         case syscall::SCANINT: {
@@ -153,7 +154,7 @@ bool Impl::Syscall(args::Register reg, syscall::Code code) {
         }
     }
 
-    return true;
+    return std::nullopt;
 }
 
 void Impl::Push(arch::Word value) {
@@ -205,9 +206,9 @@ void Impl::Return() {
 ///                              Execute command                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-bool Impl::ExecuteRMCommand(cmd::Code code,
-                            args::Register reg,
-                            args::Address addr) {
+Impl::MaybeRetCode Impl::ExecuteRMCommand(cmd::Code code,
+                                        args::Register reg,
+                                        args::Address addr) {
     switch (code) {
         case cmd::LA: {
             registers_[reg] = addr;
@@ -241,13 +242,13 @@ bool Impl::ExecuteRMCommand(cmd::Code code,
         }
     }
 
-    return true;
+    return std::nullopt;
 }
 
-bool Impl::ExecuteRRCommand(cmd::Code code,
-                            args::Receiver recv,
-                            args::Source src,
-                            args::Modifier mod) {
+Impl::MaybeRetCode Impl::ExecuteRRCommand(cmd::Code code,
+                                        args::Receiver recv,
+                                        args::Source src,
+                                        args::Modifier mod) {
     auto lhs_word = [this, recv]() -> arch::Word {
         return registers_[recv];
     };
@@ -421,12 +422,12 @@ bool Impl::ExecuteRRCommand(cmd::Code code,
         }
     }
 
-    return true;
+    return std::nullopt;
 }
 
-bool Impl::ExecuteRICommand(cmd::Code code,
-                            args::Register reg,
-                            args::Immediate imm) {
+Impl::MaybeRetCode Impl::ExecuteRICommand(cmd::Code code,
+                                        args::Register reg,
+                                        args::Immediate imm) {
     auto imm_word = [imm]() -> arch::Word {
         return static_cast<arch::Word>(imm);
     };
@@ -443,11 +444,7 @@ bool Impl::ExecuteRICommand(cmd::Code code,
         }
 
         case cmd::SYSCALL: {
-            if (!Syscall(reg, static_cast<syscall::Code>(imm_word()))) {
-                return false;
-            }
-
-            break;
+            return Syscall(reg, static_cast<syscall::Code>(imm_word()));
         }
 
         case cmd::ADDI: {
@@ -540,10 +537,10 @@ bool Impl::ExecuteRICommand(cmd::Code code,
         }
     }
 
-    return true;
+    return std::nullopt;
 }
 
-bool Impl::ExecuteJCommand(cmd::Code code, args::Address addr) {
+Impl::MaybeRetCode Impl::ExecuteJCommand(cmd::Code code, args::Address addr) {
     switch (code) {
         case cmd::JMP: {
             registers_[arch::kInstructionRegister] = addr;
@@ -595,10 +592,10 @@ bool Impl::ExecuteJCommand(cmd::Code code, args::Address addr) {
         }
     }
 
-    return true;
+    return std::nullopt;
 }
 
-bool Impl::ExecuteCommand(cmd::Bin command) {
+Impl::MaybeRetCode Impl::ExecuteCommand(cmd::Bin command) {
     registers_[arch::kInstructionRegister]++;
 
     auto code = cmd::GetCode(command);
@@ -637,7 +634,7 @@ bool Impl::ExecuteCommand(cmd::Bin command) {
 ///                              Execute binary                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Impl::ExecuteImpl(const std::string& exec_path) {
+Impl::RetCode Impl::ExecuteImpl(const std::string& exec_path) {
     exec::Data data = exec::Read(exec_path);
 
     registers_[arch::kCallFrameRegister]   = data.initial_stack;
@@ -661,28 +658,32 @@ void Impl::ExecuteImpl(const std::string& exec_path) {
 
         cmd::Bin curr_command = memory_[curr_address];
 
-        if (!ExecuteCommand(curr_command)) {
-            break;
+        if (MaybeRetCode return_code = ExecuteCommand(curr_command)) {
+            return *return_code;
         }
     }
 }
 
-void Impl::MustExecute(const std::string& exec_path) {
-    ExecuteImpl(exec_path);
+Impl::RetCode Impl::MustExecute(const std::string& exec_path) {
+    return ExecuteImpl(exec_path);
 }
 
-void Impl::Execute(const std::string& exec_path) {
+Impl::RetCode Impl::Execute(const std::string& exec_path) {
     try {
-        ExecuteImpl(exec_path);
+        return ExecuteImpl(exec_path);
     } catch (const Error& e) {
         std::cout << "executing " << exec_path << ": " << e.what() << std::endl;
+        return 1;
     } catch (const errors::Error& e) {
         std::cout << exec_path << ": " << e.what() << std::endl;
+        return 1;
     } catch (const std::exception& e) {
         std::cout << exec_path << ": unexpected exception: " << e.what()
                   << std::endl;
+        return 1;
     } catch (...) {
         std::cout << "executing " << exec_path << ": unexpected exception";
+        return 1;
     }
 }
 
