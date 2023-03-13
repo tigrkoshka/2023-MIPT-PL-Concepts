@@ -15,6 +15,7 @@ namespace exec = karma::detail::exec;
 void Storage::PrepareForExecution(const exec::Data& exec_data) {
     utils::vector::CopyToBegin(memory_, exec_data.code, exec_data.constants);
 
+    registers_.fill(0);
     registers_[arch::kCallFrameRegister]   = exec_data.initial_stack;
     registers_[arch::kStackRegister]       = exec_data.initial_stack;
     registers_[arch::kInstructionRegister] = exec_data.entrypoint;
@@ -25,7 +26,7 @@ arch::Word& Storage::Reg(arch::Register reg) {
 }
 
 arch::Word& Storage::Mem(arch::Address address) {
-    return registers_[address];
+    return memory_[address];
 }
 
 arch::Word& Storage::Flags() {

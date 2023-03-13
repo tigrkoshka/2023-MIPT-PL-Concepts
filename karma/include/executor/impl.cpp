@@ -30,23 +30,35 @@ MaybeReturnCode Impl::ExecuteCommand(cmd::Bin command) {
 
     switch (cmd::Format format = cmd::kCodeToFormat.at(code)) {
         case cmd::RM: {
+            if (!rm_map_.contains(code)) {
+                throw InternalError::UnprocessedCommandForFormat(format, code);
+            }
+
             return rm_map_.at(code)(cmd::parse::RM(command));
-            break;
         }
 
         case cmd::RR: {
+            if (!rr_map_.contains(code)) {
+                throw InternalError::UnprocessedCommandForFormat(format, code);
+            }
+
             return rr_map_.at(code)(cmd::parse::RR(command));
-            break;
         }
 
         case cmd::RI: {
+            if (!ri_map_.contains(code)) {
+                throw InternalError::UnprocessedCommandForFormat(format, code);
+            }
+
             return ri_map_.at(code)(cmd::parse::RI(command));
-            break;
         }
 
         case cmd::J: {
+            if (!j_map_.contains(code)) {
+                throw InternalError::UnprocessedCommandForFormat(format, code);
+            }
+
             return j_map_.at(code)(cmd::parse::J(command));
-            break;
         }
 
         default: {

@@ -2,7 +2,6 @@
 
 #include <limits>         // for numeric_limits
 #include <string>         // for string
-#include <tuple>          // for tuple
 #include <type_traits>    // for make_signed_t
 #include <unordered_map>  // for unordered_map
 
@@ -101,7 +100,10 @@ enum Code : Bin {
     RET,
 };
 
-using CodeFormat = std::tuple<Code, Format>;
+struct CodeFormat {
+    Code code;
+    Format format;
+};
 
 Code GetCode(Bin);
 

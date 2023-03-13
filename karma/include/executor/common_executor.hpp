@@ -21,7 +21,20 @@ class CommonExecutor : public CommandExecutor {
                          karma::detail::specs::cmd::Code);
 
     template <std::totally_ordered T>
-    void WriteComparisonToFlags(T, T);
+    void WriteComparisonToFlags(T lhs, T rhs) {
+        auto cmp_res = lhs <=> rhs;
+
+        if (cmp_res < 0) {
+            Flags() = karma::detail::specs::flags::kLess;
+        } else if (cmp_res > 0) {
+            Flags() = karma::detail::specs::flags::kGreater;
+        } else {
+            // condition "cmp_res == 0" is true
+            // because lhs and rhs are comparable
+            // because of the template type constraint
+            Flags() = karma::detail::specs::flags::kEqual;
+        }
+    }
 
     void Divide(karma::detail::specs::arch::TwoWords,
                 karma::detail::specs::arch::TwoWords,

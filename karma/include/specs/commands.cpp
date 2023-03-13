@@ -22,31 +22,31 @@ Code GetCode(Bin command) {
 namespace parse {
 
 args::RMArgs RM(Bin command) {
-    args::Register reg = (command >> kRecvShift) & kRegisterMask;
-    args::Address addr = command & kAddressMask;
-
-    return {reg, addr};
+    return {
+        .reg  = (command >> kRecvShift) & kRegisterMask,
+        .addr = command & kAddressMask,
+    };
 }
 
 args::RRArgs RR(Bin command) {
-    args::Receiver recv = (command >> kRecvShift) & kRegisterMask;
-    args::Source src    = (command >> kSrcShift) & kRegisterMask;
-    args::Modifier mod  = utils::types::GetSignedValue(command, args::kModSize);
-
-    return {recv, src, mod};
+    return {
+        .recv = (command >> kRecvShift) & kRegisterMask,
+        .src  = (command >> kSrcShift) & kRegisterMask,
+        .mod  = utils::types::GetSignedValue(command, args::kModSize),
+    };
 }
 
 args::RIArgs RI(Bin command) {
-    args::Register reg  = (command >> kRecvShift) & kRegisterMask;
-    args::Immediate imm = utils::types::GetSignedValue(command, args::kImmSize);
-
-    return {reg, imm};
+    return {
+        .reg = (command >> kRecvShift) & kRegisterMask,
+        .imm = utils::types::GetSignedValue(command, args::kImmSize),
+    };
 }
 
 args::JArgs J(Bin command) {
-    args::Address addr = command & kAddressMask;
-
-    return {addr};
+    return {
+        .addr = command & kAddressMask,
+    };
 }
 
 }  // namespace parse
@@ -54,35 +54,27 @@ args::JArgs J(Bin command) {
 namespace build {
 
 Bin RM(Code code, args::RMArgs args) {
-    auto [reg, addr] = args;
-
-    return (code << kCodeShift) |  //
-           (reg << kRecvShift) |   //
-           addr;
+    return (code << kCodeShift) |      //
+           (args.reg << kRecvShift) |  //
+           args.addr;
 }
 
 Bin RR(Code code, args::RRArgs args) {
-    auto [recv, src, mod] = args;
-
-    return (code << kCodeShift) |  //
-           (recv << kRecvShift) |  //
-           (src << kSrcShift) |    //
-           utils::types::GetUnsignedBits(mod, args::kModSize);
+    return (code << kCodeShift) |       //
+           (args.recv << kRecvShift) |  //
+           (args.src << kSrcShift) |    //
+           utils::types::GetUnsignedBits(args.mod, args::kModSize);
 }
 
 Bin RI(Code code, args::RIArgs args) {
-    auto [recv, imm] = args;
-
-    return (code << kCodeShift) |  //
-           (recv << kRecvShift) |  //
-           utils::types::GetUnsignedBits(imm, args::kImmSize);
+    return (code << kCodeShift) |      //
+           (args.reg << kRecvShift) |  //
+           utils::types::GetUnsignedBits(args.imm, args::kImmSize);
 }
 
 Bin J(Code code, args::JArgs args) {
-    auto [addr] = args;
-
     return (code << kCodeShift) |  //
-           addr;
+           args.addr;
 }
 
 }  // namespace build

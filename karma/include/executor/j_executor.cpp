@@ -76,7 +76,7 @@ JExecutor::Operation JExecutor::RET() {
     };
 }
 
-JExecutor::JExecutor::GetMap() {
+JExecutor::Map JExecutor::GetMap() {
     return {
         {cmd::JMP,   JMP()  },
         {cmd::JNE,   JNE()  },

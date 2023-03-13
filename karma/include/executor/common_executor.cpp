@@ -39,22 +39,6 @@ void CommonExecutor::CheckBitwiseRHS(arch::Word rhs, cmd::Code code) {
     }
 }
 
-template <std::totally_ordered T>
-void CommonExecutor::WriteComparisonToFlags(T lhs, T rhs) {
-    auto cmp_res = lhs <=> rhs;
-
-    if (cmp_res < 0) {
-        Flags() = flags::kLess;
-    } else if (cmp_res > 0) {
-        Flags() = flags::kGreater;
-    } else {
-        // condition "cmp_res == 0" is true
-        // because lhs and rhs are comparable
-        // because of the template type constraint
-        Flags() = flags::kEqual;
-    }
-}
-
 void CommonExecutor::Divide(arch::TwoWords lhs,
                             arch::TwoWords rhs,
                             args::Receiver recv) {

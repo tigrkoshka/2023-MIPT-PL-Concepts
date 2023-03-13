@@ -17,7 +17,7 @@ class Executor {
     Executor();
     ~Executor();
 
-    // we did not include utils/traits, because we don't want to expose
+    // do not include utils/traits, because we don't want to expose
     // internal features of the karma library to the user
 
     // Non-copyable

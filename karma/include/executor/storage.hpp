@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>    // for array
 #include <utility>  // for pair
 #include <vector>   // for vector
 
@@ -12,8 +13,7 @@ namespace karma::executor::detail {
 class Storage : karma::detail::utils::traits::NonCopyableMovable {
    public:
     Storage()
-        : memory_(karma::detail::specs::arch::kMemorySize),
-          registers_(karma::detail::specs::arch::kNRegisters) {}
+        : memory_(karma::detail::specs::arch::kMemorySize){}
 
     void PrepareForExecution(const karma::detail::exec::Data& exec_data);
 
@@ -22,8 +22,13 @@ class Storage : karma::detail::utils::traits::NonCopyableMovable {
     karma::detail::specs::arch::Word& Flags();
 
    private:
+    // allocate the memory on the heap, and all the registers on the stack
+    // to provide emulation that register operations are faster
+
     std::vector<karma::detail::specs::arch::Word> memory_;
-    std::vector<karma::detail::specs::arch::Word> registers_;
+
+    std::array<karma::detail::specs::arch::Word,
+               karma::detail::specs::arch::kNRegisters> registers_;
     karma::detail::specs::arch::Word flags_{0};
 };
 

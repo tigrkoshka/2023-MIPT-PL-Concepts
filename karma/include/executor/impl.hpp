@@ -8,6 +8,7 @@
 #include "ri_executor.hpp"
 #include "rm_executor.hpp"
 #include "rr_executor.hpp"
+#include "utils/traits.hpp"
 
 namespace karma::executor::detail {
 
@@ -25,6 +26,10 @@ class Impl : karma::detail::utils::traits::NonCopyableMovable {
    private:
     std::shared_ptr<Storage> storage_;
 
+    // we store the maps as const to avoid accessing them via the operator[]
+    // and to force ourselves to check the .contains method before calling .at
+
+    // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members)
     RMExecutor rm_{storage_};
     const RMExecutor::Map rm_map_ = rm_.GetMap();
 
@@ -36,6 +41,7 @@ class Impl : karma::detail::utils::traits::NonCopyableMovable {
 
     JExecutor j_{storage_};
     const JExecutor::Map j_map_ = j_.GetMap();
+    // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 }  // namespace karma::executor::detail

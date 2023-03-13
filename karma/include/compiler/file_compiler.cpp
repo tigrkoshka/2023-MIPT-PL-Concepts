@@ -472,7 +472,7 @@ args::RMArgs FileCompiler::GetRMArgs() {
         throw CompileError::RMNoAddress(Where());
     }
 
-    return {reg, GetAddress()};
+    return {.reg = reg, .addr = GetAddress()};
 }
 
 args::RRArgs FileCompiler::GetRRArgs() {
@@ -492,7 +492,7 @@ args::RRArgs FileCompiler::GetRRArgs() {
         throw CompileError::RRNoModifier(Where());
     }
 
-    return {recv, src, GetImmediate(args::kModSize)};
+    return {.recv = recv, .src = src, .mod = GetImmediate(args::kModSize)};
 }
 
 args::RIArgs FileCompiler::GetRIArgs() {
@@ -506,7 +506,7 @@ args::RIArgs FileCompiler::GetRIArgs() {
         throw CompileError::RINoImmediate(Where());
     }
 
-    return {reg, GetImmediate(args::kImmSize)};
+    return {.reg = reg, .imm = GetImmediate(args::kImmSize)};
 }
 
 args::JArgs FileCompiler::GetJArgs() {
@@ -514,7 +514,7 @@ args::JArgs FileCompiler::GetJArgs() {
         throw CompileError::JNoAddress(Where());
     }
 
-    return GetAddress();
+    return {.addr = GetAddress()};
 }
 
 ////////////////////////////////////////////////////////////////////////////////

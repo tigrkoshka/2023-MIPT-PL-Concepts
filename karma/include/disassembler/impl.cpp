@@ -224,43 +224,45 @@ std::string Impl::GetCommandString(cmd::Bin command) {
 
     switch (cmd::Format format = cmd::kCodeToFormat.at(code)) {
         case cmd::RM: {
-            auto [reg, addr] = cmd::parse::RM(command);
+            args::RMArgs args = cmd::parse::RM(command);
 
-            result << GetRegister(reg) << " ";
-            result << std::hex << addr;
+            result << GetRegister(args.reg) << " ";
+            result << std::hex << args.addr;
 
             break;
         }
 
         case cmd::RR: {
-            auto [recv, src, mod] = cmd::parse::RR(command);
+            args::RRArgs args = cmd::parse::RR(command);
 
-            result << GetRegister(recv) << " ";
-            result << GetRegister(src) << " ";
+            result << GetRegister(args.recv) << " ";
+            result << GetRegister(args.src) << " ";
 
             // two's complement logics is used per C++20 standard
             // see: https://urlis.net/kh43f3cf
-            result << static_cast<std::make_signed_t<args::Modifier>>(mod);
+            using SignedModifier = std::make_signed_t<args::Modifier>;
+            result << static_cast<SignedModifier>(args.mod);
 
             break;
         }
 
         case cmd::RI: {
-            auto [reg, imm] = cmd::parse::RI(command);
+            args::RIArgs args = cmd::parse::RI(command);
 
-            result << GetRegister(reg) << " ";
+            result << GetRegister(args.reg) << " ";
 
             // two's complement logics is used per C++20 standard
             // see: https://urlis.net/kh43f3cf
-            result << static_cast<std::make_signed_t<args::Immediate>>(imm);
+            using SignedImmediate = std::make_signed_t<args::Immediate>;
+            result << static_cast<SignedImmediate>(args.imm);
 
             break;
         }
 
         case cmd::J: {
-            auto [addr] = cmd::parse::J(command);
+            args::JArgs args = cmd::parse::J(command);
 
-            result << std::hex << addr;
+            result << std::hex << args.addr;
 
             break;
         }
