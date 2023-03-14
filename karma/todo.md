@@ -14,13 +14,3 @@
 
 2. Concept definition: see `TODO` comments in [.clang-format](.clang-format)
    and [map.hpp](include/utils/map.hpp)
-
-### Executor:
-
-Maybe rename executor to computer??
-
-#### Config:
-
-This config is passed to the Computer's constructor
-as well as to the Execute function, the strictest of these two
-settings are used for a particular execution.

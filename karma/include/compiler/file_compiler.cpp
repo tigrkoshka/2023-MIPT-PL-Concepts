@@ -10,6 +10,7 @@
 
 #include "errors.hpp"
 #include "exec_data.hpp"
+#include "labels.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/constants.hpp"

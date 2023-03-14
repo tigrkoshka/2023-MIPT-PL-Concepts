@@ -1,8 +1,5 @@
 #include "storage.hpp"
 
-#include <cstddef>   // for size_t
-#include <optional>  // for optional
-
 #include "config.hpp"
 #include "errors.hpp"
 #include "exec/exec.hpp"

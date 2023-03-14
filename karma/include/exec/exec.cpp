@@ -1,9 +1,7 @@
 #include "exec.hpp"
 
 #include <cstddef>  // for size_t
-#include <fstream>  // for ofstream
-#include <iosfwd>   // for ostringstream
-#include <sstream>  // for ostringstream
+#include <fstream>  // for ifstream, ofstream
 #include <string>   // for string
 #include <vector>   // for vector
 

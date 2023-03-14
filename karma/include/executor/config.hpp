@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>        // for int32_t
+#include <cstddef>        // for size_t
 #include <optional>       // for optional, nullopt
 #include <unordered_set>  // for unordered_set
 

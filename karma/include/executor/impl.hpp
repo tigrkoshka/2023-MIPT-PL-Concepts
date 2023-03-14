@@ -1,7 +1,8 @@
 #pragma once
 
-#include <memory>  // for shared_ptr
-#include <string>  // for string
+#include <memory>   // for shared_ptr
+#include <string>   // for string
+#include <utility>  // for move
 
 #include "config.hpp"
 #include "j_executor.hpp"
@@ -9,6 +10,8 @@
 #include "ri_executor.hpp"
 #include "rm_executor.hpp"
 #include "rr_executor.hpp"
+#include "specs/commands.hpp"
+#include "storage.hpp"
 #include "utils/traits.hpp"
 
 namespace karma::executor::detail {

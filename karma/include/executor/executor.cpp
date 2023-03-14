@@ -3,6 +3,7 @@
 #include <cstdint>  // for uint32_t
 #include <memory>   // for make_unique
 #include <string>   // for string
+#include <utility>  // for move
 
 #include "impl.hpp"
 

@@ -3,6 +3,7 @@
 #include <algorithm>      // for min
 #include <optional>       // for optional
 #include <unordered_set>  // for erase_if
+#include <utility>        // for move
 
 #include "specs/architecture.hpp"
 

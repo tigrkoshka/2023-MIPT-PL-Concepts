@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>        // for int32_t
 #include <string>         // for string
 #include <unordered_map>  // for unordered_map
 

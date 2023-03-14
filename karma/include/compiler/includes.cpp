@@ -2,12 +2,13 @@
 
 #include <filesystem>     // for path
 #include <memory>         // for unique_ptr
-#include <optional>       // for optional
 #include <string>         // for string
 #include <unordered_set>  // for unordered_set
+#include <utility>        // for move
 #include <vector>         // for vector
 
 #include "errors.hpp"
+#include "file.hpp"
 #include "specs/syntax.hpp"
 #include "utils/traits.hpp"
 

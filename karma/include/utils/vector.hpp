@@ -1,9 +1,7 @@
 #pragma once
 
-#include <algorithm>  // for copy
-#include <concepts>   // for same_as
-#include <cstddef>    // for size_t
-#include <vector>     // for vector
+#include <concepts>  // for same_as
+#include <vector>    // for vector
 
 namespace karma::detail::utils::vector {
 

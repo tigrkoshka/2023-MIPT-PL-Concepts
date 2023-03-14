@@ -1,12 +1,15 @@
 #pragma once
 
 #include <istream>        // for istream
+#include <memory>         // for unique_ptr, shared_ptr
 #include <string>         // for string
 #include <unordered_map>  // for unordered_map
+#include <vector>         // for vector
 
 #include "entrypoint.hpp"
 #include "exec/exec.hpp"
 #include "exec_data.hpp"
+#include "file.hpp"
 #include "labels.hpp"
 #include "utils/traits.hpp"
 

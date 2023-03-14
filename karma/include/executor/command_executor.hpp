@@ -1,9 +1,7 @@
 #pragma once
 
-#include <cstdint>   // for uint32_t
 #include <memory>    // for shared_ptr
-#include <optional>  // for optional
-#include <utility>
+#include <utility>   // for move
 
 #include "specs/architecture.hpp"
 #include "storage.hpp"

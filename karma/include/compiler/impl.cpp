@@ -4,10 +4,9 @@
 #include <exception>   // for exception
 #include <filesystem>  // for path
 #include <iostream>    // for cout
-#include <memory>      // for shared_ptr
 #include <optional>    // for optional
-#include <ranges>      // for ranges
 #include <string>      // for string
+#include <utility>     // for move
 #include <vector>      // for vector
 
 #include "errors.hpp"
@@ -18,6 +17,7 @@
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/exec.hpp"
+#include "utils/error.hpp"
 #include "utils/vector.hpp"
 
 namespace karma::compiler::detail {

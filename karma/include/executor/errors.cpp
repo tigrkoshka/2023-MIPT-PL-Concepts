@@ -1,5 +1,6 @@
 #include "errors.hpp"
 
+#include <cstddef>  // for size_t
 #include <sstream>  // for ostringstream
 #include <string>   // for string
 

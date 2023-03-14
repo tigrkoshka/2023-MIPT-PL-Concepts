@@ -1,6 +1,5 @@
 #include "errors.hpp"
 
-#include <cstddef>  // for size_t
 #include <iomanip>  // for quoted
 #include <sstream>  // for ostringstream
 #include <string>   // for string, to_string

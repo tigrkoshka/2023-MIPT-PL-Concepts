@@ -11,7 +11,7 @@ namespace karma::compiler::detail {
 class Entrypoint : karma::detail::utils::traits::NonCopyableMovable {
    private:
     using MaybeAddress = std::optional<karma::detail::specs::arch::Address>;
-    using MaybePos = std::optional<std::string>;
+    using MaybePos     = std::optional<std::string>;
 
    public:
     void Record(karma::detail::specs::arch::Address address,

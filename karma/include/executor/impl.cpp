@@ -1,10 +1,13 @@
 #include "impl.hpp"
 
-#include <iostream>  // for cout, endl
+#include <exception>  // for exception
+#include <iostream>   // for cout, endl
+#include <string>     // for string
 
 #include "config.hpp"
 #include "errors.hpp"
 #include "exec/exec.hpp"
+#include "return_code.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/error.hpp"

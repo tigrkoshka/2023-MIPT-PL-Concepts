@@ -1,7 +1,5 @@
 #include "common_executor.hpp"
 
-#include <concepts>  // for totally_ordered
-
 #include "errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"

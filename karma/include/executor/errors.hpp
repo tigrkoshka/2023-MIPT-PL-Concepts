@@ -1,7 +1,8 @@
 #pragma once
 
-#include <sstream>      // for ostringstream
-#include <string>       // for string, to_string
+#include <cstddef>  // for size_t
+#include <sstream>  // for ostringstream
+#include <string>   // for string, to_string
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"

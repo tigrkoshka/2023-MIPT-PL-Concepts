@@ -3,7 +3,6 @@
 #include <cstdint>  // for int32_t
 #include <string>   // for string, to_string
 
-#include "labels.hpp"
 #include "specs/commands.hpp"
 #include "specs/constants.hpp"
 #include "utils/error.hpp"

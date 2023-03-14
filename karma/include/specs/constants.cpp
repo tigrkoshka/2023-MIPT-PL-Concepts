@@ -1,5 +1,7 @@
 #include "constants.hpp"
 
+#include <string>  // for string
+
 #include "utils/map.hpp"
 
 namespace karma::detail::specs::consts {
