@@ -5,7 +5,7 @@
 #include <string>   // for string
 #include <vector>   // for vector
 
-#include "errors.hpp"
+#include "exec/errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/exec.hpp"

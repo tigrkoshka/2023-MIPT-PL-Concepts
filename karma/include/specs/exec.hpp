@@ -3,7 +3,7 @@
 #include <cstddef>  // for size_t
 #include <string>   // for string
 
-#include "architecture.hpp"
+#include "specs/architecture.hpp"
 
 namespace karma::detail::specs::exec {
 
@@ -14,7 +14,6 @@ const size_t kIntroSize          = kIntroString.size() + 1;
 constexpr size_t kMetaInfoEndPos = 36;
 constexpr size_t kHeaderSize     = 512;
 constexpr size_t kCodeSegmentPos = kHeaderSize;
-
-const arch::Word kProcessorID = 239;
+const arch::Word kProcessorID    = 239;
 
 }  // namespace karma::detail::specs::exec

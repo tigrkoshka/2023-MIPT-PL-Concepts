@@ -4,15 +4,15 @@
 #include <iostream>   // for cout, endl
 #include <string>     // for string
 
-#include "config.hpp"
-#include "errors.hpp"
 #include "exec/exec.hpp"
-#include "return_code.hpp"
+#include "executor/config.hpp"
+#include "executor/errors.hpp"
+#include "executor/return_code.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/error.hpp"
 
-namespace karma::executor::detail {
+namespace karma {
 
 using errors::executor::InternalError;
 using errors::executor::ExecutionError;
@@ -24,7 +24,7 @@ namespace cmd = karma::detail::specs::cmd;
 
 namespace exec = karma::detail::exec;
 
-MaybeReturnCode Impl::ExecuteCommand(cmd::Bin command) {
+Executor::Impl::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
     storage_->Reg(arch::kInstructionRegister)++;
 
     auto code = cmd::GetCode(command);
@@ -71,7 +71,8 @@ MaybeReturnCode Impl::ExecuteCommand(cmd::Bin command) {
     }
 }
 
-ReturnCode Impl::MustExecute(const std::string& exec, const Config& config) {
+Executor::Impl::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
+                                                       const Config& config) {
     exec::Data data = exec::Read(exec);
 
     storage_->PrepareForExecution(data, config);
@@ -84,13 +85,14 @@ ReturnCode Impl::MustExecute(const std::string& exec, const Config& config) {
         }
 
         if (MaybeReturnCode return_code =
-                ExecuteCommand(storage_->Mem(curr_address))) {
+                ExecuteCmd(storage_->Mem(curr_address))) {
             return *return_code;
         }
     }
 }
 
-ReturnCode Impl::Execute(const std::string& exec, const Config& config) {
+Executor::Impl::ReturnCode Executor::Impl::Execute(const std::string& exec,
+                                                   const Config& config) {
     try {
         return MustExecute(exec, config);
     } catch (const Error& e) {
@@ -109,4 +111,4 @@ ReturnCode Impl::Execute(const std::string& exec, const Config& config) {
     }
 }
 
-}  // namespace karma::executor::detail
+}  // namespace karma

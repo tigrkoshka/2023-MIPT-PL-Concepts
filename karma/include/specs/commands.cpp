@@ -3,9 +3,9 @@
 #include <string>
 #include <unordered_map>
 
-#include "architecture.hpp"
+#include "specs/architecture.hpp"
 #include "utils/map.hpp"
-#include "utils/type_conversions.hpp"
+#include "utils/types.hpp"
 
 namespace karma::detail::specs::cmd {
 
@@ -18,66 +18,6 @@ constexpr arch::Word kAddressMask  = 0xfffffu;
 Code GetCode(Bin command) {
     return static_cast<cmd::Code>(command >> kCodeShift);
 }
-
-namespace parse {
-
-args::RMArgs RM(Bin command) {
-    return {
-        .reg  = (command >> kRecvShift) & kRegisterMask,
-        .addr = command & kAddressMask,
-    };
-}
-
-args::RRArgs RR(Bin command) {
-    return {
-        .recv = (command >> kRecvShift) & kRegisterMask,
-        .src  = (command >> kSrcShift) & kRegisterMask,
-        .mod  = utils::types::GetSignedValue(command, args::kModSize),
-    };
-}
-
-args::RIArgs RI(Bin command) {
-    return {
-        .reg = (command >> kRecvShift) & kRegisterMask,
-        .imm = utils::types::GetSignedValue(command, args::kImmSize),
-    };
-}
-
-args::JArgs J(Bin command) {
-    return {
-        .addr = command & kAddressMask,
-    };
-}
-
-}  // namespace parse
-
-namespace build {
-
-Bin RM(Code code, args::RMArgs args) {
-    return (code << kCodeShift) |      //
-           (args.reg << kRecvShift) |  //
-           args.addr;
-}
-
-Bin RR(Code code, args::RRArgs args) {
-    return (code << kCodeShift) |       //
-           (args.recv << kRecvShift) |  //
-           (args.src << kSrcShift) |    //
-           utils::types::GetUnsignedBits(args.mod, args::kModSize);
-}
-
-Bin RI(Code code, args::RIArgs args) {
-    return (code << kCodeShift) |      //
-           (args.reg << kRecvShift) |  //
-           utils::types::GetUnsignedBits(args.imm, args::kImmSize);
-}
-
-Bin J(Code code, args::JArgs args) {
-    return (code << kCodeShift) |  //
-           args.addr;
-}
-
-}  // namespace build
 
 const std::unordered_map<Format, std::string> kFormatToString = {
     {RM, "RM"},
@@ -253,5 +193,65 @@ const std::unordered_map<std::string, Code> kNameToCode = {
 
 const std::unordered_map<Code, std::string> kCodeToName =
     utils::map::Revert(kNameToCode);
+
+namespace parse {
+
+args::RMArgs RM(Bin command) {
+    return {
+        .reg  = (command >> kRecvShift) & kRegisterMask,
+        .addr = command & kAddressMask,
+    };
+}
+
+args::RRArgs RR(Bin command) {
+    return {
+        .recv = (command >> kRecvShift) & kRegisterMask,
+        .src  = (command >> kSrcShift) & kRegisterMask,
+        .mod  = utils::types::GetSignedValue(command, args::kModSize),
+    };
+}
+
+args::RIArgs RI(Bin command) {
+    return {
+        .reg = (command >> kRecvShift) & kRegisterMask,
+        .imm = utils::types::GetSignedValue(command, args::kImmSize),
+    };
+}
+
+args::JArgs J(Bin command) {
+    return {
+        .addr = command & kAddressMask,
+    };
+}
+
+}  // namespace parse
+
+namespace build {
+
+Bin RM(Code code, args::RMArgs args) {
+    return (code << kCodeShift) |      //
+           (args.reg << kRecvShift) |  //
+           args.addr;
+}
+
+Bin RR(Code code, args::RRArgs args) {
+    return (code << kCodeShift) |       //
+           (args.recv << kRecvShift) |  //
+           (args.src << kSrcShift) |    //
+           utils::types::GetUnsignedBits(args.mod, args::kModSize);
+}
+
+Bin RI(Code code, args::RIArgs args) {
+    return (code << kCodeShift) |      //
+           (args.reg << kRecvShift) |  //
+           utils::types::GetUnsignedBits(args.imm, args::kImmSize);
+}
+
+Bin J(Code code, args::JArgs args) {
+    return (code << kCodeShift) |  //
+           args.addr;
+}
+
+}  // namespace build
 
 }  // namespace karma::detail::specs::cmd

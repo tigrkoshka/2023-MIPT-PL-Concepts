@@ -4,21 +4,32 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include "config.hpp"
-#include "j_executor.hpp"
-#include "return_code.hpp"
-#include "ri_executor.hpp"
-#include "rm_executor.hpp"
-#include "rr_executor.hpp"
+#include "executor.hpp"
+#include "executor/config.hpp"
+#include "executor/j_executor.hpp"
+#include "executor/return_code.hpp"
+#include "executor/ri_executor.hpp"
+#include "executor/rm_executor.hpp"
+#include "executor/rr_executor.hpp"
+#include "executor/storage.hpp"
 #include "specs/commands.hpp"
-#include "storage.hpp"
 #include "utils/traits.hpp"
 
-namespace karma::executor::detail {
+namespace karma {
 
-class Impl : karma::detail::utils::traits::NonCopyableMovable {
+class Executor::Impl : detail::utils::traits::NonCopyableMovable {
    private:
-    MaybeReturnCode ExecuteCommand(karma::detail::specs::cmd::Bin);
+    // use symbols from executor::detail namespace
+    using ReturnCode      = executor::detail::ReturnCode;
+    using MaybeReturnCode = executor::detail::MaybeReturnCode;
+    using Storage         = executor::detail::Storage;
+    using RMExecutor      = executor::detail::RMExecutor;
+    using RIExecutor      = executor::detail::RIExecutor;
+    using RRExecutor      = executor::detail::RRExecutor;
+    using JExecutor       = executor::detail::JExecutor;
+
+   private:
+    MaybeReturnCode ExecuteCmd(karma::detail::specs::cmd::Bin);
 
    public:
     explicit Impl(Config config = Config())
@@ -48,4 +59,4 @@ class Impl : karma::detail::utils::traits::NonCopyableMovable {
     // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
-}  // namespace karma::executor::detail
+}  // namespace karma

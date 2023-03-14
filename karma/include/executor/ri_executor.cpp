@@ -4,11 +4,11 @@
 #include <iostream>     // for cin, cout
 #include <type_traits>  // for make_signed_t
 
-#include "errors.hpp"
-#include "return_code.hpp"
+#include "executor/errors.hpp"
+#include "executor/return_code.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
-#include "utils/type_conversions.hpp"
+#include "utils/types.hpp"
 
 namespace karma::executor::detail {
 

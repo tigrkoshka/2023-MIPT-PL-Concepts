@@ -4,9 +4,9 @@
 
 namespace karma::detail::specs::syntax {
 
-constexpr char8_t kCommentSep        = '#';
-constexpr char8_t kDisableCommentSep = '\\';
-constexpr char8_t kLabelEnd          = ':';
+constexpr char kCommentSep        = '#';
+constexpr char kDisableCommentSep = '\\';
+constexpr char kLabelEnd          = ':';
 
 bool IsAllowedLabelChar(char);
 

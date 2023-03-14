@@ -5,14 +5,26 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include "impl.hpp"
+#include "executor/config.hpp"
+#include "executor/impl.hpp"
 
 namespace karma {
 
+Executor::Executor()
+    : impl_(std::make_unique<Impl>()) {}
+
 Executor::Executor(Config config)
-    : impl_(std::make_unique<executor::detail::Impl>(std::move(config))) {}
+    : impl_(std::make_unique<Impl>(std::move(config))) {}
 
 Executor::~Executor() = default;
+
+uint32_t Executor::MustExecute(const std::string& exec) {
+    return MustExecute(exec, Config());
+}
+
+uint32_t Executor::Execute(const std::string& exec) {
+    return Execute(exec, Config());
+}
 
 uint32_t Executor::MustExecute(const std::string& exec, const Config& config) {
     return impl_->MustExecute(exec, config);

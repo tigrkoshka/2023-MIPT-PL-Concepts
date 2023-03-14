@@ -1,6 +1,6 @@
 #include "rm_executor.hpp"
 
-#include "return_code.hpp"
+#include "executor/return_code.hpp"
 #include "specs/commands.hpp"
 
 namespace karma::executor::detail {

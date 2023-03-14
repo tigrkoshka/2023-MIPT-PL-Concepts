@@ -1,6 +1,6 @@
 #pragma once
 
-#include "architecture.hpp"
+#include "specs/architecture.hpp"
 
 namespace karma::detail::specs::flags {
 

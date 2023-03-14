@@ -2,7 +2,7 @@
 
 #include <concepts>  // for totally_ordered
 
-#include "command_executor.hpp"
+#include "executor/command_executor.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/flags.hpp"

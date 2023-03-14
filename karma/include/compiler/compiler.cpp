@@ -2,7 +2,7 @@
 
 #include <string>  // for string
 
-#include "impl.hpp"
+#include "compiler/impl.hpp"
 
 namespace karma::compiler {
 

@@ -4,22 +4,15 @@
 #include <memory>   // for unique_ptr
 #include <string>   // for string
 
-#include "config.hpp"
-
 namespace karma {
-
-namespace executor::detail {
-
-class Impl;
-
-}  // namespace executor::detail
 
 class Executor {
    public:
-    using Config = executor::Config;
+    class Config;
 
    public:
-    explicit Executor(Config = Config());
+    Executor();
+    explicit Executor(Config);
     ~Executor();
 
     // do not include utils/traits, because we don't want to expose
@@ -34,11 +27,18 @@ class Executor {
     Executor& operator=(Executor&&) = default;
 
    public:
-    uint32_t MustExecute(const std::string& exec, const Config& = Config());
-    uint32_t Execute(const std::string& exec, const Config& = Config());
+    // cannot use default value for Config, because it is declared
+    // in another file, which includes this one
+
+    uint32_t MustExecute(const std::string& exec);
+    uint32_t Execute(const std::string& exec);
+
+    uint32_t MustExecute(const std::string& exec, const Config&);
+    uint32_t Execute(const std::string& exec, const Config&);
 
    private:
-    std::unique_ptr<executor::detail::Impl> impl_;
+    class Impl;
+    std::unique_ptr<Impl> impl_;
 };
 
 }  // namespace karma

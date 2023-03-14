@@ -10,7 +10,7 @@
 #include <string>      // for string
 #include <utility>     // for move
 
-#include "errors.hpp"
+#include "compiler/errors.hpp"
 #include "specs/syntax.hpp"
 #include "utils/strings.hpp"
 

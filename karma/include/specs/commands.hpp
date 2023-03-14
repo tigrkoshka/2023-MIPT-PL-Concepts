@@ -5,9 +5,13 @@
 #include <type_traits>    // for make_signed_t
 #include <unordered_map>  // for unordered_map
 
-#include "architecture.hpp"
+#include "specs/architecture.hpp"
 
 namespace karma::detail::specs::cmd {
+
+////////////////////////////////////////////////////////////////////////////////
+///                              Code and format                             ///
+////////////////////////////////////////////////////////////////////////////////
 
 using Bin = arch::Word;
 
@@ -107,6 +111,15 @@ struct CodeFormat {
 
 Code GetCode(Bin);
 
+extern const std::unordered_map<Format, std::string> kFormatToString;
+extern const std::unordered_map<Code, Format> kCodeToFormat;
+extern const std::unordered_map<std::string, Code> kNameToCode;
+extern const std::unordered_map<Code, std::string> kCodeToName;
+
+////////////////////////////////////////////////////////////////////////////////
+///                                   Args                                   ///
+////////////////////////////////////////////////////////////////////////////////
+
 namespace args {
 
 using Register  = arch::Register;
@@ -141,6 +154,10 @@ struct JArgs {
 
 }  // namespace args
 
+////////////////////////////////////////////////////////////////////////////////
+///                                  Syscall                                 ///
+////////////////////////////////////////////////////////////////////////////////
+
 namespace syscall {
 
 using Char = unsigned char;
@@ -159,6 +176,10 @@ enum Code : cmd::args::Immediate {
 
 }  // namespace syscall
 
+////////////////////////////////////////////////////////////////////////////////
+///                                   Parse                                  ///
+////////////////////////////////////////////////////////////////////////////////
+
 namespace parse {
 
 args::RMArgs RM(Bin);
@@ -168,6 +189,10 @@ args::JArgs J(Bin);
 
 }  // namespace parse
 
+////////////////////////////////////////////////////////////////////////////////
+///                                   Build                                  ///
+////////////////////////////////////////////////////////////////////////////////
+
 namespace build {
 
 Bin RM(Code, args::RMArgs);
@@ -176,10 +201,5 @@ Bin RI(Code, args::RIArgs);
 Bin J(Code, args::JArgs);
 
 }  // namespace build
-
-extern const std::unordered_map<Format, std::string> kFormatToString;
-extern const std::unordered_map<Code, Format> kCodeToFormat;
-extern const std::unordered_map<std::string, Code> kNameToCode;
-extern const std::unordered_map<Code, std::string> kCodeToName;
 
 }  // namespace karma::detail::specs::cmd

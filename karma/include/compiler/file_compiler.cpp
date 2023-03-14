@@ -8,15 +8,15 @@
 #include <type_traits>  // for make_unsigned_t
 #include <utility>      // for exchange
 
-#include "errors.hpp"
-#include "exec_data.hpp"
-#include "labels.hpp"
+#include "compiler/errors.hpp"
+#include "compiler/exec_data.hpp"
+#include "compiler/labels.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/constants.hpp"
 #include "specs/syntax.hpp"
 #include "utils/strings.hpp"
-#include "utils/type_conversions.hpp"
+#include "utils/types.hpp"
 
 namespace karma::compiler::detail {
 

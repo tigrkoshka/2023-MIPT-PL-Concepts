@@ -4,13 +4,13 @@
 #include <optional>       // for optional, nullopt
 #include <unordered_set>  // for unordered_set
 
-#include "specs/architecture.hpp"
+#include "executor.hpp"
 
-namespace karma::executor {
+namespace karma {
 
-class Config {
+class Executor::Config {
    private:
-    using Registers = std::unordered_set<karma::detail::specs::arch::Register>;
+    using Registers = std::unordered_set<uint32_t>;
 
    public:
     Config& SetBlockedRegisters(const Registers& registers);
@@ -38,7 +38,7 @@ class Config {
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     Config& operator&=(const Config&);
 
-    bool RegisterIsBlocked(karma::detail::specs::arch::Register);
+    bool RegisterIsBlocked(uint32_t reg);
     bool CodeSegmentIsBlocked();
     bool ConstantsSegmentIsBlocked();
     size_t MaxStackSize();
@@ -54,9 +54,10 @@ class Config {
 };
 
 // NOLINTNEXTLINE(fuchsia-overloaded-operator)
-inline Config operator&(Config lhs, const Config& rhs) {
+inline Executor::Config operator&(Executor::Config lhs,
+                                  const Executor::Config& rhs) {
     lhs &= rhs;
     return lhs;
 }
 
-}  // namespace karma::executor
+}  // namespace karma

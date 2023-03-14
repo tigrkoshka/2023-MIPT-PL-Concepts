@@ -9,11 +9,11 @@
 #include <utility>     // for move
 #include <vector>      // for vector
 
-#include "errors.hpp"
+#include "compiler/errors.hpp"
+#include "compiler/exec_data.hpp"
+#include "compiler/file_compiler.hpp"
+#include "compiler/includes.hpp"
 #include "exec/exec.hpp"
-#include "exec_data.hpp"
-#include "file_compiler.hpp"
-#include "includes.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/exec.hpp"

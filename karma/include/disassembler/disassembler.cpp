@@ -1,6 +1,6 @@
 #include "disassembler.hpp"
 
-#include "impl.hpp"
+#include "disassembler/impl.hpp"
 
 namespace karma::disassembler {
 

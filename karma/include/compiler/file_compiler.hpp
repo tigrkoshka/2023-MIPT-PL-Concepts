@@ -6,10 +6,10 @@
 #include <utility>  // for move
 #include <vector>   // for vector
 
-#include "entrypoint.hpp"
-#include "exec_data.hpp"
-#include "file.hpp"
-#include "labels.hpp"
+#include "compiler/entrypoint.hpp"
+#include "compiler/exec_data.hpp"
+#include "compiler/file.hpp"
+#include "compiler/labels.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/traits.hpp"

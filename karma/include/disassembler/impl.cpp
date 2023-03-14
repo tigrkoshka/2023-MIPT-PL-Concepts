@@ -9,14 +9,14 @@
 #include <string>       // for string
 #include <type_traits>  // for make_signed_t
 
-#include "errors.hpp"
+#include "disassembler/errors.hpp"
 #include "exec/exec.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/constants.hpp"
 #include "utils/error.hpp"
 #include "utils/strings.hpp"
-#include "utils/type_conversions.hpp"
+#include "utils/types.hpp"
 
 namespace karma::disassembler::detail {
 

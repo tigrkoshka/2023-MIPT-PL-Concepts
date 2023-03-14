@@ -1,9 +1,9 @@
 #pragma once
 
-#include <concepts>     // for integral, floating_point, convertible_to
-#include <cstddef>      // for size_t
-#include <functional>   // for hash
-#include <istream>      // for istream
+#include <concepts>    // for integral, floating_point, convertible_to
+#include <cstddef>     // for size_t
+#include <functional>  // for hash
+#include <istream>     // for istream
 
 namespace karma::detail::utils::concepts {
 
@@ -17,11 +17,6 @@ concept IntOrFloat = std::integral<T> || std::floating_point<T>;
 template <typename T>
 concept Hashable = requires(T val) {
     { std::hash<T>{}(val) } -> std::convertible_to<std::size_t>;
-};
-
-template <typename T>
-concept Istreamable = requires(std::istream stream, T value) {
-    stream >> value;
 };
 
 // clang-format on

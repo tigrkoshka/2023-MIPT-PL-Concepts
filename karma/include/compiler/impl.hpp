@@ -6,11 +6,11 @@
 #include <unordered_map>  // for unordered_map
 #include <vector>         // for vector
 
-#include "entrypoint.hpp"
+#include "compiler/entrypoint.hpp"
+#include "compiler/exec_data.hpp"
+#include "compiler/file.hpp"
+#include "compiler/labels.hpp"
 #include "exec/exec.hpp"
-#include "exec_data.hpp"
-#include "file.hpp"
-#include "labels.hpp"
 #include "utils/traits.hpp"
 
 namespace karma::compiler::detail {

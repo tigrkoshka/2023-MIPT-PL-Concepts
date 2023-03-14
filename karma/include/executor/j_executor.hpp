@@ -3,8 +3,8 @@
 #include <functional>     // for function
 #include <unordered_map>  // for unordered_map
 
-#include "common_executor.hpp"
-#include "return_code.hpp"
+#include "executor/common_executor.hpp"
+#include "executor/return_code.hpp"
 #include "specs/commands.hpp"
 
 namespace karma::executor::detail {

@@ -7,7 +7,7 @@
 #include <utility>        // for pair
 #include <vector>         // for vector
 
-#include "file.hpp"
+#include "compiler/file.hpp"
 #include "utils/traits.hpp"
 
 namespace karma::compiler::detail {

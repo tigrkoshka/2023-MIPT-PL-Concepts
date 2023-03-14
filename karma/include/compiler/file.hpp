@@ -11,7 +11,7 @@
 
 namespace karma::compiler::detail {
 
-struct File : karma::detail::utils::traits::NonCopyableMovable {
+class File : karma::detail::utils::traits::NonCopyableMovable {
    private:
     static void TrimComment(std::string& line);
 

@@ -1,10 +1,10 @@
 #include "common_executor.hpp"
 
-#include "errors.hpp"
+#include "executor/errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/flags.hpp"
-#include "utils/type_conversions.hpp"
+#include "utils/types.hpp"
 
 namespace karma::executor::detail {
 

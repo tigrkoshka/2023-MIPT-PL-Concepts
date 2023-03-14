@@ -6,7 +6,7 @@
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
-#include "utils/type_conversions.hpp"
+#include "utils/types.hpp"
 
 namespace karma::errors::executor {
 

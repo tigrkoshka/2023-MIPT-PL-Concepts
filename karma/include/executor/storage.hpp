@@ -5,8 +5,8 @@
 #include <utility>  // for pair
 #include <vector>   // for vector
 
-#include "config.hpp"
 #include "exec/exec.hpp"
+#include "executor/config.hpp"
 #include "specs/architecture.hpp"
 #include "utils/traits.hpp"
 
@@ -14,7 +14,8 @@ namespace karma::executor::detail {
 
 class Storage : karma::detail::utils::traits::NonCopyableMovable {
    private:
-    using Word = karma::detail::specs::arch::Word;
+    using Config = Executor::Config;
+    using Word   = karma::detail::specs::arch::Word;
 
    public:
     explicit Storage(Config config = Config())

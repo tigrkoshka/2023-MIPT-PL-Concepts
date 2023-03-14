@@ -7,7 +7,9 @@
 
 #include "specs/architecture.hpp"
 
-namespace karma::executor {
+namespace karma {
+
+using Config = Executor::Config;
 
 namespace arch = karma::detail::specs::arch;
 
@@ -145,4 +147,4 @@ const Config::Registers Config::kUtilityRegisters = {
     karma::detail::specs::arch::kInstructionRegister,
 };
 
-}  // namespace karma::executor
+}  // namespace karma

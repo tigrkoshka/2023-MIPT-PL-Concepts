@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>    // for shared_ptr
-#include <utility>   // for move
+#include <memory>   // for shared_ptr
+#include <utility>  // for move
 
+#include "executor/storage.hpp"
 #include "specs/architecture.hpp"
-#include "storage.hpp"
 #include "utils/traits.hpp"
 
 namespace karma::executor::detail {

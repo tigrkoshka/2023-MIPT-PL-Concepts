@@ -12,5 +12,12 @@ int main() {
 
     karma::disassembler::MustDisassemble("../programs/04_factorial_loop.a");
 
+    karma::Executor::Config c;
+
+    try {
+
+    } catch (const karma::errors::disassembler::DisassembleError& e) {}
+
+
     return 0;
 }
