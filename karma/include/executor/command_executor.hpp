@@ -20,6 +20,8 @@ class CommandExecutor : karma::detail::utils::traits::NonCopyableMovable {
         : storage_(std::move(storage)){};
 
    protected:
+    void CheckPushAllowed();
+
     karma::detail::specs::arch::Word& Reg(karma::detail::specs::arch::Register);
     karma::detail::specs::arch::Word& Mem(karma::detail::specs::arch::Address);
     karma::detail::specs::arch::Word& Flags();

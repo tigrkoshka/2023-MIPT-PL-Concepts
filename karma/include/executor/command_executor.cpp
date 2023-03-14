@@ -6,6 +6,10 @@ namespace karma::executor::detail {
 
 namespace arch = karma::detail::specs::arch;
 
+void CommandExecutor::CheckPushAllowed() {
+    storage_->CheckPushAllowed();
+}
+
 arch::Word& CommandExecutor::Reg(arch::Register reg) {
     return storage_->Reg(reg);
 }

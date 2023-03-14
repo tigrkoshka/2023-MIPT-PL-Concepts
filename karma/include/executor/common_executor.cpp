@@ -59,6 +59,7 @@ void CommonExecutor::Divide(arch::TwoWords lhs,
 }
 
 void CommonExecutor::Push(arch::Word value) {
+    CheckPushAllowed();
     Mem(Reg(arch::kStackRegister)--) = value;
 }
 
