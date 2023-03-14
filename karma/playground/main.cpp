@@ -1,5 +1,4 @@
 #include <iostream>
-
 #include <karma>
 
 int main() {
@@ -11,13 +10,6 @@ int main() {
     std::cout << "executable returned code " << ret_code;
 
     karma::disassembler::MustDisassemble("../programs/04_factorial_loop.a");
-
-    karma::Executor::Config c;
-
-    try {
-
-    } catch (const karma::errors::disassembler::DisassembleError& e) {}
-
 
     return 0;
 }
