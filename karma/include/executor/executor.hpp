@@ -1,10 +1,10 @@
 #pragma once
 
-#include <cstdint>   // for uint32_t
-#include <memory>    // for unique_ptr
-#include <string>    // for string
+#include <cstdint>  // for uint32_t
+#include <memory>   // for unique_ptr
+#include <string>   // for string
 
-#include "config.hpp" // just for export
+#include "config.hpp"
 
 namespace karma {
 
@@ -16,7 +16,10 @@ class Impl;
 
 class Executor {
    public:
-    Executor();
+    using Config = executor::Config;
+
+   public:
+    explicit Executor(Config = Config());
     ~Executor();
 
     // do not include utils/traits, because we don't want to expose
@@ -31,8 +34,8 @@ class Executor {
     Executor& operator=(Executor&&) = default;
 
    public:
-    uint32_t MustExecute(const std::string& exec_path);
-    uint32_t Execute(const std::string& exec_path);
+    uint32_t MustExecute(const std::string& exec, const Config& = Config());
+    uint32_t Execute(const std::string& exec, const Config& = Config());
 
    private:
     std::unique_ptr<executor::detail::Impl> impl_;

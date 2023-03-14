@@ -3,6 +3,7 @@
 #include <memory>  // for shared_ptr
 #include <string>  // for string
 
+#include "config.hpp"
 #include "j_executor.hpp"
 #include "return_code.hpp"
 #include "ri_executor.hpp"
@@ -17,14 +18,14 @@ class Impl : karma::detail::utils::traits::NonCopyableMovable {
     MaybeReturnCode ExecuteCommand(karma::detail::specs::cmd::Bin);
 
    public:
-    Impl()
-        : storage_(std::make_shared<Storage>()) {}
+    explicit Impl(Config config = Config())
+        : storage_(std::make_shared<Storage>(std::move(config))) {}
 
-    ReturnCode MustExecute(const std::string& exec_path);
-    ReturnCode Execute(const std::string& exec_path);
+    ReturnCode MustExecute(const std::string& exec, const Config& = Config());
+    ReturnCode Execute(const std::string& exec, const Config& = Config());
 
    private:
-    std::shared_ptr<Storage> storage_;
+    std::shared_ptr<Storage> storage_ = std::make_shared<Storage>();
 
     // we store the maps as const to avoid accessing them via the operator[]
     // and to force ourselves to check the .contains method before calling .at

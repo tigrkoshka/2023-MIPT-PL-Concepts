@@ -38,12 +38,17 @@ class Config {
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     Config& operator&=(const Config&);
 
+    bool RegisterIsBlocked(karma::detail::specs::arch::Register);
+    bool CodeSegmentIsBlocked();
+    bool ConstantsSegmentIsBlocked();
+    std::optional<size_t> MaxStackSize();
+
    private:
     static const Registers kUtilityRegisters;
 
     Registers blocked_registers_;
-    bool block_code_segment_{false};
-    bool block_constants_segment_{false};
+    bool code_segment_blocked_{false};
+    bool constants_segment_blocked_{false};
     std::optional<size_t> max_stack_size_;
 };
 

@@ -1,9 +1,14 @@
 #include "config.hpp"
 
 #include <algorithm>      // for min
+#include <optional>       // for optional
 #include <unordered_set>  // for erase_if
 
+#include "specs/architecture.hpp"
+
 namespace karma::executor {
+
+namespace arch = karma::detail::specs::arch;
 
 Config& Config::SetBlockedRegisters(const Registers& registers) {
     blocked_registers_ = registers;
@@ -40,32 +45,32 @@ Config& Config::UnblockUtilityRegisters() {
 }
 
 Config& Config::SetCodeSegmentBlock(bool block) {
-    block_code_segment_ = block;
+    code_segment_blocked_ = block;
     return *this;
 }
 
 Config& Config::BlockCodeSegment() {
-    block_code_segment_ = true;
+    code_segment_blocked_ = true;
     return *this;
 }
 
 Config& Config::UnblockCodeSegment() {
-    block_code_segment_ = false;
+    code_segment_blocked_ = false;
     return *this;
 }
 
 Config& Config::SetConstantsSegmentBlock(bool block) {
-    block_constants_segment_ = block;
+    constants_segment_blocked_ = block;
     return *this;
 }
 
 Config& Config::BlockConstantsSegment() {
-    block_constants_segment_ = true;
+    constants_segment_blocked_ = true;
     return *this;
 }
 
 Config& Config::UnblockConstantsSegment() {
-    block_constants_segment_ = false;
+    constants_segment_blocked_ = false;
     return *this;
 }
 
@@ -95,10 +100,10 @@ Config& Config::Strict() {
 Config& Config::operator&=(const Config& other) {
     BlockRegisters(other.blocked_registers_);
 
-    SetCodeSegmentBlock(block_code_segment_ || other.block_code_segment_);
+    SetCodeSegmentBlock(code_segment_blocked_ || other.code_segment_blocked_);
 
-    SetConstantsSegmentBlock(block_constants_segment_ ||
-                             other.block_constants_segment_);
+    SetConstantsSegmentBlock(constants_segment_blocked_ ||
+                             other.constants_segment_blocked_);
 
     if (max_stack_size_ && other.max_stack_size_) {
         BoundStack(std::min(*max_stack_size_, *other.max_stack_size_));
@@ -107,6 +112,22 @@ Config& Config::operator&=(const Config& other) {
     }
 
     return *this;
+}
+
+bool Config::RegisterIsBlocked(arch::Register reg) {
+    return blocked_registers_.contains(reg);
+}
+
+bool Config::CodeSegmentIsBlocked() {
+    return code_segment_blocked_;
+}
+
+bool Config::ConstantsSegmentIsBlocked() {
+    return constants_segment_blocked_;
+}
+
+std::optional<size_t> Config::MaxStackSize() {
+    return max_stack_size_;
 }
 
 const Config::Registers Config::kUtilityRegisters = {
