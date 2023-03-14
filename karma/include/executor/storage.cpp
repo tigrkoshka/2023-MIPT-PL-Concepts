@@ -33,6 +33,12 @@ void Storage::PrepareForExecution(const exec::Data& exec_data,
 }
 
 void Storage::CheckPushAllowed() {
+    if (registers_.at(arch::kStackRegister) > arch::kMemorySize) {
+        // precaution in case the stack is unbounded, but has somehow
+        // rewritten the constants and the code and still trying to push
+        // TODO: throw
+    }
+
     if (registers_.at(arch::kStackRegister) < curr_min_stack_allowed_) {
         // TODO: throw
     }
