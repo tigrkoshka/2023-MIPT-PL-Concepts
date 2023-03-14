@@ -43,7 +43,7 @@ enum RegisterEnum : Register {
     R15,
 };
 
-constexpr size_t kNRegisters = 16ull;
+constexpr size_t kNRegisters = 16;
 
 constexpr Register kCallFrameRegister   = static_cast<Register>(R13);
 constexpr Register kStackRegister       = static_cast<Register>(R14);

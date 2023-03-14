@@ -116,8 +116,8 @@ using Address   = arch::Address;
 using Modifier  = std::make_signed_t<arch::Word>;
 using Immediate = std::make_signed_t<arch::Word>;
 
-constexpr arch::Word kModSize = 16u;
-constexpr arch::Word kImmSize = 20u;
+constexpr arch::Word kModSize = 16;
+constexpr arch::Word kImmSize = 20;
 
 struct RMArgs {
     Register reg;

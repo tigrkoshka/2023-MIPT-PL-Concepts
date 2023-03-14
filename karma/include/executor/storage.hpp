@@ -17,6 +17,9 @@ class Storage : karma::detail::utils::traits::NonCopyableMovable {
 
     void PrepareForExecution(const karma::detail::exec::Data& exec_data);
 
+    // do not provide the const variants of the methods below,
+    // because the storage is never meant to be const
+
     karma::detail::specs::arch::Word& Reg(karma::detail::specs::arch::Register);
     karma::detail::specs::arch::Word& Mem(karma::detail::specs::arch::Address);
     karma::detail::specs::arch::Word& Flags();

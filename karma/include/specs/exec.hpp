@@ -11,10 +11,10 @@ const std::string kDefaultExtension = ".a";
 
 const std::string kIntroString   = "ThisIsKarmaExec";
 const size_t kIntroSize          = kIntroString.size() + 1;
-constexpr size_t kMetaInfoEndPos = 36ull;
-constexpr size_t kHeaderSize     = 512ll;
+constexpr size_t kMetaInfoEndPos = 36;
+constexpr size_t kHeaderSize     = 512;
 constexpr size_t kCodeSegmentPos = kHeaderSize;
 
-const arch::Word kProcessorID = 239ull;
+const arch::Word kProcessorID = 239;
 
 }  // namespace karma::detail::specs::exec

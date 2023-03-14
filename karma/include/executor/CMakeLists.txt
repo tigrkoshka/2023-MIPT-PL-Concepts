@@ -8,7 +8,8 @@ add_library(
         rm_executor.cpp
         common_executor.cpp
         command_executor.cpp
-        return_code.cpp
         storage.cpp
+        config.cpp
+        return_code.cpp
         errors.cpp
 )

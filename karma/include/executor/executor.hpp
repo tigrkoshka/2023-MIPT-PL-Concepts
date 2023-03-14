@@ -4,6 +4,8 @@
 #include <memory>    // for unique_ptr
 #include <string>    // for string
 
+#include "config.hpp" // just for export
+
 namespace karma {
 
 namespace executor::detail {
