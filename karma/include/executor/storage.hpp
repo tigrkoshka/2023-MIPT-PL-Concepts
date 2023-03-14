@@ -43,7 +43,6 @@ class Storage : karma::detail::utils::traits::NonCopyableMovable {
     std::vector<Word> memory_;
     size_t curr_code_end_{0};
     size_t curr_constants_end_{0};
-    size_t curr_min_stack_allowed_{0};
 
     std::array<Word, karma::detail::specs::arch::kNRegisters> registers_{};
     Word flags_{0};

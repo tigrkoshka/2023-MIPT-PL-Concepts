@@ -41,7 +41,8 @@ class Config {
     bool RegisterIsBlocked(karma::detail::specs::arch::Register);
     bool CodeSegmentIsBlocked();
     bool ConstantsSegmentIsBlocked();
-    std::optional<size_t> MaxStackSize();
+    size_t MaxStackSize();
+    size_t MinStackAddress();
 
    private:
     static const Registers kUtilityRegisters;

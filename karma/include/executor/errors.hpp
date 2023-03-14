@@ -35,9 +35,17 @@ struct ExecutionError : Error {
 
    public:
     static ExecutionError ExecPointerOutOfMemory(detail::specs::arch::Address);
+    static ExecutionError StackPointerOutOfMemory(detail::specs::arch::Address);
+    static ExecutionError StackOverflow(size_t max_stack_size);
+
+    static ExecutionError InvalidRegister(detail::specs::arch::Register);
+    static ExecutionError RegisterIsBlocked(detail::specs::arch::Register);
+
+    static ExecutionError AddressOutOfMemory(detail::specs::arch::Address);
+    static ExecutionError CodeSegmentBlocked(detail::specs::arch::Address);
+    static ExecutionError ConstantsSegmentBlocked(detail::specs::arch::Address);
 
     static ExecutionError UnknownCommand(detail::specs::cmd::Code);
-
     static ExecutionError UnknownSyscallCode(detail::specs::cmd::syscall::Code);
 
     template <detail::utils::concepts::IntOrFloat T>
@@ -47,7 +55,6 @@ struct ExecutionError : Error {
            << divisor;
         return ExecutionError{ss.str()};
     }
-
     static ExecutionError QuotientOverflow(
         detail::specs::arch::TwoWords dividend,
         detail::specs::arch::TwoWords divisor);
@@ -58,9 +65,6 @@ struct ExecutionError : Error {
     static ExecutionError DtoiOverflow(detail::specs::arch::Double);
 
     static ExecutionError InvalidPutCharValue(detail::specs::arch::Word);
-
-    static ExecutionError AddressOutsideOfMemory(
-        detail::specs::cmd::args::Address);
 };
 
 }  // namespace karma::errors::executor

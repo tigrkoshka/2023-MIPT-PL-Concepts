@@ -75,7 +75,7 @@ Config& Config::UnblockConstantsSegment() {
 }
 
 Config& Config::BoundStack(size_t stack_size) {
-    if (stack_size >= karma::detail::specs::arch::kMemorySize) {
+    if (stack_size >= arch::kMemorySize) {
         max_stack_size_ = std::nullopt;
     } else {
         max_stack_size_ = stack_size;
@@ -126,8 +126,16 @@ bool Config::ConstantsSegmentIsBlocked() {
     return constants_segment_blocked_;
 }
 
-std::optional<size_t> Config::MaxStackSize() {
-    return max_stack_size_;
+size_t Config::MaxStackSize() {
+    if (!max_stack_size_) {
+        return arch::kMemorySize;
+    }
+
+    return *max_stack_size_;
+}
+
+size_t Config::MinStackAddress() {
+    return arch::kMemorySize - MaxStackSize();
 }
 
 const Config::Registers Config::kUtilityRegisters = {
