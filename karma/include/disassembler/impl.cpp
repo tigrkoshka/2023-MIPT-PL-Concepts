@@ -1,5 +1,6 @@
 #include "impl.hpp"
 
+#include <bit>          // for bit_cast
 #include <exception>    // for exception
 #include <filesystem>   // for path
 #include <fstream>      // for ofstream
@@ -19,14 +20,11 @@
 
 namespace karma {
 
-namespace utils = karma::detail::utils;
-
-namespace arch = karma::detail::specs::arch;
-
-namespace cmd  = karma::detail::specs::cmd;
-namespace args = cmd::args;
-
-namespace consts = karma::detail::specs::consts;
+namespace utils  = detail::utils;
+namespace arch   = detail::specs::arch;
+namespace cmd    = detail::specs::cmd;
+namespace args   = cmd::args;
+namespace consts = detail::specs::consts;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                      Disassembling a constant value                      ///
@@ -95,7 +93,7 @@ std::string Disassembler::Impl::GetDoubleValue(const Segment& constants,
 
     arch::Word high = constants[pos++];
 
-    consts::Double value = utils::types::ToDbl(utils::types::Join(low, high));
+    auto value = std::bit_cast<consts::Double>(utils::types::Join(low, high));
 
     std::ostringstream ss;
     ss << std::setprecision(consts::kDoublePrecision) << value;

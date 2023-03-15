@@ -32,6 +32,12 @@ class Disassembler {
     Disassembler()  = delete;
     ~Disassembler() = delete;
 
+    Disassembler(const Disassembler&)            = delete;
+    Disassembler& operator=(const Disassembler&) = delete;
+
+    Disassembler(Disassembler&&)            = delete;
+    Disassembler& operator=(Disassembler&&) = delete;
+
    public:
     static void MustDisassemble(const std::string& exec_path,
                                 std::ostream& out);

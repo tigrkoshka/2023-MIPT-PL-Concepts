@@ -12,16 +12,13 @@
 
 #include "compiler/compiler.hpp"
 #include "specs/syntax.hpp"
+#include "utils/generator.hpp"
 #include "utils/strings.hpp"
 
 namespace karma {
 
-using karma::errors::compiler::InternalError;
-using karma::errors::compiler::CompileError;
-
-namespace utils = karma::detail::utils;
-
-namespace syntax = karma::detail::specs::syntax;
+namespace utils  = detail::utils;
+namespace syntax = detail::specs::syntax;
 
 void Compiler::File::TrimComment(std::string& line) {
     size_t curr_start_pos = 0;
@@ -113,12 +110,10 @@ std::string Compiler::File::Where() const {
     std::ostringstream where;
     where << "at line " << LineNum() << " in ";
 
-    auto x = FromRoot();
-
     auto get_path = [](const File* file) -> std::string {
         return file->Path();
     };
-    auto pipeline = x | std::views::transform(get_path);
+    auto pipeline = FromRoot() | std::views::transform(get_path);
 
     std::ostream_iterator<std::string> dst{where, "\n included from "};
     std::ranges::copy(pipeline, dst);

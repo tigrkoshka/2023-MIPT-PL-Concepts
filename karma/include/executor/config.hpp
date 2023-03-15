@@ -39,11 +39,11 @@ class Executor::Config {
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     Config& operator&=(const Config&);
 
-    bool RegisterIsBlocked(uint32_t reg);
-    bool CodeSegmentIsBlocked();
-    bool ConstantsSegmentIsBlocked();
-    size_t MaxStackSize();
-    size_t MinStackAddress();
+    [[nodiscard]] bool RegisterIsBlocked(uint32_t reg) const;
+    [[nodiscard]] bool CodeSegmentIsBlocked() const;
+    [[nodiscard]] bool ConstantsSegmentIsBlocked() const;
+    [[nodiscard]] size_t MaxStackSize() const;
+    [[nodiscard]] size_t MinStackAddress() const;
 
    private:
     static const Registers kUtilityRegisters;

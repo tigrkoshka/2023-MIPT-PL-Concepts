@@ -14,7 +14,7 @@
 
 namespace karma {
 
-class Compiler::Labels : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::Labels : detail::utils::traits::NonCopyableMovable {
    private:
     using CompileError = errors::compiler::CompileError::Builder;
 
@@ -35,8 +35,10 @@ class Compiler::Labels : karma::detail::utils::traits::NonCopyableMovable {
 
     void SetCodeSize(size_t code_size);
 
-    std::optional<size_t> TryGetDefinition(const std::string& label) const;
-    std::optional<std::string> TryGetPos(const std::string& label) const;
+    [[nodiscard]] std::optional<size_t> TryGetDefinition(
+        const std::string& label) const;
+    [[nodiscard]] std::optional<std::string> TryGetPos(
+        const std::string& label) const;
 
     void RecordCommandLabel(const std::string& label,
                             size_t definition,
@@ -46,13 +48,13 @@ class Compiler::Labels : karma::detail::utils::traits::NonCopyableMovable {
                              const std::string& pos);
 
     void RecordEntrypointLabel(const std::string& label);
-    std::optional<std::string> TryGetEntrypointLabel() const;
+    [[nodiscard]] std::optional<std::string> TryGetEntrypointLabel() const;
 
     void RecordUsage(const std::string& label,
                      const File* file,
                      size_t command_number);
-    const AllUsages& GetUsages() const;
-    std::string GetUsageSample(const std::string& label) const;
+    [[nodiscard]] const AllUsages& GetUsages() const;
+    [[nodiscard]] std::string GetUsageSample(const std::string& label) const;
 
    private:
     Definitions commands_labels_;

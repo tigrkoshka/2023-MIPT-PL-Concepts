@@ -12,9 +12,8 @@ namespace karma::errors::disassembler {
 using IE = InternalError;
 using DE = DisassembleError;
 
-namespace cmd  = detail::specs::cmd;
-namespace args = cmd::args;
-
+namespace cmd    = detail::specs::cmd;
+namespace args   = cmd::args;
 namespace consts = detail::specs::consts;
 
 ////////////////////////////////////////////////////////////////////////////////

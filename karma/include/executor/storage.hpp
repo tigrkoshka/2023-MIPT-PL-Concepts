@@ -23,8 +23,7 @@ class Executor::Storage : karma::detail::utils::traits::NonCopyableMovable {
 
    public:
     explicit Storage(Config config = Config())
-        : base_config_(std::move(config)),
-          memory_(karma::detail::specs::arch::kMemorySize) {}
+        : base_config_(std::move(config)) {}
 
     void PrepareForExecution(const karma::Exec::Data& exec_data,
                              const Config& config = Config());
@@ -42,10 +41,11 @@ class Executor::Storage : karma::detail::utils::traits::NonCopyableMovable {
     // allocate the memory on the heap, and all the registers on the stack
     // to provide emulation that register operations are faster
 
-    Config base_config_;
+    Config base_config_ = Config();
     Config curr_config_{base_config_};
 
-    std::vector<Word> memory_;
+    std::vector<Word> memory_ =
+        std::vector<Word>(karma::detail::specs::arch::kMemorySize);
     size_t curr_code_end_{0};
     size_t curr_constants_end_{0};
 

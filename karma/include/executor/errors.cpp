@@ -13,13 +13,10 @@ namespace karma::errors::executor {
 using IE = InternalError;
 using EE = ExecutionError;
 
-namespace arch = detail::specs::arch;
-
+namespace arch    = detail::specs::arch;
 namespace cmd     = detail::specs::cmd;
-namespace args    = cmd::args;
 namespace syscall = cmd::syscall;
-
-namespace utils = detail::utils;
+namespace utils   = detail::utils;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                              Internal errors                             ///
@@ -52,7 +49,7 @@ EE EE::Builder::ExecPointerOutOfMemory(arch::Address address) {
     return EE{ss.str()};
 }
 
-EE EE::Builder::StackPointerOutOfMemory(detail::specs::arch::Address address) {
+EE EE::Builder::StackPointerOutOfMemory(arch::Address address) {
     std::ostringstream ss;
     ss << "address is outside of memory (size " << arch::kMemorySize
        << "): " << std::hex << address;
@@ -65,7 +62,7 @@ EE EE::Builder::StackOverflow(size_t max_stack_size) {
     return EE{ss.str()};
 }
 
-EE EE::Builder::InvalidRegister(detail::specs::arch::Register reg) {
+EE EE::Builder::InvalidRegister(arch::Register reg) {
     std::ostringstream ss;
     ss << "unknown register " << reg << "there are only " << arch::kNRegisters
        << "registers besides the flags register (from "
@@ -74,28 +71,28 @@ EE EE::Builder::InvalidRegister(detail::specs::arch::Register reg) {
     return EE{ss.str()};
 }
 
-EE EE::Builder::RegisterIsBlocked(detail::specs::arch::Register reg) {
+EE EE::Builder::RegisterIsBlocked(arch::Register reg) {
     std::ostringstream ss;
     ss << "trying to access a blocked register "
        << arch::kRegisterNumToName.at(reg);
     return EE{ss.str()};
 }
 
-EE EE::Builder::AddressOutOfMemory(detail::specs::arch::Address address) {
+EE EE::Builder::AddressOutOfMemory(arch::Address address) {
     std::ostringstream ss;
     ss << "trying to access address outside of memory (size "
        << arch::kMemorySize << "): " << std::hex << address;
     return EE{ss.str()};
 }
 
-EE EE::Builder::CodeSegmentBlocked(detail::specs::arch::Address address) {
+EE EE::Builder::CodeSegmentBlocked(arch::Address address) {
     std::ostringstream ss;
     ss << "trying to access address inside a blocked code segment" << std::hex
        << address;
     return EE{ss.str()};
 }
 
-EE EE::Builder::ConstantsSegmentBlocked(detail::specs::arch::Address address) {
+EE EE::Builder::ConstantsSegmentBlocked(arch::Address address) {
     std::ostringstream ss;
     ss << "trying to access address inside a blocked constants segment"
        << std::hex << address;

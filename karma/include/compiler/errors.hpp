@@ -2,6 +2,7 @@
 
 #include <cstdint>  // for int32_t
 #include <string>   // for string
+#include <utility>  // for move
 
 #include "compiler/compiler.hpp"
 #include "specs/commands.hpp"
@@ -32,9 +33,9 @@ struct InternalError::Builder : detail::utils::traits::Static {
 struct CompileError::Builder : detail::utils::traits::Static {
    private:
     struct TokenImpl {
-        TokenImpl(const std::string& value, const std::string& where)
-            : value(value),
-              where(where) {}
+        TokenImpl(std::string value, std::string where)
+            : value(std::move(value)),
+              where(std::move(where)) {}
 
         std::string value;
         std::string where;

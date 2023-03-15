@@ -10,7 +10,7 @@
 
 namespace karma {
 
-namespace arch = karma::detail::specs::arch;
+namespace arch = detail::specs::arch;
 
 Executor::Config& Executor::Config::SetBlockedRegisters(const Registers& regs) {
     blocked_registers_ = regs;
@@ -79,10 +79,10 @@ Executor::Config& Executor::Config::UnblockConstantsSegment() {
 Executor::Config& Executor::Config::BoundStack(size_t stack_size) {
     if (stack_size >= arch::kMemorySize) {
         max_stack_size_ = std::nullopt;
-    } else {
-        max_stack_size_ = stack_size;
+        return *this;
     }
 
+    max_stack_size_ = stack_size;
     return *this;
 }
 
@@ -99,6 +99,7 @@ Executor::Config& Executor::Config::Strict() {
     return *this;
 }
 
+// NOLINTNEXTLINE(fuchsia-overloaded-operator)
 Executor::Config& Executor::Config::operator&=(const Executor::Config& other) {
     BlockRegisters(other.blocked_registers_);
 
@@ -116,19 +117,19 @@ Executor::Config& Executor::Config::operator&=(const Executor::Config& other) {
     return *this;
 }
 
-bool Executor::Config::RegisterIsBlocked(arch::Register reg) {
+bool Executor::Config::RegisterIsBlocked(arch::Register reg) const {
     return blocked_registers_.contains(reg);
 }
 
-bool Executor::Config::CodeSegmentIsBlocked() {
+bool Executor::Config::CodeSegmentIsBlocked() const {
     return code_segment_blocked_;
 }
 
-bool Executor::Config::ConstantsSegmentIsBlocked() {
+bool Executor::Config::ConstantsSegmentIsBlocked() const {
     return constants_segment_blocked_;
 }
 
-size_t Executor::Config::MaxStackSize() {
+size_t Executor::Config::MaxStackSize() const {
     if (!max_stack_size_) {
         return arch::kMemorySize;
     }
@@ -136,14 +137,14 @@ size_t Executor::Config::MaxStackSize() {
     return *max_stack_size_;
 }
 
-size_t Executor::Config::MinStackAddress() {
+size_t Executor::Config::MinStackAddress() const {
     return arch::kMemorySize - MaxStackSize();
 }
 
 const Executor::Config::Registers Executor::Config::kUtilityRegisters = {
-    karma::detail::specs::arch::kCallFrameRegister,
-    karma::detail::specs::arch::kStackRegister,
-    karma::detail::specs::arch::kInstructionRegister,
+    arch::kCallFrameRegister,
+    arch::kStackRegister,
+    arch::kInstructionRegister,
 };
 
 }  // namespace karma

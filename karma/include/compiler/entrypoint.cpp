@@ -7,7 +7,7 @@
 
 namespace karma {
 
-namespace arch = karma::detail::specs::arch;
+namespace arch = detail::specs::arch;
 
 void Compiler::Entrypoint::Record(arch::Address address,
                                   const std::string& pos) {

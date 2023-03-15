@@ -13,9 +13,6 @@ namespace karma::detail::utils::types {
 
 const size_t kByteSize = CHAR_BIT;
 
-double ToDbl(uint64_t);
-uint64_t ToUll(double);
-
 std::pair<uint32_t, uint32_t> Split(uint64_t);
 uint64_t Join(uint32_t low, uint32_t high);
 
@@ -151,7 +148,7 @@ std::make_unsigned_t<Int> GetUnsignedBits(Int value, size_t bit_size) {
 
     auto modulo = static_cast<Uint>(-value);
 
-    return (static_cast<Uint>(1) << static_cast<Uint>(bit_size)) - modulo;
+    return (static_cast<Uint>(1u) << static_cast<Uint>(bit_size)) - modulo;
 }
 
 }  // namespace karma::detail::utils::types

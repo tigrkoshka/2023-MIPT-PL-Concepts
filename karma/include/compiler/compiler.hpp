@@ -37,6 +37,12 @@ class Compiler {
     Compiler()  = delete;
     ~Compiler() = delete;
 
+    Compiler(const Compiler&) = delete;
+    Compiler& operator=(const Compiler&) = delete;
+
+    Compiler(Compiler&&) = delete;
+    Compiler& operator=(Compiler&&) = delete;
+
    public:
     static void MustCompile(const std::string& src,
                             const std::string& dst = "");

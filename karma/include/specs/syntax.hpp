@@ -8,7 +8,7 @@ constexpr char kCommentSep        = '#';
 constexpr char kDisableCommentSep = '\\';
 constexpr char kLabelEnd          = ':';
 
-bool IsAllowedLabelChar(char);
+bool IsAllowedLabelChar(char symbol);
 
 const std::string kIncludeDirective    = "include";
 const std::string kEntrypointDirective = "end";

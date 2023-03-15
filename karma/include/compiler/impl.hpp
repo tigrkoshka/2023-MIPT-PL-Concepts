@@ -17,7 +17,7 @@
 
 namespace karma {
 
-class Compiler::Impl : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::Impl : karma::detail::utils::traits::Static {
    private:
     using CompileError = errors::compiler::CompileError::Builder;
 
@@ -25,20 +25,14 @@ class Compiler::Impl : karma::detail::utils::traits::NonCopyableMovable {
     using FilesDataMap = std::unordered_map<const File*, ExecData*>;
 
    private:
-    void FillLabels(const FilesDataMap& files_data);
-    karma::Exec::Data PrepareExecData(const Files& files);
+    static void FillLabels(const FilesDataMap&,
+                           std::shared_ptr<Labels>&,
+                           std::shared_ptr<Entrypoint>&);
+    static karma::Exec::Data PrepareExecData(const Files&);
 
    public:
-    Impl()
-        : labels_(std::make_shared<Labels>()),
-          entrypoint_(std::make_shared<Entrypoint>()){};
-
-    void MustCompile(const std::string& src, const std::string& dst);
-    void Compile(const std::string& src, const std::string& dst);
-
-   private:
-    std::shared_ptr<Labels> labels_;
-    std::shared_ptr<Entrypoint> entrypoint_;
+    static void MustCompile(const std::string& src, const std::string& dst);
+    static void Compile(const std::string& src, const std::string& dst);
 };
 
 }  // namespace karma

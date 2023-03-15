@@ -11,10 +11,10 @@
 
 namespace karma {
 
-namespace syntax = karma::detail::specs::syntax;
+namespace syntax = detail::specs::syntax;
 
-void Compiler::Compiler::Labels::CheckLabel(const std::string& label,
-                                            const std::string& pos) {
+void Compiler::Labels::CheckLabel(const std::string& label,
+                                  const std::string& pos) {
     if (label.empty()) {
         throw CompileError::EmptyLabel(pos);
     }

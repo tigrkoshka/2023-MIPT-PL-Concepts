@@ -11,7 +11,7 @@ namespace karma {
 
 class Executor::RMExecutor : public CommonExecutor {
    private:
-    using Args      = karma::detail::specs::cmd::args::RMArgs;
+    using Args      = detail::specs::cmd::args::RMArgs;
     using Operation = std::function<MaybeReturnCode(Args)>;
 
    private:
@@ -22,7 +22,7 @@ class Executor::RMExecutor : public CommonExecutor {
     Operation STORE2();
 
    public:
-    using Map = std::unordered_map<karma::detail::specs::cmd::Code, Operation>;
+    using Map = std::unordered_map<detail::specs::cmd::Code, Operation>;
     Map GetMap();
 };
 

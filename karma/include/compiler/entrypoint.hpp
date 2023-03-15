@@ -9,16 +9,16 @@
 
 namespace karma {
 
-class Compiler::Entrypoint : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::Entrypoint : detail::utils::traits::NonCopyableMovable {
    private:
-    using MaybeAddress = std::optional<karma::detail::specs::arch::Address>;
+    using MaybeAddress = std::optional<detail::specs::arch::Address>;
     using MaybePos     = std::optional<std::string>;
 
    public:
-    void Record(karma::detail::specs::arch::Address address,
+    void Record(detail::specs::arch::Address address,
                 const std::string& pos);
 
-    void SetAddress(karma::detail::specs::arch::Address address);
+    void SetAddress(detail::specs::arch::Address address);
 
     [[nodiscard]] MaybeAddress TryGetAddress() const;
     [[nodiscard]] MaybePos TryGetPos() const;

@@ -13,10 +13,8 @@ namespace karma::errors::compiler {
 using IE = InternalError;
 using CE = CompileError;
 
-namespace cmd = detail::specs::cmd;
-
+namespace cmd    = detail::specs::cmd;
 namespace consts = detail::specs::consts;
-
 namespace syntax = detail::specs::syntax;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,6 @@
 #include "exec.hpp"
 
+#include <bit>      // for bit_cast
 #include <cstddef>  // for size_t
 #include <fstream>  // for ifstream, ofstream
 #include <string>   // for string
@@ -13,9 +14,7 @@
 namespace karma {
 
 namespace arch = detail::specs::arch;
-
-namespace cmd = detail::specs::cmd;
-
+namespace cmd  = detail::specs::cmd;
 namespace exec = detail::specs::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,7 +30,7 @@ void Exec::Write(const Data& data, const std::string& exec_path) {
     }
 
     auto write_word = [&binary](arch::Word word) {
-        binary.write(reinterpret_cast<char*>(&word), 4);
+        binary.write(std::bit_cast<char*>(&word), 4);
     };
 
     // intro string
@@ -106,7 +105,7 @@ Exec::Data Exec::Read(const std::string& exec_path) {
 
     auto read_word = [&binary]() -> arch::Word {
         arch::Word word{};
-        binary.read(reinterpret_cast<char*>(&word), 4);
+        binary.read(std::bit_cast<char*>(&word), 4);
         return word;
     };
 

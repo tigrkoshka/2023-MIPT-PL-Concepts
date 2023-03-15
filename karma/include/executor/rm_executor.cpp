@@ -5,7 +5,7 @@
 
 namespace karma {
 
-namespace cmd = karma::detail::specs::cmd;
+namespace cmd = detail::specs::cmd;
 
 Executor::RMExecutor::Operation Executor::RMExecutor::LA() {
     return [this](Args args) -> MaybeReturnCode {

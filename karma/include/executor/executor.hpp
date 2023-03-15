@@ -1,8 +1,9 @@
 #pragma once
 
-#include <cstdint>  // for uint32_t
-#include <memory>   // for unique_ptr
-#include <string>   // for string
+#include <cstdint>   // for uint32_t
+#include <memory>    // for unique_ptr
+#include <optional>  // for optional
+#include <string>    // for string
 
 #include "utils/error.hpp"
 

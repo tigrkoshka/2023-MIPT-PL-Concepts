@@ -22,22 +22,23 @@
 
 namespace karma {
 
-namespace utils = karma::detail::utils;
-
-namespace arch = karma::detail::specs::arch;
-
-namespace args = karma::detail::specs::cmd::args;
+namespace utils = detail::utils;
+namespace arch  = detail::specs::arch;
+namespace args  = detail::specs::cmd::args;
+namespace exec  = detail::specs::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                            Labels substitution                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Compiler::Impl::FillLabels(const FilesDataMap& files_data) {
-    for (const auto& [label, usages] : labels_->GetUsages()) {
-        std::optional<size_t> definition_opt = labels_->TryGetDefinition(label);
+void Compiler::Impl::FillLabels(const FilesDataMap& files_data,
+                                std::shared_ptr<Labels>& labels,
+                                std::shared_ptr<Entrypoint>& entrypoint) {
+    for (const auto& [label, usages] : labels->GetUsages()) {
+        std::optional<size_t> definition_opt = labels->TryGetDefinition(label);
         if (!definition_opt) {
             throw CompileError::UndefinedLabel(
-                {label, labels_->GetUsageSample(label)});
+                {label, labels->GetUsageSample(label)});
         }
 
         auto definition = static_cast<args::Address>(*definition_opt);
@@ -50,14 +51,14 @@ void Compiler::Impl::FillLabels(const FilesDataMap& files_data) {
         }
     }
 
-    if (std::optional<std::string> entry = labels_->TryGetEntrypointLabel()) {
-        std::optional<size_t> definition = labels_->TryGetDefinition(*entry);
+    if (std::optional<std::string> entry = labels->TryGetEntrypointLabel()) {
+        std::optional<size_t> definition = labels->TryGetDefinition(*entry);
         if (!definition) {
             throw CompileError::UndefinedLabel(
-                {*entry, *entrypoint_->TryGetPos()});
+                {*entry, *entrypoint->TryGetPos()});
         }
 
-        entrypoint_->SetAddress(static_cast<args::Address>(*definition));
+        entrypoint->SetAddress(static_cast<args::Address>(*definition));
     }
 }
 
@@ -67,12 +68,14 @@ void Compiler::Impl::FillLabels(const FilesDataMap& files_data) {
 
 Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
     // TODO: multithreading
+    std::shared_ptr<Labels> labels         = std::make_shared<Labels>();
+    std::shared_ptr<Entrypoint> entrypoint = std::make_shared<Entrypoint>();
 
     std::vector<ExecData> files_data(files.size());
     FilesDataMap files_data_map;
     size_t code_size = 0;
     for (size_t i = 0; i < files.size(); ++i) {
-        FileCompiler file_compiler{files[i], labels_, entrypoint_};
+        FileCompiler file_compiler{files[i], labels, entrypoint};
 
         files_data[i]                  = std::move(file_compiler).PrepareData();
         files_data_map[files[i].get()] = &files_data[i];
@@ -80,16 +83,16 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
         code_size += files_data[i].Code().size();
     }
 
-    if (!entrypoint_->Seen()) {
+    if (!entrypoint->Seen()) {
         throw CompileError::NoEntrypoint();
     }
 
-    labels_->SetCodeSize(code_size);
+    labels->SetCodeSize(code_size);
 
-    FillLabels(files_data_map);
+    FillLabels(files_data_map, labels, entrypoint);
 
     Exec::Data exec_data{
-        .entrypoint    = *entrypoint_->TryGetAddress(),
+        .entrypoint    = *entrypoint->TryGetAddress(),
         .initial_stack = static_cast<arch::Word>(arch::kMemorySize - 1),
         .code          = std::vector<arch::Word>(),
         .constants     = std::vector<arch::Word>(),
@@ -118,8 +121,7 @@ void Compiler::Impl::MustCompile(const std::string& src,
         std::filesystem::path src_path(src);
 
         std::filesystem::path dst_path = src_path.parent_path();
-        dst_path /= src_path.stem().replace_extension(
-            karma::detail::specs::exec::kDefaultExtension);
+        dst_path /= src_path.stem().replace_extension(exec::kDefaultExtension);
 
         exec_path = dst_path.string();
     }

@@ -7,9 +7,8 @@
 
 namespace karma {
 
-namespace utils = karma::detail::utils;
-
-namespace arch = karma::detail::specs::arch;
+namespace utils = detail::utils;
+namespace arch  = detail::specs::arch;
 
 void Executor::Storage::PrepareForExecution(const Exec::Data& exec_data,
                                             const Config& config) {

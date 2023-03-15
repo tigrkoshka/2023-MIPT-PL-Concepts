@@ -2,14 +2,6 @@
 
 namespace karma::detail::utils::types {
 
-double ToDbl(uint64_t ull) {
-    return reinterpret_cast<double&>(ull);
-}
-
-uint64_t ToUll(double dbl) {
-    return reinterpret_cast<uint64_t&>(dbl);
-}
-
 std::pair<uint32_t, uint32_t> Split(uint64_t ull) {
     return {
         static_cast<uint32_t>(ull),

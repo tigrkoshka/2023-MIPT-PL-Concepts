@@ -19,7 +19,7 @@ class Executor::RIExecutor : public CommonExecutor {
     using Operation = std::function<MaybeReturnCode(Args)>;
 
    private:
-    karma::detail::specs::arch::Word ImmWord(const Args&);
+    static karma::detail::specs::arch::Word ImmWord(const Args&);
 
    private:
     Operation HALT();

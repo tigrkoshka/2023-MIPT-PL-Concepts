@@ -11,7 +11,6 @@ namespace karma::errors::exec {
 using FE = ExecFileError;
 
 namespace arch = detail::specs::arch;
-
 namespace exec = detail::specs::exec;
 
 FE FE::Builder::FailedToOpen(const std::string& path) {

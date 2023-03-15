@@ -11,15 +11,15 @@
 
 namespace karma {
 
-namespace syntax = karma::detail::specs::syntax;
+namespace syntax = detail::specs::syntax;
 
-Compiler::IncludesManager::Includes
+std::vector<std::filesystem::path>
 Compiler::IncludesManager::GetCurrIncludes() {
     std::string token;
 
     const std::unique_ptr<File>& curr_file = files_.back();
 
-    Includes includes;
+    std::vector<std::filesystem::path> includes;
 
     curr_file->Open();
     while (curr_file->NextLine()) {
@@ -61,8 +61,8 @@ void Compiler::IncludesManager::ProcessCurrFileIncludes() {
     }
 }
 
-Compiler::IncludesManager::Files Compiler::IncludesManager::GetFiles(
-    const std::string& root) && {
+std::vector<std::unique_ptr<Compiler::File>>
+Compiler::IncludesManager::GetFiles(const std::string& root) && {
     std::filesystem::path abs_root = std::filesystem::absolute(root);
 
     abs_root_dir_ = abs_root.parent_path();

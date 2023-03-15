@@ -16,29 +16,33 @@ class Executor::CommonExecutor : public CommandExecutor {
     using ExecutionError = errors::executor::ExecutionError::Builder;
 
    protected:
+    static void CheckBitwiseRHS(karma::detail::specs::arch::Word,
+                                karma::detail::specs::cmd::Code);
+
     karma::detail::specs::arch::TwoWords GetTwoRegisters(
         karma::detail::specs::cmd::args::Register low);
 
     void PutTwoRegisters(karma::detail::specs::arch::TwoWords,
                          karma::detail::specs::cmd::args::Receiver);
 
-    void CheckBitwiseRHS(karma::detail::specs::arch::Word,
-                         karma::detail::specs::cmd::Code);
-
     template <std::totally_ordered T>
     void WriteComparisonToFlags(T lhs, T rhs) {
         auto cmp_res = lhs <=> rhs;
 
-        if (cmp_res < 0) {
+        if (cmp_res < 0) {  // NOLINT(hicpp-use-nullptr,modernize-use-nullptr)
             Flags() = karma::detail::specs::flags::kLess;
-        } else if (cmp_res > 0) {
-            Flags() = karma::detail::specs::flags::kGreater;
-        } else {
-            // condition "cmp_res == 0" is true
-            // because lhs and rhs are comparable
-            // because of the template type constraint
-            Flags() = karma::detail::specs::flags::kEqual;
+            return;
         }
+
+        if (cmp_res > 0) {  // NOLINT(hicpp-use-nullptr,modernize-use-nullptr)
+            Flags() = karma::detail::specs::flags::kGreater;
+            return;
+        }
+
+        // condition "cmp_res == 0" is true
+        // because lhs and rhs are comparable
+        // because of the template type constraint
+        Flags() = karma::detail::specs::flags::kEqual;
     }
 
     void Divide(karma::detail::specs::arch::TwoWords,

@@ -1,26 +1,24 @@
 #include "ri_executor.hpp"
 
+#include <bit>          // for bit_cast
 #include <csignal>      // for sigset_t, sigfillset, sigwait
 #include <iostream>     // for cin, cout
 #include <type_traits>  // for make_signed_t
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
-#include "utils/types.hpp"
 
 namespace karma {
 
-namespace utils = karma::detail::utils;
-
-namespace arch = karma::detail::specs::arch;
-
-namespace cmd     = karma::detail::specs::cmd;
+namespace arch    = detail::specs::arch;
+namespace cmd     = detail::specs::cmd;
 namespace syscall = cmd::syscall;
 
 arch::Word Executor::RIExecutor::ImmWord(const Args& args) {
     return static_cast<arch::Word>(args.imm);
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 Executor::RIExecutor::Operation Executor::RIExecutor::HALT() {
     return [](Args) -> MaybeReturnCode {
         sigset_t wset{};
@@ -51,7 +49,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SYSCALL() {
                 arch::Double val{};
                 std::cin >> val;
 
-                PutTwoRegisters(utils::types::ToUll(val), args.reg);
+                PutTwoRegisters(std::bit_cast<arch::TwoWords>(val), args.reg);
                 break;
             }
 
@@ -62,7 +60,8 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SYSCALL() {
             }
 
             case syscall::PRINTDOUBLE: {
-                std::cout << utils::types::ToDbl(GetTwoRegisters(args.reg));
+                arch::TwoWords words = GetTwoRegisters(args.reg);
+                std::cout << std::bit_cast<arch::Double>(words);
                 break;
             }
 

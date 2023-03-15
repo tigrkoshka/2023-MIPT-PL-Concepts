@@ -7,16 +7,11 @@
 
 namespace karma {
 
-using karma::errors::executor::ExecutionError;
-
-namespace utils = karma::detail::utils;
-
-namespace arch = karma::detail::specs::arch;
-
-namespace cmd  = karma::detail::specs::cmd;
-namespace args = cmd::args;
-
-namespace flags = karma::detail::specs::flags;
+namespace utils = detail::utils;
+namespace arch  = detail::specs::arch;
+namespace cmd   = detail::specs::cmd;
+namespace args  = cmd::args;
+namespace flags = detail::specs::flags;
 
 arch::TwoWords Executor::CommonExecutor::GetTwoRegisters(args::Register low) {
     return utils::types::Join(Reg(low), Reg(low + 1));

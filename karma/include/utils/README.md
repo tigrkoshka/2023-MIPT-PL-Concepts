@@ -41,8 +41,6 @@ karma::
                         |        Static
                         types::                      // types.hpp
                         |        kByteSize
-                        |        ToDbl
-                        |        ToUll
                         |        Split
                         |        Join
                         |        GetSignedValue

@@ -7,11 +7,9 @@
 
 namespace karma {
 
-namespace arch = karma::detail::specs::arch;
-
-namespace cmd = karma::detail::specs::cmd;
-
-namespace flags = karma::detail::specs::flags;
+namespace arch  = detail::specs::arch;
+namespace cmd   = detail::specs::cmd;
+namespace flags = detail::specs::flags;
 
 Executor::JExecutor::Operation Executor::JExecutor::JMP() {
     return [this](Args args) -> MaybeReturnCode {

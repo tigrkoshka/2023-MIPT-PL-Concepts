@@ -16,10 +16,15 @@ Checks: >
 
   -fuchsia-statically-constructed-objects,
   -cert-err58-cpp,	 
+  
+  -google-readability-todo,
 
   -readability-uppercase-literal-suffix,
   -hicpp-uppercase-literal-suffix,
   -cert-dcl16-c,
+  
+  -readability-named-parameter,
+  -hicpp-named-parameter,
 
   -llvm-header-guard,
 
@@ -39,6 +44,8 @@ WarningsAsErrors: '*'
 CheckOptions:
   - key: misc-const-correctness.AnalyzeValues
     value: 0
+  - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: 1
   - key: readability-identifier-naming.NamespaceCase
     value: lower_case
   - key: readability-identifier-naming.ClassCase

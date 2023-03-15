@@ -1,5 +1,6 @@
 #include "file_compiler.hpp"
 
+#include <bit>          // for bit_cast
 #include <cstddef>      // for size_t
 #include <cstdint>      // for int32_t
 #include <optional>     // for optional
@@ -21,16 +22,12 @@
 
 namespace karma {
 
-namespace utils = karma::detail::utils;
-
-namespace syntax = karma::detail::specs::syntax;
-
-namespace cmd  = karma::detail::specs::cmd;
-namespace args = cmd::args;
-
-namespace consts = karma::detail::specs::consts;
-
-namespace arch = karma::detail::specs::arch;
+namespace utils  = detail::utils;
+namespace syntax = detail::specs::syntax;
+namespace cmd    = detail::specs::cmd;
+namespace args   = cmd::args;
+namespace consts = detail::specs::consts;
+namespace arch   = detail::specs::arch;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Utils                                  ///
@@ -206,7 +203,9 @@ void Compiler::FileCompiler::ProcessDoubleConstant() {
                                                   {curr_token_, Where()});
         }
 
-        auto [low, high] = utils::types::Split(utils::types::ToUll(value));
+        auto value_as_uint64 = std::bit_cast<consts::UInt64>(value);
+
+        auto [low, high] = utils::types::Split(value_as_uint64);
         Constants().push_back(low);
         Constants().push_back(high);
     } catch (...) {
@@ -368,7 +367,7 @@ args::Immediate Compiler::FileCompiler::GetImmediate(size_t bit_size) const {
     using Int  = args::Immediate;
     using Uint = std::make_unsigned_t<Int>;
 
-    const auto min_modulo = static_cast<Uint>(1)
+    const auto min_modulo = static_cast<Uint>(1ull)
                             << static_cast<Uint>(bit_size - 1ull);
 
     const auto min = -static_cast<Int>(min_modulo);

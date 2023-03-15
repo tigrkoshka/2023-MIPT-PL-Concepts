@@ -12,9 +12,8 @@
 
 namespace karma {
 
-namespace arch = karma::detail::specs::arch;
-
-namespace cmd = karma::detail::specs::cmd;
+namespace arch = detail::specs::arch;
+namespace cmd  = detail::specs::cmd;
 
 Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
     storage_->Reg(arch::kInstructionRegister)++;

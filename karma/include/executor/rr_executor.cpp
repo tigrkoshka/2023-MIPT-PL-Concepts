@@ -1,20 +1,15 @@
 #include "rr_executor.hpp"
 
+#include <bit>    // for bit_cast
 #include <cmath>  // for floor
 
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
-#include "utils/types.hpp"
 
 namespace karma {
 
-using karma::errors::executor::ExecutionError;
-
-namespace utils = karma::detail::utils;
-
-namespace arch = karma::detail::specs::arch;
-
-namespace cmd  = karma::detail::specs::cmd;
+namespace arch = detail::specs::arch;
+namespace cmd  = detail::specs::cmd;
 namespace args = cmd::args;
 
 arch::Word Executor::RRExecutor::LHSWord(const Args& args) {
@@ -22,7 +17,7 @@ arch::Word Executor::RRExecutor::LHSWord(const Args& args) {
 }
 
 arch::Double Executor::RRExecutor::LHSDouble(const Args& args) {
-    return utils::types::ToDbl(GetTwoRegisters(args.recv));
+    return std::bit_cast<arch::Double>(GetTwoRegisters(args.recv));
 }
 
 arch::Word Executor::RRExecutor::RHSWord(const Args& args) {
@@ -30,7 +25,7 @@ arch::Word Executor::RRExecutor::RHSWord(const Args& args) {
 }
 
 arch::Double Executor::RRExecutor::RHSDouble(const Args& args) {
-    return utils::types::ToDbl(GetTwoRegisters(args.src));
+    return std::bit_cast<arch::Double>(GetTwoRegisters(args.src));
 }
 
 Executor::RRExecutor::Operation Executor::RRExecutor::ADD() {
@@ -112,9 +107,8 @@ Executor::RRExecutor::Operation Executor::RRExecutor::XOR() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::ITOD() {
     return [this](Args args) -> MaybeReturnCode {
-        PutTwoRegisters(
-            utils::types::ToUll(static_cast<arch::Double>(RHSWord(args))),
-            args.recv);
+        auto value = static_cast<arch::Double>(RHSWord(args));
+        PutTwoRegisters(std::bit_cast<arch::TwoWords>(value), args.recv);
         return {};
     };
 }
@@ -135,24 +129,24 @@ Executor::RRExecutor::Operation Executor::RRExecutor::DTOI() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::ADDD() {
     return [this](Args args) -> MaybeReturnCode {
-        PutTwoRegisters(utils::types::ToUll(LHSDouble(args) + RHSDouble(args)),
-                        args.recv);
+        arch::Double res = LHSDouble(args) + RHSDouble(args);
+        PutTwoRegisters(std::bit_cast<arch::TwoWords>(res), args.recv);
         return {};
     };
 }
 
 Executor::RRExecutor::Operation Executor::RRExecutor::SUBD() {
     return [this](Args args) -> MaybeReturnCode {
-        PutTwoRegisters(utils::types::ToUll(LHSDouble(args) - RHSDouble(args)),
-                        args.recv);
+        arch::Double res = LHSDouble(args) - RHSDouble(args);
+        PutTwoRegisters(std::bit_cast<arch::TwoWords>(res), args.recv);
         return {};
     };
 }
 
 Executor::RRExecutor::Operation Executor::RRExecutor::MULD() {
     return [this](Args args) -> MaybeReturnCode {
-        PutTwoRegisters(utils::types::ToUll(LHSDouble(args) * RHSDouble(args)),
-                        args.recv);
+        arch::Double res = LHSDouble(args) * RHSDouble(args);
+        PutTwoRegisters(std::bit_cast<arch::TwoWords>(res), args.recv);
         return {};
     };
 }
@@ -166,7 +160,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::DIVD() {
             throw ExecutionError::DivisionByZero(lhs, rhs);
         }
 
-        PutTwoRegisters(utils::types::ToUll(lhs / rhs), args.recv);
+        PutTwoRegisters(std::bit_cast<arch::TwoWords>(lhs / rhs), args.recv);
         return {};
     };
 }

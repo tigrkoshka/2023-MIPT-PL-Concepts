@@ -1,6 +1,6 @@
 #pragma once
 
-#include <coroutine>  // for coroutine-related labels
+#include <coroutine>  // for coroutine-related symbols
 #include <cstddef>    // for ptrdiff_t
 #include <exception>  // for exception_ptr
 #include <iterator>   // for input_iterator_tag

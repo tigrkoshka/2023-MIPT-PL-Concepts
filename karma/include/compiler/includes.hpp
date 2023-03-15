@@ -19,21 +19,18 @@ class Compiler::IncludesManager
     using InternalError = errors::compiler::InternalError::Builder;
     using CompileError  = errors::compiler::CompileError::Builder;
 
-    using Files    = std::vector<std::unique_ptr<File>>;
-    using Includes = std::vector<std::filesystem::path>;
-
    private:
-    Includes GetCurrIncludes();
+    std::vector<std::filesystem::path> GetCurrIncludes();
 
     void ProcessCurrFileIncludes();
 
    public:
-    Files GetFiles(const std::string& root) &&;
+    std::vector<std::unique_ptr<File>> GetFiles(const std::string& root) &&;
 
    private:
-    std::filesystem::path abs_root_dir_;
-    std::unordered_set<std::string> all_includes_;
-    Files files_;
+    std::filesystem::path abs_root_dir_{};
+    std::unordered_set<std::string> all_includes_{};
+    std::vector<std::unique_ptr<File>> files_{};
 };
 
 }  // namespace karma

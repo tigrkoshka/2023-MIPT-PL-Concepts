@@ -23,8 +23,9 @@ class Exec : detail::utils::traits::Static {
 
    public:
     struct Data : karma::detail::utils::traits::NonCopyableMovable {
-        detail::specs::arch::Address entrypoint;
-        detail::specs::arch::Address initial_stack;
+        detail::specs::arch::Address entrypoint{0};
+        detail::specs::arch::Address initial_stack{
+            detail::specs::arch::kMemorySize - 1};
 
         std::vector<detail::specs::cmd::Bin> code;
         std::vector<detail::specs::arch::Word> constants;
