@@ -10,7 +10,6 @@
 #include <vector>      // for vector
 
 #include "compiler/compiler.hpp"
-#include "compiler/errors.hpp"
 #include "compiler/exec_data.hpp"
 #include "compiler/file_compiler.hpp"
 #include "compiler/includes.hpp"

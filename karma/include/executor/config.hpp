@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>        // for size_t
+#include <cstdint>        // for uint32_t
 #include <optional>       // for optional, nullopt
 #include <unordered_set>  // for unordered_set
 
@@ -13,11 +14,11 @@ class Executor::Config {
     using Registers = std::unordered_set<uint32_t>;
 
    public:
-    Config& SetBlockedRegisters(const Registers& registers);
-    Config& SetBlockedRegisters(Registers&& registers);
+    Config& SetBlockedRegisters(const Registers&);
+    Config& SetBlockedRegisters(Registers&&);
 
-    Config& BlockRegisters(const Registers& registers);
-    Config& UnblockRegisters(const Registers& registers);
+    Config& BlockRegisters(const Registers&);
+    Config& UnblockRegisters(const Registers&);
 
     Config& BlockUtilityRegisters();
     Config& UnblockUtilityRegisters();

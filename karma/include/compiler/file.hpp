@@ -6,7 +6,8 @@
 #include <sstream>     // for istringstream
 #include <string>      // for string
 
-#include "compiler.hpp"
+#include "compiler/compiler.hpp"
+#include "compiler/errors.hpp"
 #include "utils/generator.hpp"
 #include "utils/traits.hpp"
 

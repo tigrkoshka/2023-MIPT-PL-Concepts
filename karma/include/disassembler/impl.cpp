@@ -9,7 +9,6 @@
 #include <string>       // for string
 #include <type_traits>  // for make_signed_t
 
-#include "disassembler/errors.hpp"
 #include "exec/exec.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"

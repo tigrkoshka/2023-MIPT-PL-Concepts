@@ -4,6 +4,7 @@
 #include <unordered_map>  // for unordered_map
 
 #include "executor/common_executor.hpp"
+#include "executor/errors.hpp"
 #include "executor/executor.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"

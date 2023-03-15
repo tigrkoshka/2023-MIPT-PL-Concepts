@@ -11,7 +11,6 @@
 #include <utility>     // for move
 
 #include "compiler/compiler.hpp"
-#include "compiler/errors.hpp"
 #include "specs/syntax.hpp"
 #include "utils/strings.hpp"
 

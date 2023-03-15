@@ -3,7 +3,6 @@
 #include <concepts>    // for integral, floating_point, convertible_to
 #include <cstddef>     // for size_t
 #include <functional>  // for hash
-#include <istream>     // for istream
 
 namespace karma::detail::utils::concepts {
 

@@ -8,6 +8,7 @@
 
 #include "compiler/compiler.hpp"
 #include "compiler/entrypoint.hpp"
+#include "compiler/errors.hpp"
 #include "compiler/exec_data.hpp"
 #include "compiler/file.hpp"
 #include "compiler/labels.hpp"

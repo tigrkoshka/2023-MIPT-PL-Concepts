@@ -1,5 +1,8 @@
 #include "disassembler.hpp"
 
+#include <ostream>  // for ostream
+#include <string>   // for string
+
 #include "disassembler/impl.hpp"
 
 namespace karma {

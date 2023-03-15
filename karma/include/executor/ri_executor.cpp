@@ -4,7 +4,6 @@
 #include <iostream>     // for cin, cout
 #include <type_traits>  // for make_signed_t
 
-#include "executor/errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/types.hpp"

@@ -8,8 +8,9 @@
 #include <type_traits>  // for make_unsigned_t
 #include <utility>      // for exchange
 
-#include "compiler/errors.hpp"
+#include "compiler/entrypoint.hpp"
 #include "compiler/exec_data.hpp"
+#include "compiler/file.hpp"
 #include "compiler/labels.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"

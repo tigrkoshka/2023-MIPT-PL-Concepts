@@ -6,7 +6,6 @@
 #include <string>    // for string
 
 #include "compiler/compiler.hpp"
-#include "compiler/errors.hpp"
 #include "compiler/file.hpp"
 #include "specs/syntax.hpp"
 

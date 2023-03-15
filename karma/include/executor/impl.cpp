@@ -6,7 +6,6 @@
 
 #include "exec/exec.hpp"
 #include "executor/config.hpp"
-#include "executor/errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/error.hpp"

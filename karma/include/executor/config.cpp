@@ -5,79 +5,78 @@
 #include <unordered_set>  // for erase_if
 #include <utility>        // for move
 
+#include "executor/executor.hpp"
 #include "specs/architecture.hpp"
 
 namespace karma {
 
-using Config = Executor::Config;
-
 namespace arch = karma::detail::specs::arch;
 
-Config& Config::SetBlockedRegisters(const Registers& registers) {
-    blocked_registers_ = registers;
+Executor::Config& Executor::Config::SetBlockedRegisters(const Registers& regs) {
+    blocked_registers_ = regs;
     return *this;
 }
 
-Config& Config::SetBlockedRegisters(Registers&& registers) {
-    blocked_registers_ = std::move(registers);
+Executor::Config& Executor::Config::SetBlockedRegisters(Registers&& regs) {
+    blocked_registers_ = std::move(regs);
     return *this;
 }
 
-Config& Config::BlockRegisters(const Registers& registers) {
-    blocked_registers_.insert(registers.begin(), registers.end());
+Executor::Config& Executor::Config::BlockRegisters(const Registers& regs) {
+    blocked_registers_.insert(regs.begin(), regs.end());
     return *this;
 }
 
-Config& Config::UnblockRegisters(const Registers& registers) {
-    auto remove = [&registers](auto const& elem) {
-        return registers.contains(elem);
+Executor::Config& Executor::Config::UnblockRegisters(const Registers& regs) {
+    auto remove = [&regs](auto const& elem) {
+        return regs.contains(elem);
     };
 
     std::erase_if(blocked_registers_, remove);
     return *this;
 }
 
-Config& Config::BlockUtilityRegisters() {
+Executor::Config& Executor::Config::BlockUtilityRegisters() {
     BlockRegisters(kUtilityRegisters);
     return *this;
 }
 
-Config& Config::UnblockUtilityRegisters() {
+Executor::Config& Executor::Config::UnblockUtilityRegisters() {
     UnblockRegisters(kUtilityRegisters);
     return *this;
 }
 
-Config& Config::SetCodeSegmentBlock(bool block) {
+Executor::Config& Executor::Config::SetCodeSegmentBlock(bool block) {
     code_segment_blocked_ = block;
     return *this;
 }
 
-Config& Config::BlockCodeSegment() {
+Executor::Config& Executor::Config::BlockCodeSegment() {
     code_segment_blocked_ = true;
     return *this;
 }
 
-Config& Config::UnblockCodeSegment() {
+Executor::Config& Executor::Config::UnblockCodeSegment() {
     code_segment_blocked_ = false;
     return *this;
 }
 
-Config& Config::SetConstantsSegmentBlock(bool block) {
+Executor::Config& Executor::Config::SetConstantsSegmentBlock(bool block) {
     constants_segment_blocked_ = block;
     return *this;
 }
 
-Config& Config::BlockConstantsSegment() {
+Executor::Config& Executor::Config::BlockConstantsSegment() {
     constants_segment_blocked_ = true;
     return *this;
 }
 
-Config& Config::UnblockConstantsSegment() {
+Executor::Config& Executor::Config::UnblockConstantsSegment() {
     constants_segment_blocked_ = false;
     return *this;
 }
 
-Config& Config::BoundStack(size_t stack_size) {
+Executor::Config& Executor::Config::BoundStack(size_t stack_size) {
     if (stack_size >= arch::kMemorySize) {
         max_stack_size_ = std::nullopt;
     } else {
@@ -87,12 +86,12 @@ Config& Config::BoundStack(size_t stack_size) {
     return *this;
 }
 
-Config& Config::UnboundStack() {
+Executor::Config& Executor::Config::UnboundStack() {
     max_stack_size_ = std::nullopt;
     return *this;
 }
 
-Config& Config::Strict() {
+Executor::Config& Executor::Config::Strict() {
     BlockUtilityRegisters();
     BlockCodeSegment();
     BlockConstantsSegment();
@@ -100,7 +99,7 @@ Config& Config::Strict() {
     return *this;
 }
 
-Config& Config::operator&=(const Config& other) {
+Executor::Config& Executor::Config::operator&=(const Executor::Config& other) {
     BlockRegisters(other.blocked_registers_);
 
     SetCodeSegmentBlock(code_segment_blocked_ || other.code_segment_blocked_);
@@ -117,19 +116,19 @@ Config& Config::operator&=(const Config& other) {
     return *this;
 }
 
-bool Config::RegisterIsBlocked(arch::Register reg) {
+bool Executor::Config::RegisterIsBlocked(arch::Register reg) {
     return blocked_registers_.contains(reg);
 }
 
-bool Config::CodeSegmentIsBlocked() {
+bool Executor::Config::CodeSegmentIsBlocked() {
     return code_segment_blocked_;
 }
 
-bool Config::ConstantsSegmentIsBlocked() {
+bool Executor::Config::ConstantsSegmentIsBlocked() {
     return constants_segment_blocked_;
 }
 
-size_t Config::MaxStackSize() {
+size_t Executor::Config::MaxStackSize() {
     if (!max_stack_size_) {
         return arch::kMemorySize;
     }
@@ -137,11 +136,11 @@ size_t Config::MaxStackSize() {
     return *max_stack_size_;
 }
 
-size_t Config::MinStackAddress() {
+size_t Executor::Config::MinStackAddress() {
     return arch::kMemorySize - MaxStackSize();
 }
 
-const Config::Registers Config::kUtilityRegisters = {
+const Executor::Config::Registers Executor::Config::kUtilityRegisters = {
     karma::detail::specs::arch::kCallFrameRegister,
     karma::detail::specs::arch::kStackRegister,
     karma::detail::specs::arch::kInstructionRegister,

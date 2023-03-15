@@ -4,8 +4,9 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include "executor.hpp"
 #include "executor/config.hpp"
+#include "executor/errors.hpp"
+#include "executor/executor.hpp"
 #include "executor/j_executor.hpp"
 #include "executor/ri_executor.hpp"
 #include "executor/rm_executor.hpp"
@@ -18,7 +19,7 @@ namespace karma {
 
 class Executor::Impl : detail::utils::traits::NonCopyableMovable {
    private:
-    using InternalError = errors::executor::InternalError::Builder;
+    using InternalError  = errors::executor::InternalError::Builder;
     using ExecutionError = errors::executor::ExecutionError::Builder;
 
    private:

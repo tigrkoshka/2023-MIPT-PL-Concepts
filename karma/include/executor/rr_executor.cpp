@@ -2,7 +2,6 @@
 
 #include <cmath>  // for floor
 
-#include "executor/errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/types.hpp"

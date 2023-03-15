@@ -3,6 +3,7 @@
 #include <concepts>  // for totally_ordered
 
 #include "executor/command_executor.hpp"
+#include "executor/errors.hpp"
 #include "executor/executor.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"

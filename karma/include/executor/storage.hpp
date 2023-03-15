@@ -7,6 +7,7 @@
 
 #include "exec/exec.hpp"
 #include "executor/config.hpp"
+#include "executor/errors.hpp"
 #include "executor/executor.hpp"
 #include "specs/architecture.hpp"
 #include "utils/traits.hpp"

@@ -1,6 +1,5 @@
 #include "common_executor.hpp"
 
-#include "executor/errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/flags.hpp"

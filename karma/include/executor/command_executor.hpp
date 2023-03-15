@@ -4,13 +4,13 @@
 #include <utility>  // for move
 
 #include "executor/executor.hpp"
-#include "executor/storage.hpp"
 #include "specs/architecture.hpp"
 #include "utils/traits.hpp"
 
 namespace karma {
 
-class Executor::CommandExecutor : karma::detail::utils::traits::NonCopyableMovable {
+class Executor::CommandExecutor
+    : karma::detail::utils::traits::NonCopyableMovable {
    public:
     // delete the default constructor defined in NonCopyableMovable
     CommandExecutor() = delete;
@@ -29,4 +29,4 @@ class Executor::CommandExecutor : karma::detail::utils::traits::NonCopyableMovab
     std::shared_ptr<Storage> storage_;
 };
 
-}  // namespace karma::executor::detail
+}  // namespace karma

@@ -1,5 +1,6 @@
 #include "command_executor.hpp"
 
+#include "executor/storage.hpp"
 #include "specs/architecture.hpp"
 
 namespace karma {

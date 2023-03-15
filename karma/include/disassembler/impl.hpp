@@ -6,6 +6,7 @@
 #include <vector>   // for vector
 
 #include "disassembler/disassembler.hpp"
+#include "disassembler/errors.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/traits.hpp"

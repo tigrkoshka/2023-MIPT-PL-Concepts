@@ -7,6 +7,7 @@
 #include <vector>         // for vector
 
 #include "compiler/compiler.hpp"
+#include "compiler/errors.hpp"
 #include "compiler/file.hpp"
 #include "utils/traits.hpp"
 
@@ -16,7 +17,7 @@ class Compiler::IncludesManager
     : karma::detail::utils::traits::NonCopyableMovable {
    private:
     using InternalError = errors::compiler::InternalError::Builder;
-    using CompileError = errors::compiler::CompileError::Builder;
+    using CompileError  = errors::compiler::CompileError::Builder;
 
     using Files    = std::vector<std::unique_ptr<File>>;
     using Includes = std::vector<std::filesystem::path>;
@@ -35,4 +36,4 @@ class Compiler::IncludesManager
     Files files_;
 };
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

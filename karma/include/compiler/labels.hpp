@@ -8,6 +8,7 @@
 #include <vector>         // for vector
 
 #include "compiler/compiler.hpp"
+#include "compiler/errors.hpp"
 #include "compiler/file.hpp"
 #include "utils/traits.hpp"
 
