@@ -4,16 +4,46 @@
 #include <memory>   // for unique_ptr
 #include <string>   // for string
 
+#include "utils/error.hpp"
+
 namespace karma {
 
+namespace errors::executor {
+
+struct Error;
+struct InternalError;
+struct ExecutionError;
+
+}  // namespace errors::executor
+
 class Executor {
+   private:
+    friend struct errors::executor::InternalError;
+    friend struct errors::executor::ExecutionError;
+
    public:
     class Config;
+
+   private:
+    class Storage;
+    class CommandExecutor;
+    class CommonExecutor;
+    class RMExecutor;
+    class RRExecutor;
+    class RIExecutor;
+    class JExecutor;
+    class Impl;
+
+   private:
+    using ReturnCode      = uint32_t;
+    using MaybeReturnCode = std::optional<ReturnCode>;
 
    public:
     Executor();
     explicit Executor(Config);
     ~Executor();
+
+    // utils::traits::NonCopyableMovable
 
     // do not include utils/traits, because we don't want to expose
     // internal features of the karma library to the user
@@ -30,15 +60,52 @@ class Executor {
     // cannot use default value for Config, because it is declared
     // in another file, which includes this one
 
-    uint32_t MustExecute(const std::string& exec);
-    uint32_t Execute(const std::string& exec);
+    ReturnCode MustExecute(const std::string& exec);
+    ReturnCode Execute(const std::string& exec);
 
-    uint32_t MustExecute(const std::string& exec, const Config&);
-    uint32_t Execute(const std::string& exec, const Config&);
+    ReturnCode MustExecute(const std::string& exec, const Config&);
+    ReturnCode Execute(const std::string& exec, const Config&);
 
    private:
-    class Impl;
     std::unique_ptr<Impl> impl_;
 };
+
+namespace errors::executor {
+
+struct Error : errors::Error {
+   protected:
+    explicit Error(const std::string& message)
+        : errors::Error(message) {}
+};
+
+struct InternalError : Error {
+   private:
+    friend class Executor::Impl;
+
+   private:
+    struct Builder;
+
+   private:
+    explicit InternalError(const std::string& message)
+        : Error("internal executor error: " + message) {}
+};
+
+struct ExecutionError : Error {
+   private:
+    friend class Executor::Storage;
+    friend class Executor::CommonExecutor;
+    friend class Executor::RIExecutor;
+    friend class Executor::RRExecutor;
+    friend class Executor::Impl;
+
+   private:
+    struct Builder;
+
+   private:
+    explicit ExecutionError(const std::string& message)
+        : Error("execution error" + message) {}
+};
+
+}  // namespace errors::executor
 
 }  // namespace karma

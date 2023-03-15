@@ -18,11 +18,7 @@
 #include "utils/strings.hpp"
 #include "utils/types.hpp"
 
-namespace karma::compiler::detail {
-
-using errors::compiler::Error;
-using errors::compiler::InternalError;
-using errors::compiler::CompileError;
+namespace karma {
 
 namespace utils = karma::detail::utils;
 
@@ -39,38 +35,39 @@ namespace arch = karma::detail::specs::arch;
 ///                                   Utils                                  ///
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string FileCompiler::Where() const {
+std::string Compiler::FileCompiler::Where() const {
     return file_->Where();
 }
 
-FileCompiler::Segment& FileCompiler::Code() {
+Compiler::FileCompiler::Segment& Compiler::FileCompiler::Code() {
     return data_.Code();
 }
 
-const FileCompiler::Segment& FileCompiler::Code() const {
+const Compiler::FileCompiler::Segment& Compiler::FileCompiler::Code() const {
     return data_.Code();
 }
 
-FileCompiler::Segment& FileCompiler::Constants() {
+Compiler::FileCompiler::Segment& Compiler::FileCompiler::Constants() {
     return data_.Constants();
 }
 
-const FileCompiler::Segment& FileCompiler::Constants() const {
+const Compiler::FileCompiler::Segment& Compiler::FileCompiler::Constants()
+    const {
     return data_.Constants();
 }
 
-size_t FileCompiler::CurrCmdAddress() const {
+size_t Compiler::FileCompiler::CurrCmdAddress() const {
     return Code().size();
 }
 
-size_t FileCompiler::CurrConstAddress() const {
+size_t Compiler::FileCompiler::CurrConstAddress() const {
     // add 1 to the start of the current constant record, because
     // the memory representation of any constant starts with one-word
     // prefix specifying the constant's type for disassembling
     return Constants().size() + 1;
 }
 
-void FileCompiler::SkipIncludes() {
+void Compiler::FileCompiler::SkipIncludes() {
     while (file_->NextLine()) {
         if (!file_->GetToken(curr_token_)) {
             continue;
@@ -86,7 +83,7 @@ void FileCompiler::SkipIncludes() {
 ///                            Line types parsing                            ///
 ////////////////////////////////////////////////////////////////////////////////
 
-bool FileCompiler::TryProcessLabel() {
+bool Compiler::FileCompiler::TryProcessLabel() {
     if (curr_token_.empty()) {
         throw InternalError::EmptyWord(Where());
     }
@@ -116,7 +113,7 @@ bool FileCompiler::TryProcessLabel() {
     return true;
 }
 
-bool FileCompiler::TryProcessEntrypoint() {
+bool Compiler::FileCompiler::TryProcessEntrypoint() {
     if (curr_token_.empty()) {
         throw InternalError::EmptyWord(Where());
     }
@@ -152,7 +149,7 @@ bool FileCompiler::TryProcessEntrypoint() {
 ///                        Constants value processing                        ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void FileCompiler::ProcessUint32Constant() {
+void Compiler::FileCompiler::ProcessUint32Constant() {
     try {
         size_t pos{};
 
@@ -176,7 +173,7 @@ void FileCompiler::ProcessUint32Constant() {
     }
 }
 
-void FileCompiler::ProcessUint64Constant() {
+void Compiler::FileCompiler::ProcessUint64Constant() {
     try {
         size_t pos{};
 
@@ -197,7 +194,7 @@ void FileCompiler::ProcessUint64Constant() {
     }
 }
 
-void FileCompiler::ProcessDoubleConstant() {
+void Compiler::FileCompiler::ProcessDoubleConstant() {
     try {
         size_t pos{};
 
@@ -217,7 +214,7 @@ void FileCompiler::ProcessDoubleConstant() {
     }
 }
 
-void FileCompiler::ProcessCharConstant() {
+void Compiler::FileCompiler::ProcessCharConstant() {
     if (curr_token_.size() < 2) {
         throw CompileError::CharTooSmallForQuotes({curr_token_, Where()});
     }
@@ -242,7 +239,7 @@ void FileCompiler::ProcessCharConstant() {
     Constants().push_back(static_cast<arch::Word>(curr_token_[0]));
 }
 
-void FileCompiler::ProcessStringConstant() {
+void Compiler::FileCompiler::ProcessStringConstant() {
     if (curr_token_.size() < 2) {
         throw CompileError::StringTooSmallForQuotes({curr_token_, Where()});
     }
@@ -269,7 +266,7 @@ void FileCompiler::ProcessStringConstant() {
 ///                           Constants processing                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-bool FileCompiler::TryProcessConstant() {
+bool Compiler::FileCompiler::TryProcessConstant() {
     if (curr_token_.empty()) {
         throw InternalError::EmptyWord(Where());
     }
@@ -334,7 +331,7 @@ bool FileCompiler::TryProcessConstant() {
 ///                           Command word parsing                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-cmd::CodeFormat FileCompiler::GetCodeFormat() const {
+cmd::CodeFormat Compiler::FileCompiler::GetCodeFormat() const {
     if (!cmd::kNameToCode.contains(curr_token_)) {
         throw CompileError::UnknownCommand({curr_token_, Where()});
     }
@@ -350,7 +347,7 @@ cmd::CodeFormat FileCompiler::GetCodeFormat() const {
     return {code, format};
 }
 
-args::Register FileCompiler::GetRegister() const {
+args::Register Compiler::FileCompiler::GetRegister() const {
     if (curr_token_.empty()) {
         throw InternalError::EmptyWord(Where());
     }
@@ -362,7 +359,7 @@ args::Register FileCompiler::GetRegister() const {
     return arch::kRegisterNameToNum.at(curr_token_);
 }
 
-args::Immediate FileCompiler::GetImmediate(size_t bit_size) const {
+args::Immediate Compiler::FileCompiler::GetImmediate(size_t bit_size) const {
     if (curr_token_.empty()) {
         throw InternalError::EmptyWord(Where());
     }
@@ -402,7 +399,7 @@ args::Immediate FileCompiler::GetImmediate(size_t bit_size) const {
     }
 }
 
-args::Address FileCompiler::GetAddress(bool is_entrypoint) {
+args::Address Compiler::FileCompiler::GetAddress(bool is_entrypoint) {
     if (curr_token_.empty()) {
         throw InternalError::EmptyWord(Where());
     }
@@ -462,7 +459,7 @@ args::Address FileCompiler::GetAddress(bool is_entrypoint) {
 ///                           Command args parsing                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-args::RMArgs FileCompiler::GetRMArgs() {
+args::RMArgs Compiler::FileCompiler::GetRMArgs() {
     if (!file_->GetToken(curr_token_)) {
         throw CompileError::RMNoRegister(Where());
     }
@@ -476,7 +473,7 @@ args::RMArgs FileCompiler::GetRMArgs() {
     return {.reg = reg, .addr = GetAddress()};
 }
 
-args::RRArgs FileCompiler::GetRRArgs() {
+args::RRArgs Compiler::FileCompiler::GetRRArgs() {
     if (!file_->GetToken(curr_token_)) {
         throw CompileError::RRNoReceiver(Where());
     }
@@ -496,7 +493,7 @@ args::RRArgs FileCompiler::GetRRArgs() {
     return {.recv = recv, .src = src, .mod = GetImmediate(args::kModSize)};
 }
 
-args::RIArgs FileCompiler::GetRIArgs() {
+args::RIArgs Compiler::FileCompiler::GetRIArgs() {
     if (!file_->GetToken(curr_token_)) {
         throw CompileError::RINoRegister(Where());
     }
@@ -510,7 +507,7 @@ args::RIArgs FileCompiler::GetRIArgs() {
     return {.reg = reg, .imm = GetImmediate(args::kImmSize)};
 }
 
-args::JArgs FileCompiler::GetJArgs() {
+args::JArgs Compiler::FileCompiler::GetJArgs() {
     if (!file_->GetToken(curr_token_)) {
         throw CompileError::JNoAddress(Where());
     }
@@ -522,7 +519,7 @@ args::JArgs FileCompiler::GetJArgs() {
 ///                              Command parsing                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-cmd::Bin FileCompiler::MustParseCommand() {
+cmd::Bin Compiler::FileCompiler::MustParseCommand() {
     cmd::Bin bin{};
 
     auto [code, format] = GetCodeFormat();
@@ -570,7 +567,7 @@ cmd::Bin FileCompiler::MustParseCommand() {
 ///                               Line parsing                               ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void FileCompiler::ProcessCurrLine(bool is_first_line) {
+void Compiler::FileCompiler::ProcessCurrLine(bool is_first_line) {
     if (!is_first_line && !file_->GetToken(curr_token_)) {
         return;
     }
@@ -594,7 +591,7 @@ void FileCompiler::ProcessCurrLine(bool is_first_line) {
 ///                              File compiling                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-ExecData FileCompiler::PrepareData() && {
+Compiler::ExecData Compiler::FileCompiler::PrepareData() && {
     file_->Open();
 
     SkipIncludes();
@@ -618,4 +615,4 @@ ExecData FileCompiler::PrepareData() && {
     return std::move(data_);
 }
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

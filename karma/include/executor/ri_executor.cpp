@@ -5,14 +5,11 @@
 #include <type_traits>  // for make_signed_t
 
 #include "executor/errors.hpp"
-#include "executor/return_code.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/types.hpp"
 
-namespace karma::executor::detail {
-
-using karma::errors::executor::ExecutionError;
+namespace karma {
 
 namespace utils = karma::detail::utils;
 
@@ -21,11 +18,11 @@ namespace arch = karma::detail::specs::arch;
 namespace cmd     = karma::detail::specs::cmd;
 namespace syscall = cmd::syscall;
 
-arch::Word RIExecutor::ImmWord(const Args& args) {
+arch::Word Executor::RIExecutor::ImmWord(const Args& args) {
     return static_cast<arch::Word>(args.imm);
 }
 
-RIExecutor::Operation RIExecutor::HALT() {
+Executor::RIExecutor::Operation Executor::RIExecutor::HALT() {
     return [](Args) -> MaybeReturnCode {
         sigset_t wset{};
         sigfillset(&wset);
@@ -36,7 +33,7 @@ RIExecutor::Operation RIExecutor::HALT() {
     };
 }
 
-RIExecutor::Operation RIExecutor::SYSCALL() {
+Executor::RIExecutor::Operation Executor::RIExecutor::SYSCALL() {
     return [this](Args args) -> MaybeReturnCode {
         switch (auto code = static_cast<syscall::Code>(ImmWord(args))) {
             case syscall::EXIT: {
@@ -96,21 +93,21 @@ RIExecutor::Operation RIExecutor::SYSCALL() {
     };
 }
 
-RIExecutor::Operation RIExecutor::ADDI() {
+Executor::RIExecutor::Operation Executor::RIExecutor::ADDI() {
     return [this](Args args) -> MaybeReturnCode {
         Reg(args.reg) += ImmWord(args);
         return {};
     };
 }
 
-RIExecutor::Operation RIExecutor::SUBI() {
+Executor::RIExecutor::Operation Executor::RIExecutor::SUBI() {
     return [this](Args args) -> MaybeReturnCode {
         Reg(args.reg) -= ImmWord(args);
         return {};
     };
 }
 
-RIExecutor::Operation RIExecutor::MULI() {
+Executor::RIExecutor::Operation Executor::RIExecutor::MULI() {
     return [this](Args args) -> MaybeReturnCode {
         auto res = static_cast<arch::TwoWords>(Reg(args.reg)) *
                    static_cast<arch::TwoWords>(ImmWord(args));
@@ -120,7 +117,7 @@ RIExecutor::Operation RIExecutor::MULI() {
     };
 }
 
-RIExecutor::Operation RIExecutor::DIVI() {
+Executor::RIExecutor::Operation Executor::RIExecutor::DIVI() {
     return [this](Args args) -> MaybeReturnCode {
         Divide(GetTwoRegisters(args.reg),
                static_cast<arch::TwoWords>(ImmWord(args)),
@@ -129,14 +126,14 @@ RIExecutor::Operation RIExecutor::DIVI() {
     };
 }
 
-RIExecutor::Operation RIExecutor::NOT() {
+Executor::RIExecutor::Operation Executor::RIExecutor::NOT() {
     return [this](Args args) -> MaybeReturnCode {
         Reg(args.reg) = ~Reg(args.reg);
         return {};
     };
 }
 
-RIExecutor::Operation RIExecutor::SHLI() {
+Executor::RIExecutor::Operation Executor::RIExecutor::SHLI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
         CheckBitwiseRHS(rhs, cmd::SHLI);
@@ -145,7 +142,7 @@ RIExecutor::Operation RIExecutor::SHLI() {
     };
 }
 
-RIExecutor::Operation RIExecutor::SHRI() {
+Executor::RIExecutor::Operation Executor::RIExecutor::SHRI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
         CheckBitwiseRHS(rhs, cmd::SHRI);
@@ -154,7 +151,7 @@ RIExecutor::Operation RIExecutor::SHRI() {
     };
 }
 
-RIExecutor::Operation RIExecutor::ANDI() {
+Executor::RIExecutor::Operation Executor::RIExecutor::ANDI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
         CheckBitwiseRHS(rhs, cmd::ANDI);
@@ -163,7 +160,7 @@ RIExecutor::Operation RIExecutor::ANDI() {
     };
 }
 
-RIExecutor::Operation RIExecutor::ORI() {
+Executor::RIExecutor::Operation Executor::RIExecutor::ORI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
         CheckBitwiseRHS(rhs, cmd::ORI);
@@ -172,7 +169,7 @@ RIExecutor::Operation RIExecutor::ORI() {
     };
 }
 
-RIExecutor::Operation RIExecutor::XORI() {
+Executor::RIExecutor::Operation Executor::RIExecutor::XORI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
         CheckBitwiseRHS(rhs, cmd::XORI);
@@ -181,35 +178,35 @@ RIExecutor::Operation RIExecutor::XORI() {
     };
 }
 
-RIExecutor::Operation RIExecutor::CMPI() {
+Executor::RIExecutor::Operation Executor::RIExecutor::CMPI() {
     return [this](Args args) -> MaybeReturnCode {
         WriteComparisonToFlags(Reg(args.reg), ImmWord(args));
         return {};
     };
 }
 
-RIExecutor::Operation RIExecutor::PUSH() {
+Executor::RIExecutor::Operation Executor::RIExecutor::PUSH() {
     return [this](Args args) -> MaybeReturnCode {
         Push(Reg(args.reg) + ImmWord(args));
         return {};
     };
 }
 
-RIExecutor::Operation RIExecutor::POP() {
+Executor::RIExecutor::Operation Executor::RIExecutor::POP() {
     return [this](Args args) -> MaybeReturnCode {
         Pop(args.reg, ImmWord(args));
         return {};
     };
 }
 
-RIExecutor::Operation RIExecutor::LC() {
+Executor::RIExecutor::Operation Executor::RIExecutor::LC() {
     return [this](Args args) -> MaybeReturnCode {
         Reg(args.reg) = ImmWord(args);
         return {};
     };
 }
 
-RIExecutor::Map RIExecutor::GetMap() {
+Executor::RIExecutor::Map Executor::RIExecutor::GetMap() {
     return {
         {cmd::HALT,    HALT()   },
         {cmd::SYSCALL, SYSCALL()},
@@ -230,4 +227,4 @@ RIExecutor::Map RIExecutor::GetMap() {
     };
 }
 
-}  // namespace karma::executor::detail
+}  // namespace karma

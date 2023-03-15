@@ -10,26 +10,24 @@
 #include "specs/commands.hpp"
 #include "specs/exec.hpp"
 
-namespace karma::detail::exec {
+namespace karma {
 
-using errors::exec::ExecFileError;
+namespace arch = detail::specs::arch;
 
-namespace arch = specs::arch;
+namespace cmd = detail::specs::cmd;
 
-namespace cmd = specs::cmd;
-
-namespace exec = specs::exec;
+namespace exec = detail::specs::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Write                                  ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Write(const Data& data, const std::string& exec_path) {
+void Exec::Write(const Data& data, const std::string& exec_path) {
     std::ofstream binary(exec_path, std::ios::binary | std::ios::trunc);
 
     // check that the file was found
     if (binary.fail()) {
-        throw ExecFileError::FailedToOpen(exec_path);
+        throw ExecFileError::Builder::FailedToOpen(exec_path);
     }
 
     auto write_word = [&binary](arch::Word word) {
@@ -78,7 +76,7 @@ void Write(const Data& data, const std::string& exec_path) {
 ///                                   Read                                   ///
 ////////////////////////////////////////////////////////////////////////////////
 
-Data Read(const std::string& exec_path) {
+Exec::Data Exec::Read(const std::string& exec_path) {
     // set the input position indicator to the end (using std::ios::ate)
     // after opening the file to get the size of the exec file,
     // which is used later to verify that the exec is not malformed
@@ -86,20 +84,21 @@ Data Read(const std::string& exec_path) {
 
     // check that the file was found
     if (binary.fail()) {
-        throw ExecFileError::FailedToOpen(exec_path);
+        throw ExecFileError::Builder::FailedToOpen(exec_path);
     }
 
     // check that the exec size is not too small to contain a valid header
     auto exec_size = static_cast<size_t>(binary.tellg());
     if (exec_size < exec::kHeaderSize) {
-        throw ExecFileError::TooSmallForHeader(exec_size, exec_path);
+        throw ExecFileError::Builder::TooSmallForHeader(exec_size, exec_path);
     }
 
     // check that the combined code and constants segments sizes
     // are not too big to fit into memory
     if (exec_size - exec::kHeaderSize > arch::kMemorySize) {
-        throw ExecFileError::TooBigForMemory(exec_size - exec::kHeaderSize,
-                                             exec_path);
+        throw ExecFileError::Builder::TooBigForMemory(
+            exec_size - exec::kHeaderSize,
+            exec_path);
     }
 
     // reset input position indicator
@@ -119,12 +118,12 @@ Data Read(const std::string& exec_path) {
     // check that the introductory string is valid
     if (intro.back() != '\0') {
         intro.resize(intro.size() - 1);
-        throw ExecFileError::NoTrailingZeroInIntro(intro, exec_path);
+        throw ExecFileError::Builder::NoTrailingZeroInIntro(intro, exec_path);
     }
 
     intro.resize(intro.size() - 1);
     if (intro != exec::kIntroString) {
-        throw ExecFileError::InvalidIntroString(intro, exec_path);
+        throw ExecFileError::Builder::InvalidIntroString(intro, exec_path);
     }
 
     Data data;
@@ -135,10 +134,10 @@ Data Read(const std::string& exec_path) {
 
     // check that the exec file size equals the size specified by the header
     if (exec_size != exec::kHeaderSize + code_size + consts_size) {
-        throw ExecFileError::InvalidExecSize(exec_size,
-                                             code_size,
-                                             consts_size,
-                                             exec_path);
+        throw ExecFileError::Builder::InvalidExecSize(exec_size,
+                                                      code_size,
+                                                      consts_size,
+                                                      exec_path);
     }
 
     // read the address of the first instruction
@@ -150,7 +149,8 @@ Data Read(const std::string& exec_path) {
     // read the target processor ID
     arch::Word processor_id = read_word();
     if (processor_id != exec::kProcessorID) {
-        throw ExecFileError::InvalidProcessorID(processor_id, exec_path);
+        throw ExecFileError::Builder::InvalidProcessorID(processor_id,
+                                                         exec_path);
     }
 
     // jump to the code segment
@@ -161,8 +161,8 @@ Data Read(const std::string& exec_path) {
 
     auto read_segment = [&read_word](size_t byte_size) {
         std::vector<arch::Word> dst(byte_size / arch::kWordSize);
-        for (size_t i = 0; i < dst.size(); ++i) {
-            dst[i] = read_word();
+        for (arch::Word& word : dst) {
+            word = read_word();
         }
 
         return dst;
@@ -177,4 +177,4 @@ Data Read(const std::string& exec_path) {
     return data;
 }
 
-}  // namespace karma::detail::exec
+}  // namespace karma

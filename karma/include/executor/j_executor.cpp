@@ -1,11 +1,11 @@
 #include "j_executor.hpp"
 
-#include "executor/return_code.hpp"
+#include "executor/executor.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/flags.hpp"
 
-namespace karma::executor::detail {
+namespace karma {
 
 namespace arch = karma::detail::specs::arch;
 
@@ -13,70 +13,70 @@ namespace cmd = karma::detail::specs::cmd;
 
 namespace flags = karma::detail::specs::flags;
 
-JExecutor::Operation JExecutor::JMP() {
+Executor::JExecutor::Operation Executor::JExecutor::JMP() {
     return [this](Args args) -> MaybeReturnCode {
         Reg(arch::kInstructionRegister) = args.addr;
         return {};
     };
 }
 
-JExecutor::Operation JExecutor::JNE() {
+Executor::JExecutor::Operation Executor::JExecutor::JNE() {
     return [this](Args args) -> MaybeReturnCode {
         Jump(flags::NOT_EQUAL, args.addr);
         return {};
     };
 }
 
-JExecutor::Operation JExecutor::JEQ() {
+Executor::JExecutor::Operation Executor::JExecutor::JEQ() {
     return [this](Args args) -> MaybeReturnCode {
         Jump(flags::EQUAL, args.addr);
         return {};
     };
 }
 
-JExecutor::Operation JExecutor::JLE() {
+Executor::JExecutor::Operation Executor::JExecutor::JLE() {
     return [this](Args args) -> MaybeReturnCode {
         Jump(flags::LESS_OR_EQUAL, args.addr);
         return {};
     };
 }
 
-JExecutor::Operation JExecutor::JL() {
+Executor::JExecutor::Operation Executor::JExecutor::JL() {
     return [this](Args args) -> MaybeReturnCode {
         Jump(flags::LESS, args.addr);
         return {};
     };
 }
 
-JExecutor::Operation JExecutor::JGE() {
+Executor::JExecutor::Operation Executor::JExecutor::JGE() {
     return [this](Args args) -> MaybeReturnCode {
         Jump(flags::GREATER_OR_EQUAL, args.addr);
         return {};
     };
 }
 
-JExecutor::Operation JExecutor::JG() {
+Executor::JExecutor::Operation Executor::JExecutor::JG() {
     return [this](Args args) -> MaybeReturnCode {
         Jump(flags::GREATER, args.addr);
         return {};
     };
 }
 
-JExecutor::Operation JExecutor::CALLI() {
+Executor::JExecutor::Operation Executor::JExecutor::CALLI() {
     return [this](Args args) -> MaybeReturnCode {
         Call(args.addr);
         return {};
     };
 }
 
-JExecutor::Operation JExecutor::RET() {
+Executor::JExecutor::Operation Executor::JExecutor::RET() {
     return [this](Args) -> MaybeReturnCode {
         Return();
         return {};
     };
 }
 
-JExecutor::Map JExecutor::GetMap() {
+Executor::JExecutor::Map Executor::JExecutor::GetMap() {
     return {
         {cmd::JMP,   JMP()  },
         {cmd::JNE,   JNE()  },
@@ -90,4 +90,4 @@ JExecutor::Map JExecutor::GetMap() {
     };
 }
 
-}  // namespace karma::executor::detail
+}  // namespace karma

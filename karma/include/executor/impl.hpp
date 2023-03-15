@@ -7,7 +7,6 @@
 #include "executor.hpp"
 #include "executor/config.hpp"
 #include "executor/j_executor.hpp"
-#include "executor/return_code.hpp"
 #include "executor/ri_executor.hpp"
 #include "executor/rm_executor.hpp"
 #include "executor/rr_executor.hpp"
@@ -19,14 +18,8 @@ namespace karma {
 
 class Executor::Impl : detail::utils::traits::NonCopyableMovable {
    private:
-    // use symbols from executor::detail namespace
-    using ReturnCode      = executor::detail::ReturnCode;
-    using MaybeReturnCode = executor::detail::MaybeReturnCode;
-    using Storage         = executor::detail::Storage;
-    using RMExecutor      = executor::detail::RMExecutor;
-    using RIExecutor      = executor::detail::RIExecutor;
-    using RRExecutor      = executor::detail::RRExecutor;
-    using JExecutor       = executor::detail::JExecutor;
+    using InternalError = errors::executor::InternalError::Builder;
+    using ExecutionError = errors::executor::ExecutionError::Builder;
 
    private:
     MaybeReturnCode ExecuteCmd(karma::detail::specs::cmd::Bin);

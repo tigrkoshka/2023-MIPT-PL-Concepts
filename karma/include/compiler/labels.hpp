@@ -7,13 +7,16 @@
 #include <utility>        // for pair
 #include <vector>         // for vector
 
+#include "compiler/compiler.hpp"
 #include "compiler/file.hpp"
 #include "utils/traits.hpp"
 
-namespace karma::compiler::detail {
+namespace karma {
 
-class Labels : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::Labels : karma::detail::utils::traits::NonCopyableMovable {
    private:
+    using CompileError = errors::compiler::CompileError::Builder;
+
     // definition, where
     using Definition  = std::pair<size_t, std::string>;
     using Definitions = std::unordered_map<std::string, Definition>;
@@ -61,4 +64,4 @@ class Labels : karma::detail::utils::traits::NonCopyableMovable {
     size_t code_size_{};
 };
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

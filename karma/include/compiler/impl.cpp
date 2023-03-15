@@ -9,6 +9,7 @@
 #include <utility>     // for move
 #include <vector>      // for vector
 
+#include "compiler/compiler.hpp"
 #include "compiler/errors.hpp"
 #include "compiler/exec_data.hpp"
 #include "compiler/file_compiler.hpp"
@@ -20,11 +21,7 @@
 #include "utils/error.hpp"
 #include "utils/vector.hpp"
 
-namespace karma::compiler::detail {
-
-using errors::compiler::Error;
-using errors::compiler::InternalError;
-using errors::compiler::CompileError;
+namespace karma {
 
 namespace utils = karma::detail::utils;
 
@@ -32,13 +29,11 @@ namespace arch = karma::detail::specs::arch;
 
 namespace args = karma::detail::specs::cmd::args;
 
-namespace exec = karma::detail::exec;
-
 ////////////////////////////////////////////////////////////////////////////////
 ///                            Labels substitution                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Impl::FillLabels(const FilesDataMap& files_data) {
+void Compiler::Impl::FillLabels(const FilesDataMap& files_data) {
     for (const auto& [label, usages] : labels_->GetUsages()) {
         std::optional<size_t> definition_opt = labels_->TryGetDefinition(label);
         if (!definition_opt) {
@@ -71,7 +66,7 @@ void Impl::FillLabels(const FilesDataMap& files_data) {
 ///                                Prepare data                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-exec::Data Impl::PrepareExecData(const Files& files) {
+Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
     // TODO: multithreading
 
     std::vector<ExecData> files_data(files.size());
@@ -94,7 +89,7 @@ exec::Data Impl::PrepareExecData(const Files& files) {
 
     FillLabels(files_data_map);
 
-    exec::Data exec_data{
+    Exec::Data exec_data{
         .entrypoint    = *entrypoint_->TryGetAddress(),
         .initial_stack = static_cast<arch::Word>(arch::kMemorySize - 1),
         .code          = std::vector<arch::Word>(),
@@ -113,10 +108,11 @@ exec::Data Impl::PrepareExecData(const Files& files) {
 ///                             Compile from file                            ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Impl::MustCompile(const std::string& src, const std::string& dst) {
-    std::vector<std::unique_ptr<File>> files = GetFiles(src);
+void Compiler::Impl::MustCompile(const std::string& src,
+                                 const std::string& dst) {
+    std::vector<std::unique_ptr<File>> files = IncludesManager().GetFiles(src);
 
-    exec::Data data = PrepareExecData(files);
+    Exec::Data data = PrepareExecData(files);
 
     std::string exec_path = dst;
     if (exec_path.empty()) {
@@ -129,13 +125,13 @@ void Impl::MustCompile(const std::string& src, const std::string& dst) {
         exec_path = dst_path.string();
     }
 
-    exec::Write(data, exec_path);
+    Exec::Write(data, exec_path);
 }
 
-void Impl::Compile(const std::string& src, const std::string& dst) {
+void Compiler::Impl::Compile(const std::string& src, const std::string& dst) {
     try {
         MustCompile(src, dst);
-    } catch (const Error& e) {
+    } catch (const errors::compiler::Error& e) {
         std::cout << e.what() << std::endl;
     } catch (const errors::Error& e) {
         std::cout << e.what() << std::endl;
@@ -147,4 +143,4 @@ void Impl::Compile(const std::string& src, const std::string& dst) {
     }
 }
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

@@ -3,23 +3,13 @@
 #include <cstddef>  // for size_t
 #include <string>   // for string
 
+#include "exec/exec.hpp"
 #include "specs/architecture.hpp"
-#include "utils/error.hpp"
+#include "utils/traits.hpp"
 
 namespace karma::errors::exec {
 
-struct Error : errors::Error {
-   protected:
-    explicit Error(const std::string& message)
-        : errors::Error(message) {}
-};
-
-struct ExecFileError : Error {
-   private:
-    ExecFileError(const std::string& message, const std::string& path)
-        : Error(path + ": exec file error: " + message) {}
-
-   public:
+struct ExecFileError::Builder : detail::utils::traits::Static {
     static ExecFileError FailedToOpen(const std::string& path);
 
     static ExecFileError TooSmallForHeader(size_t size,

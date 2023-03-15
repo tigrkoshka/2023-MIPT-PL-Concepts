@@ -3,24 +3,14 @@
 #include <cstddef>  // for size_t
 #include <string>   // for string, to_string
 
+#include "disassembler/disassembler.hpp"
 #include "specs/commands.hpp"
 #include "specs/constants.hpp"
-#include "utils/error.hpp"
+#include "utils/traits.hpp"
 
 namespace karma::errors::disassembler {
 
-struct Error : errors::Error {
-   protected:
-    explicit Error(const std::string& message)
-        : errors::Error(message) {}
-};
-
-struct InternalError : Error {
-   private:
-    explicit InternalError(const std::string& message)
-        : Error("internal disassembler error: " + message) {}
-
-   public:
+struct InternalError::Builder : detail::utils::traits::Static {
     static InternalError FailedToOpen(const std::string& path);
 
     static InternalError UnprocessedConstantType(detail::specs::consts::Type);
@@ -33,12 +23,7 @@ struct InternalError : Error {
     static InternalError UnprocessedCommandFormat(detail::specs::cmd::Format);
 };
 
-struct DisassembleError : Error {
-   private:
-    explicit DisassembleError(const std::string& message)
-        : Error("disassembling error: " + message) {}
-
-   public:
+struct DisassembleError::Builder : detail::utils::traits::Static {
     static DisassembleError UnknownConstantType(detail::specs::consts::Type);
 
     static DisassembleError ConstantNoValue(

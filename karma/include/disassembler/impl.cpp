@@ -18,11 +18,7 @@
 #include "utils/strings.hpp"
 #include "utils/types.hpp"
 
-namespace karma::disassembler::detail {
-
-using errors::disassembler::Error;
-using errors::disassembler::InternalError;
-using errors::disassembler::DisassembleError;
+namespace karma {
 
 namespace utils = karma::detail::utils;
 
@@ -33,13 +29,12 @@ namespace args = cmd::args;
 
 namespace consts = karma::detail::specs::consts;
 
-namespace exec = karma::detail::exec;
-
 ////////////////////////////////////////////////////////////////////////////////
 ///                      Disassembling a constant value                      ///
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string Impl::GetUint32Value(const Segment& constants, size_t& pos) {
+std::string Disassembler::Impl::GetUint32Value(const Segment& constants,
+                                               size_t& pos) {
     size_t start = pos;
 
     if (pos >= constants.size()) {
@@ -52,7 +47,8 @@ std::string Impl::GetUint32Value(const Segment& constants, size_t& pos) {
     return std::to_string(constants[pos++]);
 }
 
-std::string Impl::GetUint64Value(const Segment& constants, size_t& pos) {
+std::string Disassembler::Impl::GetUint64Value(const Segment& constants,
+                                               size_t& pos) {
     size_t start = pos;
 
     if (pos >= constants.size()) {
@@ -78,7 +74,8 @@ std::string Impl::GetUint64Value(const Segment& constants, size_t& pos) {
     return std::to_string(value);
 }
 
-std::string Impl::GetDoubleValue(const Segment& constants, size_t& pos) {
+std::string Disassembler::Impl::GetDoubleValue(const Segment& constants,
+                                               size_t& pos) {
     size_t start = pos;
 
     if (pos >= constants.size()) {
@@ -107,7 +104,8 @@ std::string Impl::GetDoubleValue(const Segment& constants, size_t& pos) {
     return ss.str();
 }
 
-std::string Impl::GetCharValue(const Segment& constants, size_t& pos) {
+std::string Disassembler::Impl::GetCharValue(const Segment& constants,
+                                             size_t& pos) {
     size_t start = pos;
 
     if (pos >= constants.size()) {
@@ -123,7 +121,8 @@ std::string Impl::GetCharValue(const Segment& constants, size_t& pos) {
            consts::kCharQuote;
 }
 
-std::string Impl::GetStringValue(const Segment& constants, size_t& pos) {
+std::string Disassembler::Impl::GetStringValue(const Segment& constants,
+                                               size_t& pos) {
     size_t start = pos;
 
     if (pos >= constants.size()) {
@@ -154,7 +153,8 @@ std::string Impl::GetStringValue(const Segment& constants, size_t& pos) {
 ///                    Disassembling the constants segment                   ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Impl::DisassembleConstants(const Segment& constants, std::ostream& out) {
+void Disassembler::Impl::DisassembleConstants(const Segment& constants,
+                                              std::ostream& out) {
     size_t pos = 0;
 
     while (pos < constants.size()) {
@@ -199,7 +199,7 @@ void Impl::DisassembleConstants(const Segment& constants, std::ostream& out) {
 ///                          Disassembling a command                         ///
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string Impl::GetRegister(args::Register reg) {
+std::string Disassembler::Impl::GetRegister(args::Register reg) {
     if (!arch::kRegisterNumToName.contains(reg)) {
         throw InternalError::RegisterNameNotFound(reg);
     }
@@ -207,7 +207,7 @@ std::string Impl::GetRegister(args::Register reg) {
     return arch::kRegisterNumToName.at(reg);
 }
 
-std::string Impl::GetCommandString(cmd::Bin command) {
+std::string Disassembler::Impl::GetCommandString(cmd::Bin command) {
     std::ostringstream result;
 
     cmd::Code code = cmd::GetCode(command);
@@ -279,9 +279,9 @@ std::string Impl::GetCommandString(cmd::Bin command) {
 ///                      Disassembling the code segment                      ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Impl::DisassembleCode(const Segment& code,
-                           size_t entrypoint,
-                           std::ostream& out) {
+void Disassembler::Impl::DisassembleCode(const Segment& code,
+                                         size_t entrypoint,
+                                         std::ostream& out) {
     for (size_t i = 0; i < entrypoint; ++i) {
         out << GetCommandString(code[i]) << std::endl;
     }
@@ -303,8 +303,9 @@ void Impl::DisassembleCode(const Segment& code,
 ///                          Disassembling to stream                         ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Impl::DisassembleImpl(const std::string& exec_path, std::ostream& out) {
-    exec::Data data = exec::Read(exec_path);
+void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
+                                         std::ostream& out) {
+    Exec::Data data = Exec::Read(exec_path);
 
     DisassembleConstants(data.constants, out);
 
@@ -313,14 +314,16 @@ void Impl::DisassembleImpl(const std::string& exec_path, std::ostream& out) {
     DisassembleCode(data.code, data.entrypoint, out);
 }
 
-void Impl::MustDisassemble(const std::string& exec_path, std::ostream& out) {
+void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
+                                         std::ostream& out) {
     DisassembleImpl(exec_path, out);
 }
 
-void Impl::Disassemble(const std::string& exec_path, std::ostream& out) {
+void Disassembler::Impl::Disassemble(const std::string& exec_path,
+                                     std::ostream& out) {
     try {
         DisassembleImpl(exec_path, out);
-    } catch (const Error& e) {
+    } catch (const errors::disassembler::Error& e) {
         std::cout << e.what() << std::endl;
     } catch (const errors::Error& e) {
         std::cout << e.what() << std::endl;
@@ -336,8 +339,8 @@ void Impl::Disassemble(const std::string& exec_path, std::ostream& out) {
 ///                           Disassembling to file                          ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Impl::DisassembleImpl(const std::string& exec_path,
-                           const std::string& dst) {
+void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
+                                         const std::string& dst) {
     std::string real_dst = dst;
     if (real_dst.empty()) {
         std::filesystem::path src_path(exec_path);
@@ -356,15 +359,16 @@ void Impl::DisassembleImpl(const std::string& exec_path,
     return DisassembleImpl(exec_path, out);
 }
 
-void Impl::MustDisassemble(const std::string& exec_path,
-                           const std::string& dst) {
+void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
+                                         const std::string& dst) {
     return DisassembleImpl(exec_path, dst);
 }
 
-void Impl::Disassemble(const std::string& exec_path, const std::string& dst) {
+void Disassembler::Impl::Disassemble(const std::string& exec_path,
+                                     const std::string& dst) {
     try {
         DisassembleImpl(exec_path, dst);
-    } catch (const Error& e) {
+    } catch (const errors::disassembler::Error& e) {
         std::cout << e.what() << std::endl;
     } catch (const errors::Error& e) {
         std::cout << e.what() << std::endl;
@@ -376,4 +380,4 @@ void Impl::Disassemble(const std::string& exec_path, const std::string& dst) {
     }
 }
 
-}  // namespace karma::disassembler::detail
+}  // namespace karma

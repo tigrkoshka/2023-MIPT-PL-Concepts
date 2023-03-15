@@ -38,6 +38,7 @@ karma::
                         |        Unescape
                         traits::                     // traits.hpp
                         |        NonCopyableMovable
+                        |        Static
                         types::                      // types.hpp
                         |        kByteSize
                         |        ToDbl

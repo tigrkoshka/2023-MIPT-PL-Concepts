@@ -14,20 +14,20 @@ namespace arch = detail::specs::arch;
 
 namespace exec = detail::specs::exec;
 
-FE FE::FailedToOpen(const std::string& path) {
+FE FE::Builder::FailedToOpen(const std::string& path) {
     std::ostringstream ss;
     ss << "failed to open exec file";
     return {ss.str(), path};
 }
 
-FE FE::TooSmallForHeader(size_t size, const std::string& path) {
+FE FE::Builder::TooSmallForHeader(size_t size, const std::string& path) {
     std::ostringstream ss;
     ss << "exec size is " << size << ", which is less than "
        << exec::kHeaderSize << " bytes required for the header";
     return {ss.str(), path};
 }
 
-FE FE::TooBigForMemory(size_t size, const std::string& path) {
+FE FE::Builder::TooBigForMemory(size_t size, const std::string& path) {
     std::ostringstream ss;
     ss << "the combined size of the code and constants segments is " << size
        << ", which is greater than the memory size " << arch::kMemorySize
@@ -35,10 +35,10 @@ FE FE::TooBigForMemory(size_t size, const std::string& path) {
     return {ss.str(), path};
 }
 
-FE FE::InvalidExecSize(size_t exec_size,
-                       size_t code_size,
-                       size_t consts_size,
-                       const std::string& path) {
+FE FE::Builder::InvalidExecSize(size_t exec_size,
+                                size_t code_size,
+                                size_t consts_size,
+                                const std::string& path) {
     std::ostringstream ss;
     ss << "the exec file size (" << exec_size << ") does not equal "
        << exec::kHeaderSize + code_size + consts_size
@@ -49,8 +49,8 @@ FE FE::InvalidExecSize(size_t exec_size,
     return {ss.str(), path};
 }
 
-FE FE::NoTrailingZeroInIntro(const std::string& intro,
-                             const std::string& path) {
+FE FE::Builder::NoTrailingZeroInIntro(const std::string& intro,
+                                      const std::string& path) {
     std::ostringstream ss;
     ss << "expected the welcoming " << std::quoted(exec::kIntroString)
        << R"( string (and a trailing '\0') as the first )" << exec::kIntroSize
@@ -58,7 +58,8 @@ FE FE::NoTrailingZeroInIntro(const std::string& intro,
     return {ss.str(), path};
 }
 
-FE FE::InvalidIntroString(const std::string& intro, const std::string& path) {
+FE FE::Builder::InvalidIntroString(const std::string& intro,
+                                   const std::string& path) {
     std::ostringstream ss;
     ss << "expected the welcoming " << std::quoted(exec::kIntroString)
        << R"( string and a trailing '\0' as the first )" << exec::kIntroSize
@@ -67,7 +68,8 @@ FE FE::InvalidIntroString(const std::string& intro, const std::string& path) {
     return {ss.str(), path};
 }
 
-FE FE::InvalidProcessorID(arch::Word processor_id, const std::string& path) {
+FE FE::Builder::InvalidProcessorID(arch::Word processor_id,
+                                   const std::string& path) {
     std::ostringstream ss;
     ss << "exec file is built for processor with ID " << processor_id
        << ", current processor ID: " << exec::kProcessorID;

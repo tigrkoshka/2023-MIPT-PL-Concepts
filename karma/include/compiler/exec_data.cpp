@@ -1,21 +1,21 @@
 #include "exec_data.hpp"
 
-namespace karma::compiler::detail {
+namespace karma {
 
-ExecData::Segment& ExecData::Code() {
+Compiler::ExecData::Segment& Compiler::ExecData::Code() {
     return code_;
 }
 
-const ExecData::Segment& ExecData::Code() const {
+const Compiler::ExecData::Segment& Compiler::ExecData::Code() const {
     return code_;
 }
 
-ExecData::Segment& ExecData::Constants() {
+Compiler::ExecData::Segment& Compiler::ExecData::Constants() {
     return constants_;
 }
 
-const ExecData::Segment& ExecData::Constants() const {
+const Compiler::ExecData::Segment& Compiler::ExecData::Constants() const {
     return constants_;
 }
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

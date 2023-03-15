@@ -3,13 +3,17 @@
 #include <concepts>  // for totally_ordered
 
 #include "executor/command_executor.hpp"
+#include "executor/executor.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/flags.hpp"
 
-namespace karma::executor::detail {
+namespace karma {
 
-class CommonExecutor : public CommandExecutor {
+class Executor::CommonExecutor : public CommandExecutor {
+   private:
+    using ExecutionError = errors::executor::ExecutionError::Builder;
+
    protected:
     karma::detail::specs::arch::TwoWords GetTwoRegisters(
         karma::detail::specs::cmd::args::Register low);
@@ -53,4 +57,4 @@ class CommonExecutor : public CommandExecutor {
     void Return();
 };
 
-}  // namespace karma::executor::detail
+}  // namespace karma

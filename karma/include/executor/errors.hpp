@@ -4,37 +4,22 @@
 #include <sstream>  // for ostringstream
 #include <string>   // for string, to_string
 
+#include "executor/executor.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/concepts.hpp"
-#include "utils/error.hpp"
+#include "utils/traits.hpp"
 
 namespace karma::errors::executor {
 
-struct Error : errors::Error {
-   protected:
-    explicit Error(const std::string& message)
-        : errors::Error(message) {}
-};
-
-struct InternalError : Error {
-   private:
-    explicit InternalError(const std::string& message)
-        : Error("internal executor error: " + message) {}
-
-   public:
+struct InternalError::Builder : detail::utils::traits::Static {
     static InternalError UnprocessedCommandFormat(detail::specs::cmd::Format);
 
     static InternalError UnprocessedCommandForFormat(detail::specs::cmd::Format,
                                                      detail::specs::cmd::Code);
 };
 
-struct ExecutionError : Error {
-   private:
-    explicit ExecutionError(const std::string& message)
-        : Error("execution error" + message) {}
-
-   public:
+struct ExecutionError::Builder : detail::utils::traits::Static {
     static ExecutionError ExecPointerOutOfMemory(detail::specs::arch::Address);
     static ExecutionError StackPointerOutOfMemory(detail::specs::arch::Address);
     static ExecutionError StackOverflow(size_t max_stack_size);

@@ -4,14 +4,14 @@
 
 #include "compiler/impl.hpp"
 
-namespace karma::compiler {
+namespace karma {
 
-void MustCompile(const std::string& src, const std::string& dst) {
-    detail::Impl().MustCompile(src, dst);
+void Compiler::MustCompile(const std::string& src, const std::string& dst) {
+    Impl().MustCompile(src, dst);
 }
 
-void Compile(const std::string& src, const std::string& dst) {
-    detail::Impl().Compile(src, dst);
+void Compiler::Compile(const std::string& src, const std::string& dst) {
+    Impl().Compile(src, dst);
 }
 
-}  // namespace karma::compiler
+}  // namespace karma

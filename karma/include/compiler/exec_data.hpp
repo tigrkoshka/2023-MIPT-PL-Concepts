@@ -2,12 +2,13 @@
 
 #include <vector>  // for vector
 
+#include "compiler/compiler.hpp"
 #include "specs/architecture.hpp"
 #include "utils/traits.hpp"
 
-namespace karma::compiler::detail {
+namespace karma {
 
-struct ExecData : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::ExecData : karma::detail::utils::traits::NonCopyableMovable {
    private:
     using Segment = std::vector<karma::detail::specs::arch::Word>;
 
@@ -23,4 +24,4 @@ struct ExecData : karma::detail::utils::traits::NonCopyableMovable {
     std::vector<karma::detail::specs::arch::Word> constants_;
 };
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

@@ -5,18 +5,17 @@
 #include <string>      // for string
 #include <utility>     // for move
 
+#include "compiler/compiler.hpp"
 #include "compiler/errors.hpp"
 #include "compiler/file.hpp"
 #include "specs/syntax.hpp"
 
-namespace karma::compiler::detail {
-
-using karma::errors::compiler::InternalError;
-using karma::errors::compiler::CompileError;
+namespace karma {
 
 namespace syntax = karma::detail::specs::syntax;
 
-IncludesManager::Includes IncludesManager::GetCurrIncludes() {
+Compiler::IncludesManager::Includes
+Compiler::IncludesManager::GetCurrIncludes() {
     std::string token;
 
     const std::unique_ptr<File>& curr_file = files_.back();
@@ -44,7 +43,7 @@ IncludesManager::Includes IncludesManager::GetCurrIncludes() {
     return includes;
 }
 
-void IncludesManager::ProcessCurrFileIncludes() {
+void Compiler::IncludesManager::ProcessCurrFileIncludes() {
     const std::unique_ptr<File>& curr_file = files_.back();
 
     for (const auto& rel_include : GetCurrIncludes()) {
@@ -63,7 +62,8 @@ void IncludesManager::ProcessCurrFileIncludes() {
     }
 }
 
-IncludesManager::Files IncludesManager::GetFiles(const std::string& root) && {
+Compiler::IncludesManager::Files Compiler::IncludesManager::GetFiles(
+    const std::string& root) && {
     std::filesystem::path abs_root = std::filesystem::absolute(root);
 
     abs_root_dir_ = abs_root.parent_path();
@@ -75,8 +75,4 @@ IncludesManager::Files IncludesManager::GetFiles(const std::string& root) && {
     return std::move(files_);
 }
 
-IncludesManager::Files GetFiles(const std::string& root) {
-    return IncludesManager().GetFiles(root);
-}
-
-}  // namespace karma::compiler::detail
+}  // namespace karma

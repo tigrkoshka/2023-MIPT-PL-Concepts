@@ -4,12 +4,12 @@
 #include <unordered_map>  // for unordered_map
 
 #include "executor/common_executor.hpp"
-#include "executor/return_code.hpp"
+#include "executor/executor.hpp"
 #include "specs/commands.hpp"
 
-namespace karma::executor::detail {
+namespace karma {
 
-class JExecutor : public CommonExecutor {
+class Executor::JExecutor : public CommonExecutor {
    private:
     using Args      = karma::detail::specs::cmd::args::JArgs;
     using Operation = std::function<MaybeReturnCode(Args)>;
@@ -30,4 +30,4 @@ class JExecutor : public CommonExecutor {
     Map GetMap();
 };
 
-}  // namespace karma::executor::detail
+}  // namespace karma

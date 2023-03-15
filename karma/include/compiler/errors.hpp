@@ -1,30 +1,18 @@
 #pragma once
 
 #include <cstdint>  // for int32_t
-#include <string>   // for string, to_string
+#include <string>   // for string
 
+#include "compiler/compiler.hpp"
 #include "specs/commands.hpp"
 #include "specs/constants.hpp"
-#include "utils/error.hpp"
+#include "utils/traits.hpp"
 
 namespace karma::errors::compiler {
 
-struct Error : errors::Error {
-   protected:
-    explicit Error(const std::string& message)
-        : errors::Error(message) {}
-};
-
-struct InternalError : Error {
+struct InternalError::Builder : detail::utils::traits::Static {
    private:
     using Where = const std::string&;
-
-   private:
-    explicit InternalError(const std::string& message)
-        : Error("internal compiler error: " + message) {}
-
-    InternalError(const std::string& message, Where where)
-        : Error("internal compiler error " + where + ": " + message) {}
 
    public:
     static InternalError RepeatedOpenFile(const std::string& path);
@@ -41,7 +29,7 @@ struct InternalError : Error {
     static InternalError EmptyWord(Where);
 };
 
-struct CompileError : Error {
+struct CompileError::Builder : detail::utils::traits::Static {
    private:
     struct TokenImpl {
         TokenImpl(const std::string& value, const std::string& where)
@@ -62,13 +50,6 @@ struct CompileError : Error {
     using Address   = Token;
     using Immediate = Token;
     using Extra     = Token;
-
-   private:
-    explicit CompileError(const std::string& message)
-        : Error("compile error: " + message) {}
-
-    CompileError(const std::string& message, Where where)
-        : Error("compile error " + where + ": " + message) {}
 
    public:
     // file

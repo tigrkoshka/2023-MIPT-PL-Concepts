@@ -6,24 +6,27 @@
 #include <unordered_set>  // for unordered_set
 #include <vector>         // for vector
 
+#include "compiler/compiler.hpp"
 #include "compiler/file.hpp"
 #include "utils/traits.hpp"
 
-namespace karma::compiler::detail {
+namespace karma {
 
-class IncludesManager : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::IncludesManager
+    : karma::detail::utils::traits::NonCopyableMovable {
    private:
+    using InternalError = errors::compiler::InternalError::Builder;
+    using CompileError = errors::compiler::CompileError::Builder;
+
     using Files    = std::vector<std::unique_ptr<File>>;
     using Includes = std::vector<std::filesystem::path>;
-
-   private:
-    friend Files GetFiles(const std::string& root);
 
    private:
     Includes GetCurrIncludes();
 
     void ProcessCurrFileIncludes();
 
+   public:
     Files GetFiles(const std::string& root) &&;
 
    private:
@@ -31,7 +34,5 @@ class IncludesManager : karma::detail::utils::traits::NonCopyableMovable {
     std::unordered_set<std::string> all_includes_;
     Files files_;
 };
-
-IncludesManager::Files GetFiles(const std::string& root);
 
 }  // namespace karma::compiler::detail

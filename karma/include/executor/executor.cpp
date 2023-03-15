@@ -18,19 +18,21 @@ Executor::Executor(Config config)
 
 Executor::~Executor() = default;
 
-uint32_t Executor::MustExecute(const std::string& exec) {
+Executor::ReturnCode Executor::MustExecute(const std::string& exec) {
     return MustExecute(exec, Config());
 }
 
-uint32_t Executor::Execute(const std::string& exec) {
+Executor::ReturnCode Executor::Execute(const std::string& exec) {
     return Execute(exec, Config());
 }
 
-uint32_t Executor::MustExecute(const std::string& exec, const Config& config) {
+Executor::ReturnCode Executor::MustExecute(const std::string& exec,
+                                           const Config& config) {
     return impl_->MustExecute(exec, config);
 }
 
-uint32_t Executor::Execute(const std::string& exec, const Config& config) {
+Executor::ReturnCode Executor::Execute(const std::string& exec,
+                                       const Config& config) {
     return impl_->Execute(exec, config);
 }
 

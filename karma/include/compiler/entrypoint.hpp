@@ -3,12 +3,13 @@
 #include <optional>  // for optional
 #include <string>    // for string
 
+#include "compiler/compiler.hpp"
 #include "specs/architecture.hpp"
 #include "utils/traits.hpp"
 
-namespace karma::compiler::detail {
+namespace karma {
 
-class Entrypoint : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::Entrypoint : karma::detail::utils::traits::NonCopyableMovable {
    private:
     using MaybeAddress = std::optional<karma::detail::specs::arch::Address>;
     using MaybePos     = std::optional<std::string>;
@@ -29,4 +30,4 @@ class Entrypoint : karma::detail::utils::traits::NonCopyableMovable {
     MaybePos pos_;
 };
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

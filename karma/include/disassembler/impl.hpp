@@ -5,14 +5,18 @@
 #include <string>   // for string
 #include <vector>   // for vector
 
+#include "disassembler/disassembler.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 
-namespace karma::disassembler::detail {
+namespace karma {
 
-class Impl {
+class Disassembler::Impl {
    private:
-    using Segment = std::vector<karma::detail::specs::arch::Word>;
+    using InternalError    = errors::disassembler::InternalError::Builder;
+    using DisassembleError = errors::disassembler::DisassembleError::Builder;
+
+    using Segment = std::vector<detail::specs::arch::Word>;
 
    private:
     static std::string GetUint32Value(const Segment& constants, size_t& pos);
@@ -24,9 +28,9 @@ class Impl {
     static void DisassembleConstants(const Segment& constants,
                                      std::ostream& out);
 
-    static std::string GetRegister(karma::detail::specs::cmd::args::Register);
+    static std::string GetRegister(detail::specs::cmd::args::Register);
 
-    static std::string GetCommandString(karma::detail::specs::cmd::Bin);
+    static std::string GetCommandString(detail::specs::cmd::Bin);
 
     static void DisassembleCode(const Segment& code,
                                 size_t entrypoint,
@@ -51,4 +55,4 @@ class Impl {
                             const std::string& dst);
 };
 
-}  // namespace karma::disassembler::detail
+}  // namespace karma

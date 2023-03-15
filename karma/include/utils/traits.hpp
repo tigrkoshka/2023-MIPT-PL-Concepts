@@ -15,4 +15,9 @@ struct NonCopyableMovable {
     NonCopyableMovable& operator=(NonCopyableMovable&&) = default;
 };
 
+struct Static {
+    Static()  = delete;
+    ~Static() = delete;
+};
+
 }  // namespace karma::detail::utils::traits

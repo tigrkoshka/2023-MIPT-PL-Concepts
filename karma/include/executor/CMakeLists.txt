@@ -10,6 +10,5 @@ add_library(
         command_executor.cpp
         storage.cpp
         config.cpp
-        return_code.cpp
         errors.cpp
 )

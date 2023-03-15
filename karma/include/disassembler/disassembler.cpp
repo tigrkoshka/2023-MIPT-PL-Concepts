@@ -2,22 +2,26 @@
 
 #include "disassembler/impl.hpp"
 
-namespace karma::disassembler {
+namespace karma {
 
-void MustDisassemble(const std::string& exec_path, std::ostream& out) {
-    detail::Impl::MustDisassemble(exec_path, out);
+void Disassembler::MustDisassemble(const std::string& exec_path,
+                                   std::ostream& out) {
+    Impl::MustDisassemble(exec_path, out);
 }
 
-void Disassemble(const std::string& exec_path, std::ostream& out) {
-    detail::Impl::Disassemble(exec_path, out);
+void Disassembler::Disassemble(const std::string& exec_path,
+                               std::ostream& out) {
+    Impl::Disassemble(exec_path, out);
 }
 
-void MustDisassemble(const std::string& exec_path, const std::string& dst) {
-    detail::Impl::MustDisassemble(exec_path, dst);
+void Disassembler::MustDisassemble(const std::string& exec_path,
+                                   const std::string& dst) {
+    Impl::MustDisassemble(exec_path, dst);
 }
 
-void Disassemble(const std::string& exec_path, const std::string& dst) {
-    detail::Impl::Disassemble(exec_path, dst);
+void Disassembler::Disassemble(const std::string& exec_path,
+                               const std::string& dst) {
+    Impl::Disassemble(exec_path, dst);
 }
 
-}  // namespace karma::disassembler
+}  // namespace karma

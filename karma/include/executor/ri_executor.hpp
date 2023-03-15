@@ -4,14 +4,16 @@
 #include <unordered_map>  // for unordered_map
 
 #include "executor/common_executor.hpp"
-#include "executor/return_code.hpp"
+#include "executor/executor.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 
-namespace karma::executor::detail {
+namespace karma {
 
-class RIExecutor : public CommonExecutor {
+class Executor::RIExecutor : public CommonExecutor {
    private:
+    using ExecutionError = errors::executor::ExecutionError::Builder;
+
     using Args      = karma::detail::specs::cmd::args::RIArgs;
     using Operation = std::function<MaybeReturnCode(Args)>;
 
@@ -41,4 +43,4 @@ class RIExecutor : public CommonExecutor {
     Map GetMap();
 };
 
-}  // namespace karma::executor::detail
+}  // namespace karma

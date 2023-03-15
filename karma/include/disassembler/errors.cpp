@@ -21,32 +21,32 @@ namespace consts = detail::specs::consts;
 ///                              Internal errors                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-IE IE::FailedToOpen(const std::string& path) {
+IE IE::Builder::FailedToOpen(const std::string& path) {
     std::ostringstream ss;
     ss << "failed to open " << std::quoted(path);
     return IE{ss.str()};
 }
 
-IE IE::UnprocessedConstantType(consts::Type type) {
+IE IE::Builder::UnprocessedConstantType(consts::Type type) {
     std::ostringstream ss;
     ss << "processing for constant of type " << consts::kTypeToName.at(type)
        << " is not implemented";
     return IE{ss.str()};
 }
 
-IE IE::CommandNameNotFound(cmd::Code code) {
+IE IE::Builder::CommandNameNotFound(cmd::Code code) {
     std::ostringstream ss;
     ss << "name not found for command with code " << code;
     return IE{ss.str()};
 }
 
-IE IE::RegisterNameNotFound(args::Register reg) {
+IE IE::Builder::RegisterNameNotFound(args::Register reg) {
     std::ostringstream ss;
     ss << "name not found for register # " << reg;
     return IE{ss.str()};
 }
 
-IE IE::UnprocessedCommandFormat(cmd::Format format) {
+IE IE::Builder::UnprocessedCommandFormat(cmd::Format format) {
     std::ostringstream ss;
     ss << "processing for command format " << cmd::kFormatToString.at(format)
        << " is not implemented";
@@ -57,16 +57,16 @@ IE IE::UnprocessedCommandFormat(cmd::Format format) {
 ///                           Disassembling errors                           ///
 ////////////////////////////////////////////////////////////////////////////////
 
-DE DE::UnknownConstantType(consts::Type type) {
+DE DE::Builder::UnknownConstantType(consts::Type type) {
     std::ostringstream ss;
     ss << "unknown constant type " << type;
     return DE{ss.str()};
 }
 
-DE DE::ConstantNoValue(size_t start,
-                       consts::Type expected,
-                       size_t index,
-                       size_t constants_size) {
+DE DE::Builder::ConstantNoValue(size_t start,
+                                consts::Type expected,
+                                size_t index,
+                                size_t constants_size) {
     std::ostringstream ss;
     ss << "expected a " << consts::kTypeToName.at(expected)
        << " constant starting from position " << start
@@ -76,7 +76,7 @@ DE DE::ConstantNoValue(size_t start,
     return DE{ss.str()};
 }
 
-DE DE::NoTrailingZeroInString(size_t start) {
+DE DE::Builder::NoTrailingZeroInString(size_t start) {
     std::ostringstream ss;
     ss << "reached the end of the constants segment, but "
        << "no trailing \'0\' character was found for a string starting from "
@@ -84,7 +84,7 @@ DE DE::NoTrailingZeroInString(size_t start) {
     return DE{ss.str()};
 }
 
-DE DE::UnknownCommand(cmd::Code code) {
+DE DE::Builder::UnknownCommand(cmd::Code code) {
     std::ostringstream ss;
     ss << "unknown command code " << code;
     return DE{ss.str()};

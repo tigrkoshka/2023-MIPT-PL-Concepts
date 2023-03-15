@@ -6,12 +6,17 @@
 #include <sstream>     // for istringstream
 #include <string>      // for string
 
+#include "compiler.hpp"
 #include "utils/generator.hpp"
 #include "utils/traits.hpp"
 
-namespace karma::compiler::detail {
+namespace karma {
 
-class File : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::File : karma::detail::utils::traits::NonCopyableMovable {
+   private:
+    using InternalError = errors::compiler::InternalError::Builder;
+    using CompileError  = errors::compiler::CompileError::Builder;
+
    private:
     static void TrimComment(std::string& line);
 
@@ -48,4 +53,4 @@ class File : karma::detail::utils::traits::NonCopyableMovable {
     std::istringstream curr_line_;
 };
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

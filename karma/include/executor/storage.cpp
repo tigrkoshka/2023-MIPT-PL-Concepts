@@ -6,18 +6,14 @@
 #include "specs/architecture.hpp"
 #include "utils/vector.hpp"
 
-namespace karma::executor::detail {
-
-using errors::executor::ExecutionError;
+namespace karma {
 
 namespace utils = karma::detail::utils;
 
 namespace arch = karma::detail::specs::arch;
 
-namespace exec = karma::detail::exec;
-
-void Storage::PrepareForExecution(const exec::Data& exec_data,
-                                  const Config& config) {
+void Executor::Storage::PrepareForExecution(const Exec::Data& exec_data,
+                                            const Config& config) {
     curr_config_ = base_config_ & config;
 
     utils::vector::CopyToBegin(memory_, exec_data.code, exec_data.constants);
@@ -29,7 +25,7 @@ void Storage::PrepareForExecution(const exec::Data& exec_data,
     registers_.at(arch::kInstructionRegister) = exec_data.entrypoint;
 }
 
-void Storage::CheckPushAllowed() {
+void Executor::Storage::CheckPushAllowed() {
     arch::Address curr_stack_address = registers_.at(arch::kStackRegister);
 
     if (curr_stack_address > arch::kMemorySize) {
@@ -43,7 +39,7 @@ void Storage::CheckPushAllowed() {
     }
 }
 
-arch::Word& Storage::Reg(arch::Register reg) {
+arch::Word& Executor::Storage::Reg(arch::Register reg) {
     if (reg >= arch::kNRegisters) {
         throw ExecutionError::InvalidRegister(reg);
     }
@@ -55,7 +51,7 @@ arch::Word& Storage::Reg(arch::Register reg) {
     return registers_.at(reg);
 }
 
-arch::Word& Storage::Mem(arch::Address address) {
+arch::Word& Executor::Storage::Mem(arch::Address address) {
     if (address >= arch::kMemorySize) {
         throw ExecutionError::AddressOutOfMemory(address);
     }
@@ -73,8 +69,8 @@ arch::Word& Storage::Mem(arch::Address address) {
     return memory_.at(address);
 }
 
-arch::Word& Storage::Flags() {
+arch::Word& Executor::Storage::Flags() {
     return flags_;
 }
 
-}  // namespace karma::executor::detail
+}  // namespace karma

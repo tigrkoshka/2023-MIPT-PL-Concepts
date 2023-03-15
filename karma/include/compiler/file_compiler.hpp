@@ -6,6 +6,7 @@
 #include <utility>  // for move
 #include <vector>   // for vector
 
+#include "compiler/compiler.hpp"
 #include "compiler/entrypoint.hpp"
 #include "compiler/exec_data.hpp"
 #include "compiler/file.hpp"
@@ -14,10 +15,14 @@
 #include "specs/commands.hpp"
 #include "utils/traits.hpp"
 
-namespace karma::compiler::detail {
+namespace karma {
 
-class FileCompiler : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::FileCompiler
+    : karma::detail::utils::traits::NonCopyableMovable {
    private:
+    using InternalError = errors::compiler::InternalError::Builder;
+    using CompileError  = errors::compiler::CompileError::Builder;
+
     using Segment = std::vector<karma::detail::specs::arch::Word>;
 
    private:
@@ -85,4 +90,4 @@ class FileCompiler : karma::detail::utils::traits::NonCopyableMovable {
     ExecData data_;
 };
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

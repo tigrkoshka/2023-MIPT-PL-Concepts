@@ -6,6 +6,7 @@
 #include <unordered_map>  // for unordered_map
 #include <vector>         // for vector
 
+#include "compiler/compiler.hpp"
 #include "compiler/entrypoint.hpp"
 #include "compiler/exec_data.hpp"
 #include "compiler/file.hpp"
@@ -13,16 +14,18 @@
 #include "exec/exec.hpp"
 #include "utils/traits.hpp"
 
-namespace karma::compiler::detail {
+namespace karma {
 
-class Impl : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::Impl : karma::detail::utils::traits::NonCopyableMovable {
    private:
+    using CompileError = errors::compiler::CompileError::Builder;
+
     using Files        = std::vector<std::unique_ptr<File>>;
     using FilesDataMap = std::unordered_map<const File*, ExecData*>;
 
    private:
     void FillLabels(const FilesDataMap& files_data);
-    karma::detail::exec::Data PrepareExecData(const Files& files);
+    karma::Exec::Data PrepareExecData(const Files& files);
 
    public:
     Impl()
@@ -37,4 +40,4 @@ class Impl : karma::detail::utils::traits::NonCopyableMovable {
     std::shared_ptr<Entrypoint> entrypoint_;
 };
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

@@ -10,11 +10,12 @@
 #include <string>      // for string
 #include <utility>     // for move
 
+#include "compiler/compiler.hpp"
 #include "compiler/errors.hpp"
 #include "specs/syntax.hpp"
 #include "utils/strings.hpp"
 
-namespace karma::compiler::detail {
+namespace karma {
 
 using karma::errors::compiler::InternalError;
 using karma::errors::compiler::CompileError;
@@ -23,7 +24,7 @@ namespace utils = karma::detail::utils;
 
 namespace syntax = karma::detail::specs::syntax;
 
-void File::TrimComment(std::string& line) {
+void Compiler::File::TrimComment(std::string& line) {
     size_t curr_start_pos = 0;
 
     size_t comment_start{};
@@ -46,7 +47,7 @@ void File::TrimComment(std::string& line) {
     line.resize(std::min(comment_start, line.size()));
 }
 
-utils::Generator<const File*> File::FromRoot() const {
+utils::Generator<const Compiler::File*> Compiler::File::FromRoot() const {
     std::stack<const File*> stack;
     for (const File* curr = this; curr != nullptr; curr = curr->parent_) {
         stack.push(curr);
@@ -58,7 +59,7 @@ utils::Generator<const File*> File::FromRoot() const {
     }
 };
 
-void File::Open() {
+void Compiler::File::Open() {
     if (stream_.is_open()) {
         throw InternalError::RepeatedOpenFile(path_);
     }
@@ -72,7 +73,7 @@ void File::Open() {
     line_ = 1;
 }
 
-void File::Close() {
+void Compiler::File::Close() {
     if (!stream_.is_open()) {
         throw InternalError::CloseUnopenedFile(path_);
     }
@@ -80,7 +81,7 @@ void File::Close() {
     stream_.close();
 }
 
-bool File::NextLine() {
+bool Compiler::File::NextLine() {
     std::string line;
     if (!std::getline(stream_, line)) {
         return false;
@@ -95,7 +96,7 @@ bool File::NextLine() {
     return true;
 }
 
-bool File::GetLine(std::string& line) {
+bool Compiler::File::GetLine(std::string& line) {
     if (!std::getline(curr_line_, line)) {
         return false;
     }
@@ -105,11 +106,11 @@ bool File::GetLine(std::string& line) {
     return !line.empty();
 }
 
-bool File::GetToken(std::string& token) {
+bool Compiler::File::GetToken(std::string& token) {
     return static_cast<bool>(curr_line_ >> token);
 }
 
-std::string File::Where() const {
+std::string Compiler::File::Where() const {
     std::ostringstream where;
     where << "at line " << LineNum() << " in ";
 
@@ -126,12 +127,12 @@ std::string File::Where() const {
     return where.str();
 }
 
-size_t File::LineNum() const {
+size_t Compiler::File::LineNum() const {
     return line_;
 }
 
-const std::filesystem::path& File::Path() const {
+const std::filesystem::path& Compiler::File::Path() const {
     return path_;
 }
 
-}  // namespace karma::compiler::detail
+}  // namespace karma

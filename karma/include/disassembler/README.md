@@ -18,7 +18,7 @@ by the [exec directory](../exec).
 
 ```c++
 karma::
-        disassembler::                      // disassembler.hpp
+        Disassembler::                      // disassembler.hpp
                 MustDisassemble
                 Disassemble
         errors::                            // errors.hpp
@@ -32,7 +32,6 @@ karma::
 
 ```c++
 karma::
-        disassembler::
-                detail::       // impl.hpp 
-                        Impl
+        Disassembler::
+                Impl     // impl.hpp 
 ```

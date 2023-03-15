@@ -2,24 +2,24 @@
 
 #include "specs/architecture.hpp"
 
-namespace karma::executor::detail {
+namespace karma {
 
 namespace arch = karma::detail::specs::arch;
 
-void CommandExecutor::CheckPushAllowed() {
+void Executor::CommandExecutor::CheckPushAllowed() {
     storage_->CheckPushAllowed();
 }
 
-arch::Word& CommandExecutor::Reg(arch::Register reg) {
+arch::Word& Executor::CommandExecutor::Reg(arch::Register reg) {
     return storage_->Reg(reg);
 }
 
-arch::Word& CommandExecutor::Mem(arch::Address address) {
+arch::Word& Executor::CommandExecutor::Mem(arch::Address address) {
     return storage_->Mem(address);
 }
 
-arch::Word& CommandExecutor::Flags() {
+arch::Word& Executor::CommandExecutor::Flags() {
     return storage_->Flags();
 }
 
-}  // namespace karma::executor::detail
+}  // namespace karma

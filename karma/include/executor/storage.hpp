@@ -7,13 +7,16 @@
 
 #include "exec/exec.hpp"
 #include "executor/config.hpp"
+#include "executor/executor.hpp"
 #include "specs/architecture.hpp"
 #include "utils/traits.hpp"
 
-namespace karma::executor::detail {
+namespace karma {
 
-class Storage : karma::detail::utils::traits::NonCopyableMovable {
+class Executor::Storage : karma::detail::utils::traits::NonCopyableMovable {
    private:
+    using ExecutionError = errors::executor::ExecutionError::Builder;
+
     using Config = Executor::Config;
     using Word   = karma::detail::specs::arch::Word;
 
@@ -22,7 +25,7 @@ class Storage : karma::detail::utils::traits::NonCopyableMovable {
         : base_config_(std::move(config)),
           memory_(karma::detail::specs::arch::kMemorySize) {}
 
-    void PrepareForExecution(const karma::detail::exec::Data& exec_data,
+    void PrepareForExecution(const karma::Exec::Data& exec_data,
                              const Config& config = Config());
 
     void CheckPushAllowed();
@@ -49,4 +52,4 @@ class Storage : karma::detail::utils::traits::NonCopyableMovable {
     Word flags_{0};
 };
 
-}  // namespace karma::executor::detail
+}  // namespace karma

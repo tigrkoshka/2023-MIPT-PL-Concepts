@@ -7,24 +7,17 @@
 #include "exec/exec.hpp"
 #include "executor/config.hpp"
 #include "executor/errors.hpp"
-#include "executor/return_code.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/error.hpp"
 
 namespace karma {
 
-using errors::executor::InternalError;
-using errors::executor::ExecutionError;
-using errors::executor::Error;
-
 namespace arch = karma::detail::specs::arch;
 
 namespace cmd = karma::detail::specs::cmd;
 
-namespace exec = karma::detail::exec;
-
-Executor::Impl::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
+Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
     storage_->Reg(arch::kInstructionRegister)++;
 
     auto code = cmd::GetCode(command);
@@ -71,9 +64,9 @@ Executor::Impl::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
     }
 }
 
-Executor::Impl::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
-                                                       const Config& config) {
-    exec::Data data = exec::Read(exec);
+Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
+                                                 const Config& config) {
+    Exec::Data data = Exec::Read(exec);
 
     storage_->PrepareForExecution(data, config);
 
@@ -91,11 +84,11 @@ Executor::Impl::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
     }
 }
 
-Executor::Impl::ReturnCode Executor::Impl::Execute(const std::string& exec,
-                                                   const Config& config) {
+Executor::ReturnCode Executor::Impl::Execute(const std::string& exec,
+                                             const Config& config) {
     try {
         return MustExecute(exec, config);
-    } catch (const Error& e) {
+    } catch (const errors::executor::Error& e) {
         std::cout << "executing " << exec << ": " << e.what() << std::endl;
         return 1;
     } catch (const errors::Error& e) {

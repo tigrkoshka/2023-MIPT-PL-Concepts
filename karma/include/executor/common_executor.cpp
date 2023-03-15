@@ -6,7 +6,7 @@
 #include "specs/flags.hpp"
 #include "utils/types.hpp"
 
-namespace karma::executor::detail {
+namespace karma {
 
 using karma::errors::executor::ExecutionError;
 
@@ -19,27 +19,27 @@ namespace args = cmd::args;
 
 namespace flags = karma::detail::specs::flags;
 
-arch::TwoWords CommonExecutor::GetTwoRegisters(args::Register low) {
+arch::TwoWords Executor::CommonExecutor::GetTwoRegisters(args::Register low) {
     return utils::types::Join(Reg(low), Reg(low + 1));
 }
 
-void CommonExecutor::PutTwoRegisters(arch::TwoWords value,
-                                     args::Receiver lower) {
+void Executor::CommonExecutor::PutTwoRegisters(arch::TwoWords value,
+                                               args::Receiver lower) {
     auto [low, high] = utils::types::Split(value);
 
     Reg(lower)     = low;
     Reg(lower + 1) = high;
 }
 
-void CommonExecutor::CheckBitwiseRHS(arch::Word rhs, cmd::Code code) {
+void Executor::CommonExecutor::CheckBitwiseRHS(arch::Word rhs, cmd::Code code) {
     if (rhs >= sizeof(arch::Word) * utils::types::kByteSize) {
         throw ExecutionError::BitwiseRHSTooBig(rhs, code);
     }
 }
 
-void CommonExecutor::Divide(arch::TwoWords lhs,
-                            arch::TwoWords rhs,
-                            args::Receiver recv) {
+void Executor::CommonExecutor::Divide(arch::TwoWords lhs,
+                                      arch::TwoWords rhs,
+                                      args::Receiver recv) {
     if (rhs == 0) {
         throw ExecutionError::DivisionByZero(lhs, rhs);
     }
@@ -56,22 +56,22 @@ void CommonExecutor::Divide(arch::TwoWords lhs,
     Reg(recv + 1) = static_cast<arch::Word>(remainder);
 }
 
-void CommonExecutor::Push(arch::Word value) {
+void Executor::CommonExecutor::Push(arch::Word value) {
     CheckPushAllowed();
     Mem(Reg(arch::kStackRegister)--) = value;
 }
 
-void CommonExecutor::Pop(args::Receiver recv, arch::Word mod) {
+void Executor::CommonExecutor::Pop(args::Receiver recv, arch::Word mod) {
     Reg(recv) = Mem(++Reg(arch::kStackRegister)) + mod;
 }
 
-void CommonExecutor::Jump(flags::Flag flag, args::Address dst) {
+void Executor::CommonExecutor::Jump(flags::Flag flag, args::Address dst) {
     if ((Flags() & flag) != 0) {
         Reg(arch::kInstructionRegister) = dst;
     }
 }
 
-arch::Address CommonExecutor::Call(args::Address callee) {
+arch::Address Executor::CommonExecutor::Call(args::Address callee) {
     // remember the return address to return from this function
     arch::Address ret = Reg(arch::kInstructionRegister);
 
@@ -90,7 +90,7 @@ arch::Address CommonExecutor::Call(args::Address callee) {
     return ret;
 }
 
-void CommonExecutor::Return() {
+void Executor::CommonExecutor::Return() {
     // move the stack to before the function local variables
     Reg(arch::kStackRegister) = Reg(arch::kCallFrameRegister);
 
@@ -108,4 +108,4 @@ void CommonExecutor::Return() {
     Pop(arch::kCallFrameRegister, 0);
 }
 
-}  // namespace karma::executor::detail
+}  // namespace karma

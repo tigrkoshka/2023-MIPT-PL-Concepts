@@ -3,12 +3,11 @@
 #include <cmath>  // for floor
 
 #include "executor/errors.hpp"
-#include "executor/return_code.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/types.hpp"
 
-namespace karma::executor::detail {
+namespace karma {
 
 using karma::errors::executor::ExecutionError;
 
@@ -19,37 +18,37 @@ namespace arch = karma::detail::specs::arch;
 namespace cmd  = karma::detail::specs::cmd;
 namespace args = cmd::args;
 
-arch::Word RRExecutor::LHSWord(const Args& args) {
+arch::Word Executor::RRExecutor::LHSWord(const Args& args) {
     return Reg(args.recv);
 }
 
-arch::Double RRExecutor::LHSDouble(const Args& args) {
+arch::Double Executor::RRExecutor::LHSDouble(const Args& args) {
     return utils::types::ToDbl(GetTwoRegisters(args.recv));
 }
 
-arch::Word RRExecutor::RHSWord(const Args& args) {
+arch::Word Executor::RRExecutor::RHSWord(const Args& args) {
     return Reg(args.src) + static_cast<arch::Word>(args.mod);
 }
 
-arch::Double RRExecutor::RHSDouble(const Args& args) {
+arch::Double Executor::RRExecutor::RHSDouble(const Args& args) {
     return utils::types::ToDbl(GetTwoRegisters(args.src));
 }
 
-RRExecutor::Operation RRExecutor::ADD() {
+Executor::RRExecutor::Operation Executor::RRExecutor::ADD() {
     return [this](Args args) -> MaybeReturnCode {
         Reg(args.recv) += RHSWord(args);
         return {};
     };
 }
 
-RRExecutor::Operation RRExecutor::SUB() {
+Executor::RRExecutor::Operation Executor::RRExecutor::SUB() {
     return [this](Args args) -> MaybeReturnCode {
         Reg(args.recv) -= RHSWord(args);
         return {};
     };
 }
 
-RRExecutor::Operation RRExecutor::MUL() {
+Executor::RRExecutor::Operation Executor::RRExecutor::MUL() {
     return [this](Args args) -> MaybeReturnCode {
         auto res = static_cast<arch::TwoWords>(LHSWord(args)) *
                    static_cast<arch::TwoWords>(RHSWord(args));
@@ -58,7 +57,7 @@ RRExecutor::Operation RRExecutor::MUL() {
     };
 }
 
-RRExecutor::Operation RRExecutor::DIV() {
+Executor::RRExecutor::Operation Executor::RRExecutor::DIV() {
     return [this](Args args) -> MaybeReturnCode {
         Divide(GetTwoRegisters(args.recv),
                static_cast<arch::TwoWords>(RHSWord(args)),
@@ -67,7 +66,7 @@ RRExecutor::Operation RRExecutor::DIV() {
     };
 }
 
-RRExecutor::Operation RRExecutor::SHL() {
+Executor::RRExecutor::Operation Executor::RRExecutor::SHL() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = RHSWord(args);
         CheckBitwiseRHS(rhs, cmd::SHL);
@@ -76,7 +75,7 @@ RRExecutor::Operation RRExecutor::SHL() {
     };
 }
 
-RRExecutor::Operation RRExecutor::SHR() {
+Executor::RRExecutor::Operation Executor::RRExecutor::SHR() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = RHSWord(args);
         CheckBitwiseRHS(rhs, cmd::SHR);
@@ -85,7 +84,7 @@ RRExecutor::Operation RRExecutor::SHR() {
     };
 }
 
-RRExecutor::Operation RRExecutor::AND() {
+Executor::RRExecutor::Operation Executor::RRExecutor::AND() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = RHSWord(args);
         CheckBitwiseRHS(rhs, cmd::AND);
@@ -94,7 +93,7 @@ RRExecutor::Operation RRExecutor::AND() {
     };
 }
 
-RRExecutor::Operation RRExecutor::OR() {
+Executor::RRExecutor::Operation Executor::RRExecutor::OR() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = RHSWord(args);
         CheckBitwiseRHS(rhs, cmd::OR);
@@ -103,7 +102,7 @@ RRExecutor::Operation RRExecutor::OR() {
     };
 }
 
-RRExecutor::Operation RRExecutor::XOR() {
+Executor::RRExecutor::Operation Executor::RRExecutor::XOR() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = RHSWord(args);
         CheckBitwiseRHS(rhs, cmd::XOR);
@@ -112,7 +111,7 @@ RRExecutor::Operation RRExecutor::XOR() {
     };
 }
 
-RRExecutor::Operation RRExecutor::ITOD() {
+Executor::RRExecutor::Operation Executor::RRExecutor::ITOD() {
     return [this](Args args) -> MaybeReturnCode {
         PutTwoRegisters(
             utils::types::ToUll(static_cast<arch::Double>(RHSWord(args))),
@@ -121,7 +120,7 @@ RRExecutor::Operation RRExecutor::ITOD() {
     };
 }
 
-RRExecutor::Operation RRExecutor::DTOI() {
+Executor::RRExecutor::Operation Executor::RRExecutor::DTOI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Double dbl = RHSDouble(args);
         auto res         = static_cast<arch::TwoWords>(floor(dbl));
@@ -135,7 +134,7 @@ RRExecutor::Operation RRExecutor::DTOI() {
     };
 }
 
-RRExecutor::Operation RRExecutor::ADDD() {
+Executor::RRExecutor::Operation Executor::RRExecutor::ADDD() {
     return [this](Args args) -> MaybeReturnCode {
         PutTwoRegisters(utils::types::ToUll(LHSDouble(args) + RHSDouble(args)),
                         args.recv);
@@ -143,7 +142,7 @@ RRExecutor::Operation RRExecutor::ADDD() {
     };
 }
 
-RRExecutor::Operation RRExecutor::SUBD() {
+Executor::RRExecutor::Operation Executor::RRExecutor::SUBD() {
     return [this](Args args) -> MaybeReturnCode {
         PutTwoRegisters(utils::types::ToUll(LHSDouble(args) - RHSDouble(args)),
                         args.recv);
@@ -151,7 +150,7 @@ RRExecutor::Operation RRExecutor::SUBD() {
     };
 }
 
-RRExecutor::Operation RRExecutor::MULD() {
+Executor::RRExecutor::Operation Executor::RRExecutor::MULD() {
     return [this](Args args) -> MaybeReturnCode {
         PutTwoRegisters(utils::types::ToUll(LHSDouble(args) * RHSDouble(args)),
                         args.recv);
@@ -159,7 +158,7 @@ RRExecutor::Operation RRExecutor::MULD() {
     };
 }
 
-RRExecutor::Operation RRExecutor::DIVD() {
+Executor::RRExecutor::Operation Executor::RRExecutor::DIVD() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Double lhs = LHSDouble(args);
         arch::Double rhs = RHSDouble(args);
@@ -173,35 +172,35 @@ RRExecutor::Operation RRExecutor::DIVD() {
     };
 }
 
-RRExecutor::Operation RRExecutor::CMP() {
+Executor::RRExecutor::Operation Executor::RRExecutor::CMP() {
     return [this](Args args) -> MaybeReturnCode {
         WriteComparisonToFlags(LHSWord(args), RHSWord(args));
         return {};
     };
 }
 
-RRExecutor::Operation RRExecutor::CMPD() {
+Executor::RRExecutor::Operation Executor::RRExecutor::CMPD() {
     return [this](Args args) -> MaybeReturnCode {
         WriteComparisonToFlags(LHSDouble(args), RHSDouble(args));
         return {};
     };
 }
 
-RRExecutor::Operation RRExecutor::MOV() {
+Executor::RRExecutor::Operation Executor::RRExecutor::MOV() {
     return [this](Args args) -> MaybeReturnCode {
         Reg(args.recv) = RHSWord(args);
         return {};
     };
 }
 
-RRExecutor::Operation RRExecutor::LOADR() {
+Executor::RRExecutor::Operation Executor::RRExecutor::LOADR() {
     return [this](Args args) -> MaybeReturnCode {
         Reg(args.recv) = Mem(RHSWord(args));
         return {};
     };
 }
 
-RRExecutor::Operation RRExecutor::LOADR2() {
+Executor::RRExecutor::Operation Executor::RRExecutor::LOADR2() {
     return [this](Args args) -> MaybeReturnCode {
         args::Address address = RHSWord(args);
 
@@ -211,14 +210,14 @@ RRExecutor::Operation RRExecutor::LOADR2() {
     };
 }
 
-RRExecutor::Operation RRExecutor::STORER() {
+Executor::RRExecutor::Operation Executor::RRExecutor::STORER() {
     return [this](Args args) -> MaybeReturnCode {
         Mem(RHSWord(args)) = Reg(args.recv);
         return {};
     };
 }
 
-RRExecutor::Operation RRExecutor::STORER2() {
+Executor::RRExecutor::Operation Executor::RRExecutor::STORER2() {
     return [this](Args args) -> MaybeReturnCode {
         args::Address address = RHSWord(args);
 
@@ -228,14 +227,14 @@ RRExecutor::Operation RRExecutor::STORER2() {
     };
 }
 
-RRExecutor::Operation RRExecutor::CALL() {
+Executor::RRExecutor::Operation Executor::RRExecutor::CALL() {
     return [this](Args args) -> MaybeReturnCode {
         Reg(args.recv) = Call(RHSWord(args));
         return {};
     };
 }
 
-RRExecutor::Map RRExecutor::GetMap() {
+Executor::RRExecutor::Map Executor::RRExecutor::GetMap() {
     return {
         {cmd::ADD,     ADD()    },
         {cmd::SUB,     SUB()    },
@@ -263,4 +262,4 @@ RRExecutor::Map RRExecutor::GetMap() {
     };
 }
 
-}  // namespace karma::executor::detail
+}  // namespace karma

@@ -29,9 +29,8 @@ karma::
 
 ```c++
 karma::
-        detail::                 // exec.hpp
-                exec::
-                        Data
-                        Write
-                        Read
+        Exec::                 // exec.hpp
+                Data
+                Write
+                Read
 ```

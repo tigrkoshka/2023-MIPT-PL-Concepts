@@ -33,17 +33,14 @@ karma::
 ```c++
 karma::
         Executor::
-                Impl                         // impl.hpp
-        
-        executor::
-                detail::
-                        ReturnCode           // return_code.hpp
-                        MaybeReturnCode
-                        Storage              // storage.hpp
-                        CommandExecutor      // command_executor.hpp
-                        CommonExecutor       // common_executor.hpp
-                        RMExecutor           // rm_executor.hpp
-                        RRExecutor           // rr_executor.hpp
-                        RIExecutor           // ri_executor.hpp
-                        JExecutor            // j_executor.hpp
+                ReturnCode
+                MaybeReturnCode
+                Storage              // storage.hpp
+                CommandExecutor      // command_executor.hpp
+                CommonExecutor       // common_executor.hpp
+                RMExecutor           // rm_executor.hpp
+                RRExecutor           // rr_executor.hpp
+                RIExecutor           // ri_executor.hpp
+                JExecutor            // j_executor.hpp
+                Impl                 // impl.hpp
 ```

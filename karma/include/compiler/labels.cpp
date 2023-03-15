@@ -5,17 +5,17 @@
 #include <optional>  // for optional
 #include <string>    // for string
 
+#include "compiler/compiler.hpp"
 #include "compiler/errors.hpp"
 #include "compiler/file.hpp"
 #include "specs/syntax.hpp"
 
-namespace karma::compiler::detail {
-
-using errors::compiler::CompileError;
+namespace karma {
 
 namespace syntax = karma::detail::specs::syntax;
 
-void Labels::CheckLabel(const std::string& label, const std::string& pos) {
+void Compiler::Compiler::Labels::CheckLabel(const std::string& label,
+                                            const std::string& pos) {
     if (label.empty()) {
         throw CompileError::EmptyLabel(pos);
     }
@@ -31,11 +31,12 @@ void Labels::CheckLabel(const std::string& label, const std::string& pos) {
     }
 }
 
-void Labels::SetCodeSize(size_t code_size) {
+void Compiler::Labels::SetCodeSize(size_t code_size) {
     code_size_ = code_size;
 }
 
-std::optional<size_t> Labels::TryGetDefinition(const std::string& label) const {
+std::optional<size_t> Compiler::Labels::TryGetDefinition(
+    const std::string& label) const {
     if (commands_labels_.contains(label)) {
         return commands_labels_.at(label).first;
     }
@@ -47,7 +48,8 @@ std::optional<size_t> Labels::TryGetDefinition(const std::string& label) const {
     return std::nullopt;
 }
 
-std::optional<std::string> Labels::TryGetPos(const std::string& label) const {
+std::optional<std::string> Compiler::Labels::TryGetPos(
+    const std::string& label) const {
     if (commands_labels_.contains(label)) {
         return commands_labels_.at(label).second;
     }
@@ -59,29 +61,29 @@ std::optional<std::string> Labels::TryGetPos(const std::string& label) const {
     return std::nullopt;
 }
 
-void Labels::RecordCommandLabel(const std::string& label,
-                                size_t definition,
-                                const std::string& pos) {
+void Compiler::Labels::RecordCommandLabel(const std::string& label,
+                                          size_t definition,
+                                          const std::string& pos) {
     commands_labels_[label] = {definition, pos};
 }
 
-void Labels::RecordConstantLabel(const std::string& label,
-                                 size_t definition,
-                                 const std::string& pos) {
+void Compiler::Labels::RecordConstantLabel(const std::string& label,
+                                           size_t definition,
+                                           const std::string& pos) {
     constants_labels_[label] = {definition, pos};
 }
 
-void Labels::RecordEntrypointLabel(const std::string& label) {
+void Compiler::Labels::RecordEntrypointLabel(const std::string& label) {
     entrypoint_label_ = label;
 }
 
-std::optional<std::string> Labels::TryGetEntrypointLabel() const {
+std::optional<std::string> Compiler::Labels::TryGetEntrypointLabel() const {
     return entrypoint_label_;
 }
 
-void Labels::RecordUsage(const std::string& label,
-                         const File* file,
-                         size_t command_number) {
+void Compiler::Labels::RecordUsage(const std::string& label,
+                                   const File* file,
+                                   size_t command_number) {
     usages_[label][file].push_back(command_number);
 
     if (!usage_samples_.contains(label)) {
@@ -89,12 +91,12 @@ void Labels::RecordUsage(const std::string& label,
     }
 }
 
-const Labels::AllUsages& Labels::GetUsages() const {
+const Compiler::Labels::AllUsages& Compiler::Labels::GetUsages() const {
     return usages_;
 }
 
-std::string Labels::GetUsageSample(const std::string& label) const {
+std::string Compiler::Labels::GetUsageSample(const std::string& label) const {
     return usage_samples_.at(label);
 }
 
-}  // namespace karma::compiler::detail
+}  // namespace karma
