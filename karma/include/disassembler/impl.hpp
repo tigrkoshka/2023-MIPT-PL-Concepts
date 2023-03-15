@@ -8,10 +8,11 @@
 #include "disassembler/disassembler.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
+#include "utils/traits.hpp"
 
 namespace karma {
 
-class Disassembler::Impl {
+class Disassembler::Impl : detail::utils::traits::Static {
    private:
     using InternalError    = errors::disassembler::InternalError::Builder;
     using DisassembleError = errors::disassembler::DisassembleError::Builder;
