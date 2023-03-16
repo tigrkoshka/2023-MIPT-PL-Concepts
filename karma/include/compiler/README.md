@@ -1,18 +1,18 @@
-## Compiler
+# Compiler
 
 This directory provides the compiling part of the public interface
 of the [karma library](../../include).
 
-### Dependencies
+## Dependencies
 
 Both the declarations and the definition of the symbols from
 this directory are dependent on and only on the symbols provided by
 the [utils directory](../utils), the [specs directory](../specs)
 and the [exec directory](../exec).
 
-### Symbols
+## Symbols
 
-#### Public
+### Public
 
 ```c++
 karma::                                 // compiler.hpp
@@ -27,7 +27,7 @@ karma::                                 // compiler.hpp
                         CompileError
 ```
 
-#### Internal
+### Internal
 
 ```c++
 karma::

@@ -1,9 +1,9 @@
-## Executor
+# Executor
 
 This directory provides the execution part of the public interface
 of the [karma library](../../include).
 
-### Dependencies
+## Dependencies
 
 The declarations of the symbols from this directory are dependent on and only on
 the symbols provided by the [utils directory](../utils)
@@ -12,9 +12,9 @@ and the [specs directory](../specs).
 The definitions are additionally dependent on the symbols provided
 by the [exec directory](../exec).
 
-### Symbols
+## Symbols
 
-#### Public
+### Public
 
 ```c++
 karma::
@@ -30,7 +30,7 @@ karma::
                         ExecutionError
 ```
 
-#### Internal
+### Internal
 
 ```c++
 karma::

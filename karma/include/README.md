@@ -1,4 +1,4 @@
-### Karma library
+# Karma library
 
 The karma library provides tools to compile Karma assembler files and
 execute the resulting Karma executable file as well as to disassemble
@@ -7,7 +7,7 @@ an existing Karma executable file back into the Karma assembler language.
 Thus, the karma library consists of three _blocks_: `compiler`, `executor` and
 `disassembler`.
 
-#### Exported symbols
+## Exported symbols
 
 ```c++
 karma::
@@ -43,7 +43,7 @@ karma::
                         DisassembleError
 ```
 
-#### Exported methods
+## Methods
 
 All exported methods od the karma library classes have two variants,
 one of which has a `Must` prefix, and the other does not.
@@ -52,15 +52,15 @@ The former throw exceptions (see [below](#exceptions)),
 while the latter wrap them in a `try-catch` block and print the exception
 info to `stdout`.
 
-#### Exceptions
+## Exceptions
 
-It is guaranteed that any exception thrown by the karma library
-is either of type `karma::errors::Error` or of a type derived
+It is guaranteed that any exception thrown by the public methods of the karma
+library is either of type `karma::errors::Error` or of a type derived
 from `karma::errors::Error`.
 
 Note that this does not guarantee that any exception thrown
-by the karma library has a type listed above, just that it can be caught
-as a `karma::errors::Error`.
+by the public methods of the karma library has a type listed above,
+just that it can be caught as a `karma::errors::Error`.
 
 Therefore, an exception-safe karma library usage either only
 uses exported methods without the `Must` prefix, or looks somewhat like this:

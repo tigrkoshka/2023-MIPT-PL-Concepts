@@ -1,4 +1,4 @@
-## Utils
+# Utils
 
 This directory provides basic utility functions used throughout
 the [karma library](../../include).
@@ -6,14 +6,14 @@ the [karma library](../../include).
 It also provides the base type for all [karma library](../../include) error,
 which is a part of the public interface of the [karma library](../../include).
 
-### Dependencies
+## Dependencies
 
 Both the declarations and the definitions of the symbols from this directory
 are not dependent on any other parts of the [karma library](../../include).
 
-### Symbols
+## Symbols
 
-#### Public
+### Public
 
 ```c++
 karma::
@@ -21,7 +21,7 @@ karma::
                 Error
 ```
 
-#### Karma internal
+### Karma internal
 
 ```c++
 karma::
