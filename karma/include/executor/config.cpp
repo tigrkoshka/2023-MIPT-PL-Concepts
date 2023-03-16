@@ -117,6 +117,13 @@ Executor::Config& Executor::Config::operator&=(const Executor::Config& other) {
     return *this;
 }
 
+// NOLINTNEXTLINE(fuchsia-overloaded-operator)
+Executor::Config Executor::Config::operator&(const Config& rhs) {
+    Config lhs = *this;
+    lhs &= rhs;
+    return lhs;
+}
+
 bool Executor::Config::RegisterIsBlocked(arch::Register reg) const {
     return blocked_registers_.contains(reg);
 }

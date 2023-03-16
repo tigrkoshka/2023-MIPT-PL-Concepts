@@ -19,7 +19,8 @@ namespace karma {
 
 class Compiler::Impl : karma::detail::utils::traits::Static {
    private:
-    using CompileError = errors::compiler::CompileError::Builder;
+    using InternalError = errors::compiler::InternalError::Builder;
+    using CompileError  = errors::compiler::CompileError::Builder;
 
     using Files        = std::vector<std::unique_ptr<File>>;
     using FilesDataMap = std::unordered_map<const File*, ExecData*>;
@@ -29,6 +30,8 @@ class Compiler::Impl : karma::detail::utils::traits::Static {
                            std::shared_ptr<Labels>&,
                            std::shared_ptr<Entrypoint>&);
     static karma::Exec::Data PrepareExecData(const Files&);
+
+    static void CompileImpl(const std::string& src, const std::string& dst);
 
    public:
     static void MustCompile(const std::string& src, const std::string& dst);

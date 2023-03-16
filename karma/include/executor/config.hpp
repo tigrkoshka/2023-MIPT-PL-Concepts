@@ -38,6 +38,8 @@ class Executor::Config {
 
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     Config& operator&=(const Config&);
+    // NOLINTNEXTLINE(fuchsia-overloaded-operator)
+    Executor::Config operator&(const Config&);
 
     [[nodiscard]] bool RegisterIsBlocked(uint32_t reg) const;
     [[nodiscard]] bool CodeSegmentIsBlocked() const;
@@ -53,12 +55,5 @@ class Executor::Config {
     bool constants_segment_blocked_{false};
     std::optional<size_t> max_stack_size_;
 };
-
-// NOLINTNEXTLINE(fuchsia-overloaded-operator)
-inline Executor::Config operator&(Executor::Config lhs,
-                                  const Executor::Config& rhs) {
-    lhs &= rhs;
-    return lhs;
-}
 
 }  // namespace karma

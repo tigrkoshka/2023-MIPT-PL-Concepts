@@ -14,7 +14,7 @@ on the symbols provided by the [utils directory](../utils).
 
 ### Symbols
 
-#### Internal
+#### Karma internal
 
 ```c++
 karma::
@@ -41,6 +41,7 @@ karma::
                         |       // Memory
                         |       Address
                         |       kMemorySize
+                        |
                         cmd::                                  // commands.hpp
                         |       // Code and format
                         |       Bin
@@ -83,6 +84,7 @@ karma::
                         |               RR
                         |               RI
                         |               J
+                        |
                         consts::                               // constants.hpp
                         |       // Types
                         |       Type
@@ -99,6 +101,7 @@ karma::
                         |       kCharQuote
                         |       kStringQuote
                         |       kStringEnd
+                        |
                         exec::                                 // exec.hpp
                         |       kDefaultExtension
                         |       kIntroString
@@ -107,16 +110,18 @@ karma::
                         |       kHeaderSize
                         |       kCodeSegmentPos
                         |       kProcessorID
+                        |
                         flags::                                // flags.hpp
                         |       Flag
                         |       kEqual
                         |       kGreater
                         |       kLess
+                        |
                         syntax::                               // syntax.hpp
-                        |       kCommentSep
-                        |       kDisableCommentSep
-                        |       kLabelEnd
-                        |       IsAllowedLabelChar
-                        |       kIncludeDirective
-                        |       kEntrypointDirective
+                                kCommentSep
+                                kDisableCommentSep
+                                kLabelEnd
+                                IsAllowedLabelChar
+                                kIncludeDirective
+                                kEntrypointDirective
 ```

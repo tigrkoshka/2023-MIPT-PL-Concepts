@@ -15,11 +15,12 @@ and the [exec directory](../exec).
 #### Public
 
 ```c++
-karma::
-        Compiler::                      // compiler.hpp
-                MustCompile
-                Compile
-        errors::                        // errors.hpp
+karma::                                 // compiler.hpp
+        Compiler::
+        |       MustCompile
+        |       Compile
+        |
+        errors::
                 compiler::
                         Error
                         InternalError
@@ -31,11 +32,16 @@ karma::
 ```c++
 karma::
         Compiler::
-                Entrypoint         // entrypoint.hpp
-                Labels             // labels.hpp
-                ExecData           // exec_data.hpp
-                File               // file.hpp
-                IncludesManager    // includes.hpp
-                FileCompiler       // file_compiler.hpp
-                Impl               // impl.hpp
+        |       Entrypoint              // entrypoint.hpp
+        |       Labels                  // labels.hpp
+        |       ExecData                // exec_data.hpp
+        |       File                    // file.hpp
+        |       IncludesManager         // includes.hpp
+        |       FileCompiler            // file_compiler.hpp
+        |       Impl                    // impl.hpp
+        |               
+        errors::                        // errors.hpp
+                compiler::
+                        InternalError::Builder
+                        CompileError::Builder
 ```

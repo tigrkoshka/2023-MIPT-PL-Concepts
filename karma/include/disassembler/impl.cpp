@@ -358,22 +358,23 @@ void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
 
 void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
                                          const std::string& dst) {
-    return DisassembleImpl(exec_path, dst);
+    try {
+        DisassembleImpl(exec_path, dst);
+    } catch (const errors::Error& e) {
+        throw e;
+    } catch (const std::exception& e) {
+        throw InternalError::Unexpected(e.what());
+    } catch (...) {
+        throw InternalError::Unexpected();
+    }
 }
 
 void Disassembler::Impl::Disassemble(const std::string& exec_path,
                                      const std::string& dst) {
     try {
-        DisassembleImpl(exec_path, dst);
-    } catch (const errors::disassembler::Error& e) {
-        std::cout << e.what() << std::endl;
+        MustDisassemble(exec_path, dst);
     } catch (const errors::Error& e) {
         std::cout << e.what() << std::endl;
-    } catch (const std::exception& e) {
-        std::cout << "disassembler: unexpected exception: " << e.what()
-                  << std::endl;
-    } catch (...) {
-        std::cout << "disassembler: unexpected exception" << std::endl;
     }
 }
 

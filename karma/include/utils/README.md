@@ -21,7 +21,7 @@ karma::
                 Error
 ```
 
-#### Internal
+#### Karma internal
 
 ```c++
 karma::

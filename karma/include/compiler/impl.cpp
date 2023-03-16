@@ -110,7 +110,7 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
 ///                             Compile from file                            ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Compiler::Impl::MustCompile(const std::string& src,
+void Compiler::Impl::CompileImpl(const std::string& src,
                                  const std::string& dst) {
     std::vector<std::unique_ptr<File>> files = IncludesManager().GetFiles(src);
 
@@ -129,18 +129,24 @@ void Compiler::Impl::MustCompile(const std::string& src,
     Exec::Write(data, exec_path);
 }
 
+void Compiler::Impl::MustCompile(const std::string& src,
+                                 const std::string& dst) {
+    try {
+        CompileImpl(src, dst);
+    } catch (const errors::Error& e) {
+        throw e;
+    } catch (const std::exception& e) {
+        throw InternalError::Unexpected(e.what());
+    } catch (...) {
+        throw InternalError::Unexpected();
+    }
+}
+
 void Compiler::Impl::Compile(const std::string& src, const std::string& dst) {
     try {
         MustCompile(src, dst);
-    } catch (const errors::compiler::Error& e) {
-        std::cout << e.what() << std::endl;
     } catch (const errors::Error& e) {
         std::cout << e.what() << std::endl;
-    } catch (const std::exception& e) {
-        std::cout << "compiler: unexpected exception: " << e.what()
-                  << std::endl;
-    } catch (...) {
-        std::cout << "compiler: unexpected exception" << std::endl;
     }
 }
 

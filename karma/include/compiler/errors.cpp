@@ -21,6 +21,15 @@ namespace syntax = detail::specs::syntax;
 ///                              Internal errors                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
+IE IE::Builder::Unexpected(const std::string& message) {
+    std::string full_message = "unexpected exception";
+    if (!message.empty()) {
+        full_message += ": " + message;
+    }
+
+    return IE{full_message};
+}
+
 IE IE::Builder::RepeatedOpenFile(const std::string& path) {
     std::ostringstream ss;
     ss << "attempt to open file " << std::quoted(path)

@@ -19,9 +19,11 @@ by the [exec directory](../exec).
 ```c++
 karma::
         Executor::                      // executor.hpp
-                Config                  // config.hpp
-
-        errors::                        // errors.hpp
+        |       MustExecute
+        |       Execute
+        |       Config                  // config.hpp
+        |
+        errors::                        // executor.hpp
                 executor::
                         Error
                         InternalError
@@ -33,14 +35,17 @@ karma::
 ```c++
 karma::
         Executor::
-                ReturnCode
-                MaybeReturnCode
-                Storage              // storage.hpp
-                CommandExecutor      // command_executor.hpp
-                CommonExecutor       // common_executor.hpp
-                RMExecutor           // rm_executor.hpp
-                RRExecutor           // rr_executor.hpp
-                RIExecutor           // ri_executor.hpp
-                JExecutor            // j_executor.hpp
-                Impl                 // impl.hpp
+        |       Storage              // storage.hpp
+        |       CommandExecutor      // command_executor.hpp
+        |       CommonExecutor       // common_executor.hpp
+        |       RMExecutor           // rm_executor.hpp
+        |       RRExecutor           // rr_executor.hpp
+        |       RIExecutor           // ri_executor.hpp
+        |       JExecutor            // j_executor.hpp
+        |       Impl                 // impl.hpp
+        |               
+        errors::                     // errors.hpp
+                executor::
+                        InternalError::Builder
+                        ExecutionError::Builder
 ```

@@ -16,6 +16,8 @@ struct InternalError::Builder : detail::utils::traits::Static {
     using Where = const std::string&;
 
    public:
+    static InternalError Unexpected(const std::string& message = "");
+
     static InternalError RepeatedOpenFile(const std::string& path);
     static InternalError CloseUnopenedFile(const std::string& path);
 

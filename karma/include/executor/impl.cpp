@@ -62,7 +62,7 @@ Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
     }
 }
 
-Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
+Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec,
                                                  const Config& config) {
     Exec::Data data = Exec::Read(exec);
 
@@ -82,22 +82,25 @@ Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
     }
 }
 
+Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
+                                                 const Config& config) {
+    try {
+        return ExecuteImpl(exec, config);
+    } catch (const errors::Error& e) {
+        throw e;
+    } catch (const std::exception& e) {
+        throw InternalError::Unexpected(e.what());
+    } catch (...) {
+        throw InternalError::Unexpected();
+    }
+}
+
 Executor::ReturnCode Executor::Impl::Execute(const std::string& exec,
                                              const Config& config) {
     try {
         return MustExecute(exec, config);
-    } catch (const errors::executor::Error& e) {
-        std::cout << "executing " << exec << ": " << e.what() << std::endl;
-        return 1;
     } catch (const errors::Error& e) {
-        std::cout << exec << ": " << e.what() << std::endl;
-        return 1;
-    } catch (const std::exception& e) {
-        std::cout << exec << ": unexpected exception: " << e.what()
-                  << std::endl;
-        return 1;
-    } catch (...) {
-        std::cout << "executing " << exec << ": unexpected exception";
+        std::cout << e.what() << std::endl;
         return 1;
     }
 }

@@ -17,11 +17,12 @@ by the [exec directory](../exec).
 #### Public
 
 ```c++
-karma::
-        Disassembler::                      // disassembler.hpp
-                MustDisassemble
-                Disassemble
-        errors::                            // errors.hpp
+karma::                                     // disassembler.hpp
+        Disassembler::
+        |       MustDisassemble
+        |       Disassemble
+        |
+        errors::
                 disassembler::
                         Error
                         InternalError
@@ -32,6 +33,10 @@ karma::
 
 ```c++
 karma::
-        Disassembler::
-                Impl     // impl.hpp 
+        Disassembler::Impl                  // impl.hpp
+        |
+        errors::                            // errors.hpp
+                disassembler::
+                        InternalError::Builder
+                        DisassembleError::Builder
 ```

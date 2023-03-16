@@ -20,6 +20,15 @@ namespace consts = detail::specs::consts;
 ///                              Internal errors                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
+IE IE::Builder::Unexpected(const std::string& message) {
+    std::string full_message = "unexpected exception";
+    if (!message.empty()) {
+        full_message += ": " + message;
+    }
+
+    return IE{full_message};
+}
+
 IE IE::Builder::FailedToOpen(const std::string& path) {
     std::ostringstream ss;
     ss << "failed to open " << std::quoted(path);

@@ -24,6 +24,7 @@ class Executor::Impl : detail::utils::traits::NonCopyableMovable {
 
    private:
     MaybeReturnCode ExecuteCmd(karma::detail::specs::cmd::Bin);
+    ReturnCode ExecuteImpl(const std::string& exec, const Config& = Config());
 
    public:
     explicit Impl(Config config = Config())

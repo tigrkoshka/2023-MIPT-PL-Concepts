@@ -15,11 +15,17 @@ the [utils directory](../utils) and the [specs directory](../specs).
 
 ### Symbols
 
-#### Public
+#### Karma internal
 
 ```c++
+karma::                        // exec.hpp
+        Exec::
+                Data
+                Write
+                Read
+                
 karma::
-        errors::                 // errors.hpp
+        errors::
                 exec::
                         Error
                         ExecFileError
@@ -28,9 +34,8 @@ karma::
 #### Internal
 
 ```c++
-karma::
-        Exec::                 // exec.hpp
-                Data
-                Write
-                Read
+karma::                        // errors.hpp
+        errors::
+                exec::
+                        ExecFileError::Builder
 ```
