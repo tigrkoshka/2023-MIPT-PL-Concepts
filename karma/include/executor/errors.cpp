@@ -22,15 +22,6 @@ namespace utils   = detail::utils;
 ///                              Internal errors                             ///
 ////////////////////////////////////////////////////////////////////////////////
 
-IE IE::Builder::Unexpected(const std::string& message) {
-    std::string full_message = "unexpected exception";
-    if (!message.empty()) {
-        full_message += ": " + message;
-    }
-
-    return IE{full_message};
-}
-
 IE IE::Builder::UnprocessedCommandFormat(cmd::Format format) {
     std::ostringstream ss;
     ss << "processing for format " << cmd::kFormatToString.at(format)

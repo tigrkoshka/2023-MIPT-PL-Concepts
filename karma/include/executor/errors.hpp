@@ -13,8 +13,6 @@
 namespace karma::errors::executor {
 
 struct InternalError::Builder : detail::utils::traits::Static {
-    static InternalError Unexpected(const std::string& message = "");
-
     static InternalError UnprocessedCommandFormat(detail::specs::cmd::Format);
 
     static InternalError UnprocessedCommandForFormat(detail::specs::cmd::Format,

@@ -16,6 +16,7 @@ struct CompileError;
 
 class Compiler {
    private:
+    friend struct errors::compiler::Error;
     friend struct errors::compiler::InternalError;
     friend struct errors::compiler::CompileError;
 
@@ -52,6 +53,9 @@ class Compiler {
 namespace errors::compiler {
 
 struct Error : errors::Error {
+   private:
+    friend class Compiler::Impl;
+
    protected:
     explicit Error(const std::string& message)
         : errors::Error(message) {}

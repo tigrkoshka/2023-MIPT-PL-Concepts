@@ -358,14 +358,17 @@ void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
 
 void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
                                          const std::string& dst) {
+    using std::string_literals::operator""s;
+
     try {
         DisassembleImpl(exec_path, dst);
     } catch (const errors::Error& e) {
         throw e;
     } catch (const std::exception& e) {
-        throw InternalError::Unexpected(e.what());
+        throw errors::disassembler::Error(
+            "unexpected disassembler exception: "s + e.what());
     } catch (...) {
-        throw InternalError::Unexpected();
+        throw errors::disassembler::Error("unexpected disassembler exception");
     }
 }
 

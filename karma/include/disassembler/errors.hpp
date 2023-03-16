@@ -11,8 +11,6 @@
 namespace karma::errors::disassembler {
 
 struct InternalError::Builder : detail::utils::traits::Static {
-    static InternalError Unexpected(const std::string& message = "");
-
     static InternalError FailedToOpen(const std::string& path);
 
     static InternalError UnprocessedConstantType(detail::specs::consts::Type);

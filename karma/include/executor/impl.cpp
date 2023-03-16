@@ -84,14 +84,17 @@ Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec,
 
 Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
                                                  const Config& config) {
+    using std::string_literals::operator""s;
+
     try {
         return ExecuteImpl(exec, config);
     } catch (const errors::Error& e) {
         throw e;
     } catch (const std::exception& e) {
-        throw InternalError::Unexpected(e.what());
+        throw errors::executor::Error(
+            "unexpected executor exception: "s + e.what());
     } catch (...) {
-        throw InternalError::Unexpected();
+        throw errors::executor::Error("unexpected executor exception");
     }
 }
 

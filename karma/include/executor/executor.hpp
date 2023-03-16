@@ -19,6 +19,7 @@ struct ExecutionError;
 
 class Executor {
    private:
+    friend struct errors::executor::Error;
     friend struct errors::executor::InternalError;
     friend struct errors::executor::ExecutionError;
 
@@ -74,6 +75,9 @@ class Executor {
 namespace errors::executor {
 
 struct Error : errors::Error {
+   private:
+    friend class Executor::Impl;
+
    protected:
     explicit Error(const std::string& message)
         : errors::Error(message) {}

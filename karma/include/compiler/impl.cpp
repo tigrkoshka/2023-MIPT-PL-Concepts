@@ -131,14 +131,17 @@ void Compiler::Impl::CompileImpl(const std::string& src,
 
 void Compiler::Impl::MustCompile(const std::string& src,
                                  const std::string& dst) {
+    using std::string_literals::operator""s;
+
     try {
         CompileImpl(src, dst);
     } catch (const errors::Error& e) {
         throw e;
     } catch (const std::exception& e) {
-        throw InternalError::Unexpected(e.what());
+        throw errors::compiler::Error("unexpected compiler exception: "s +
+                                      e.what());
     } catch (...) {
-        throw InternalError::Unexpected();
+        throw errors::compiler::Error("unexpected compiler exception");
     }
 }
 

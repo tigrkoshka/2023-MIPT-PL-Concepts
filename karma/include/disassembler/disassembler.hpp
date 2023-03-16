@@ -17,6 +17,7 @@ struct DisassembleError;
 
 class Disassembler {
    private:
+    friend struct errors::disassembler::Error;
     friend struct errors::disassembler::InternalError;
     friend struct errors::disassembler::DisassembleError;
 
@@ -54,6 +55,9 @@ class Disassembler {
 namespace errors::disassembler {
 
 struct Error : errors::Error {
+   private:
+    friend class Disassembler::Impl;
+
    protected:
     explicit Error(const std::string& message)
         : errors::Error(message) {}
