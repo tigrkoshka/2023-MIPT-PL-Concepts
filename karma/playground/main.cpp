@@ -2,14 +2,14 @@
 #include <karma>
 
 int main() {
-    karma::Compiler::MustCompile("../programs/04_factorial_loop.krm");
+    karma::Compiler::MustCompile("../programs/print/playground.krm");
 
     karma::Executor executor;
-    uint32_t ret_code = executor.MustExecute("../programs/04_factorial_loop.a");
+    uint32_t ret_code = executor.MustExecute("../programs/print/playground.a");
 
-    std::cout << "executable returned code " << ret_code;
+    std::cout << "executable returned code " << ret_code << std::endl;
 
-    karma::Disassembler::MustDisassemble("../programs/04_factorial_loop.a");
+    karma::Disassembler::MustDisassemble("../programs/print/playground.a");
 
     return 0;
 }

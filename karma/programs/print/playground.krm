@@ -1,0 +1,30 @@
+include uint32.krm
+
+main:
+    # get the value to print
+    syscall r0 100
+
+    # store the base (16) to r1
+    lc r1 16
+
+    # prepare for call
+    push r13 0
+    mov r13 r14 0
+
+    # push the value as the argument
+    push r0 0
+    push r1 0
+
+    # call the printing function
+    calli print_uint32
+
+    # print an additional '\n'
+    load r0 .newline_char
+    syscall r0 105
+
+    # set the exit code to 0
+    lc r0 0
+
+    # exit the program with code 0 from r0
+    syscall r0 0
+end main

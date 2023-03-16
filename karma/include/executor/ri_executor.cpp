@@ -54,14 +54,14 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SYSCALL() {
             }
 
             case syscall::PRINTINT: {
-                std::cout << static_cast<std::make_signed_t<arch::Word>>(
-                    Reg(args.reg));
+                using Int = std::make_signed_t<arch::Word>;
+                std::cout << static_cast<Int>(Reg(args.reg)) << std::flush;
                 break;
             }
 
             case syscall::PRINTDOUBLE: {
                 arch::TwoWords words = GetTwoRegisters(args.reg);
-                std::cout << std::bit_cast<arch::Double>(words);
+                std::cout << std::bit_cast<arch::Double>(words) << std::flush;
                 break;
             }
 
@@ -78,7 +78,8 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SYSCALL() {
                     throw ExecutionError::InvalidPutCharValue(Reg(args.reg));
                 }
 
-                std::cout << static_cast<syscall::Char>(Reg(args.reg));
+                std::cout << static_cast<syscall::Char>(Reg(args.reg))
+                          << std::flush;
                 break;
             }
 

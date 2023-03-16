@@ -108,7 +108,7 @@ struct ExecutionError : Error {
 
    private:
     explicit ExecutionError(const std::string& message)
-        : Error("execution error" + message) {}
+        : Error("execution error: " + message) {}
 };
 
 }  // namespace errors::executor

@@ -29,7 +29,8 @@ Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
                 throw InternalError::UnprocessedCommandForFormat(format, code);
             }
 
-            return rm_map_.at(code)(cmd::parse::RM(command));
+            auto args = cmd::parse::RM(command);
+            return rm_map_.at(code)(args);
         }
 
         case cmd::RR: {
@@ -37,7 +38,8 @@ Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
                 throw InternalError::UnprocessedCommandForFormat(format, code);
             }
 
-            return rr_map_.at(code)(cmd::parse::RR(command));
+            auto args = cmd::parse::RR(command);
+            return rr_map_.at(code)(args);
         }
 
         case cmd::RI: {
@@ -45,7 +47,8 @@ Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
                 throw InternalError::UnprocessedCommandForFormat(format, code);
             }
 
-            return ri_map_.at(code)(cmd::parse::RI(command));
+            auto args = cmd::parse::RI(command);
+            return ri_map_.at(code)(args);
         }
 
         case cmd::J: {
@@ -53,7 +56,8 @@ Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
                 throw InternalError::UnprocessedCommandForFormat(format, code);
             }
 
-            return j_map_.at(code)(cmd::parse::J(command));
+            auto args = cmd::parse::J(command);
+            return j_map_.at(code)(args);
         }
 
         default: {
@@ -91,8 +95,8 @@ Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
     } catch (const errors::Error& e) {
         throw e;
     } catch (const std::exception& e) {
-        throw errors::executor::Error(
-            "unexpected executor exception: "s + e.what());
+        throw errors::executor::Error("unexpected executor exception: "s +
+                                      e.what());
     } catch (...) {
         throw errors::executor::Error("unexpected executor exception");
     }

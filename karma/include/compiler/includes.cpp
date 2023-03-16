@@ -13,17 +13,15 @@ namespace karma {
 
 namespace syntax = detail::specs::syntax;
 
-std::vector<std::filesystem::path>
-Compiler::IncludesManager::GetCurrIncludes() {
+std::vector<std::filesystem::path> Compiler::IncludesManager::GetIncludes(
+    const std::unique_ptr<File>& file) {
     std::string token;
-
-    const std::unique_ptr<File>& curr_file = files_.back();
 
     std::vector<std::filesystem::path> includes;
 
-    curr_file->Open();
-    while (curr_file->NextLine()) {
-        if (!curr_file->GetToken(token)) {
+    file->Open();
+    while (file->NextLine()) {
+        if (!file->GetToken(token)) {
             continue;
         }
 
@@ -31,45 +29,46 @@ Compiler::IncludesManager::GetCurrIncludes() {
             break;
         }
 
-        if (!curr_file->GetLine(token)) {
-            throw CompileError::IncludeNoFilename(curr_file->Where());
+        if (!file->GetLine(token)) {
+            throw CompileError::IncludeNoFilename(file->Where());
         }
 
         includes.emplace_back(token);
     }
-    curr_file->Close();
+    file->Close();
 
     return includes;
 }
 
-void Compiler::IncludesManager::ProcessCurrFileIncludes() {
-    const std::unique_ptr<File>& curr_file = files_.back();
-
-    for (const auto& rel_include : GetCurrIncludes()) {
-        std::string include =
-            files_.size() == 1 ? abs_root_dir_ / rel_include
-                               : curr_file->Path().parent_path() / rel_include;
+void Compiler::IncludesManager::ProcessFileIncludes(
+    const std::unique_ptr<File>& file) {
+    for (const auto& rel_include : GetIncludes(file)) {
+        std::filesystem::path include = std::filesystem::weakly_canonical(
+            file->Path().parent_path() / rel_include);
 
         if (all_includes_.contains(include)) {
             continue;
         }
 
         all_includes_.insert(include);
-        files_.push_back(std::make_unique<File>(include, curr_file.get()));
+        auto included_file = std::make_unique<File>(include, file.get());
 
-        ProcessCurrFileIncludes();
+        ProcessFileIncludes(included_file);
+
+        files_.push_back(std::move(included_file));
     }
 }
 
 std::vector<std::unique_ptr<Compiler::File>>
 Compiler::IncludesManager::GetFiles(const std::string& root) && {
-    std::filesystem::path abs_root = std::filesystem::absolute(root);
+    std::filesystem::path abs_root = std::filesystem::weakly_canonical(root);
 
-    abs_root_dir_ = abs_root.parent_path();
     all_includes_.insert(abs_root);
-    files_.push_back(std::make_unique<File>(abs_root));
+    auto root_file = std::make_unique<File>(abs_root);
 
-    ProcessCurrFileIncludes();
+    ProcessFileIncludes(root_file);
+
+    files_.push_back(std::move(root_file));
 
     return std::move(files_);
 }

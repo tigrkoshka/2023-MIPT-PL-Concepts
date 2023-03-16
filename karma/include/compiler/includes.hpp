@@ -20,15 +20,15 @@ class Compiler::IncludesManager
     using CompileError  = errors::compiler::CompileError::Builder;
 
    private:
-    std::vector<std::filesystem::path> GetCurrIncludes();
+    std::vector<std::filesystem::path> GetIncludes(
+        const std::unique_ptr<File>&);
 
-    void ProcessCurrFileIncludes();
+    void ProcessFileIncludes(const std::unique_ptr<File>&);
 
    public:
     std::vector<std::unique_ptr<File>> GetFiles(const std::string& root) &&;
 
    private:
-    std::filesystem::path abs_root_dir_{};
     std::unordered_set<std::string> all_includes_{};
     std::vector<std::unique_ptr<File>> files_{};
 };

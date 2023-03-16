@@ -21,7 +21,7 @@ class Compiler::File : karma::detail::utils::traits::NonCopyableMovable {
    private:
     static void TrimComment(std::string& line);
 
-    [[nodiscard]] karma::detail::utils::Generator<const File*> FromRoot() const;
+    [[nodiscard]] karma::detail::utils::Generator<const File*> ToRoot() const;
 
    public:
     explicit File(std::filesystem::path path, const File* parent = nullptr)

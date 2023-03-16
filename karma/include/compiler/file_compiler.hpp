@@ -67,10 +67,14 @@ class Compiler::FileCompiler
    public:
     FileCompiler(const std::unique_ptr<File>& file,
                  std::shared_ptr<Labels> labels,
-                 std::shared_ptr<Entrypoint> entrypoint)
+                 std::shared_ptr<Entrypoint> entrypoint,
+                 size_t prev_code_size,
+                 size_t prev_constants_size)
         : file_(file),
           labels_(std::move(labels)),
-          entrypoint_(std::move(entrypoint)) {}
+          entrypoint_(std::move(entrypoint)),
+          prev_code_size_(prev_code_size),
+          prev_constants_size_(prev_constants_size) {}
 
     ExecData PrepareData() &&;
 
@@ -85,6 +89,8 @@ class Compiler::FileCompiler
 
     std::string curr_token_;
 
+    size_t prev_code_size_{0};
+    size_t prev_constants_size_{0};
     ExecData data_;
 };
 

@@ -1,9 +1,9 @@
-include 01_uint32.krm
+include uint32.krm
 
-include 02_uint64.krm
+include uint64.krm
 
-include 03_double.krm
+include double.krm
 
-include 04_char.krm
+include char.krm
 
-include 05_string.krm
+include string.krm

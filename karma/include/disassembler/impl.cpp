@@ -224,7 +224,7 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command) {
             args::RMArgs args = cmd::parse::RM(command);
 
             result << GetRegister(args.reg) << " ";
-            result << std::hex << args.addr;
+            result << "0x" << std::hex << args.addr;
 
             break;
         }
@@ -259,7 +259,7 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command) {
         case cmd::J: {
             args::JArgs args = cmd::parse::J(command);
 
-            result << std::hex << args.addr;
+            result << "0x" << std::hex << args.addr;
 
             break;
         }

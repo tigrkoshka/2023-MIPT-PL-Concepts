@@ -116,13 +116,13 @@ Executor::RRExecutor::Operation Executor::RRExecutor::ITOD() {
 Executor::RRExecutor::Operation Executor::RRExecutor::DTOI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Double dbl = RHSDouble(args);
-        auto res         = static_cast<arch::TwoWords>(floor(dbl));
-
-        if (res >= static_cast<arch::TwoWords>(arch::kMaxWord)) {
+        if (dbl >= static_cast<arch::Double>(arch::kMaxWord)) {
             throw ExecutionError::DtoiOverflow(dbl);
         }
 
-        Reg(args.recv) = static_cast<arch::Word>(res);
+        // static cast does not produce UB, because the resulting
+        // value fits into arch::Word due to the check above
+        Reg(args.recv) = static_cast<arch::Word>(floor(dbl));
         return {};
     };
 }

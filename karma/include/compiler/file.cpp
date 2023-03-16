@@ -6,7 +6,6 @@
 #include <fstream>     // for ifstream
 #include <iterator>    // for ostream_iterator
 #include <ranges>      // for ranges, views
-#include <stack>       // for stack
 #include <string>      // for string
 #include <utility>     // for move
 
@@ -43,15 +42,9 @@ void Compiler::File::TrimComment(std::string& line) {
     line.resize(std::min(comment_start, line.size()));
 }
 
-utils::Generator<const Compiler::File*> Compiler::File::FromRoot() const {
-    std::stack<const File*> stack;
+utils::Generator<const Compiler::File*> Compiler::File::ToRoot() const {
     for (const File* curr = this; curr != nullptr; curr = curr->parent_) {
-        stack.push(curr);
-    }
-
-    while (!stack.empty()) {
-        co_yield stack.top();
-        stack.pop();
+        co_yield curr;
     }
 };
 
@@ -66,7 +59,7 @@ void Compiler::File::Open() {
         throw CompileError::FailedToOpen(path_);
     }
 
-    line_ = 1;
+    line_ = 0;
 }
 
 void Compiler::File::Close() {
@@ -88,6 +81,7 @@ bool Compiler::File::NextLine() {
     // C++20 feature for moving a string into the istringstream,
     // may not be supported by some STL versions, but is supported by GNU
     curr_line_ = std::istringstream(std::move(line));
+    ++line_;
 
     return true;
 }
@@ -110,15 +104,27 @@ std::string Compiler::File::Where() const {
     std::ostringstream where;
     where << "at line " << LineNum() << " in ";
 
+    auto files    = ToRoot();
     auto get_path = [](const File* file) -> std::string {
         return file->Path();
     };
-    auto pipeline = FromRoot() | std::views::transform(get_path);
 
-    std::ostream_iterator<std::string> dst{where, "\n included from "};
+    auto pipeline = files | std::views::transform(get_path);
+
+    // TODO: there is an std::experimental::ostream_joiner
+    //       currently defines in <experimental/iterator>
+    //       that does exactly what is needed, but we do not
+    //       want to use experimental features, so here is a workaround
+    std::string sep = "\n included from ";
+
+    std::ostream_iterator<std::string> dst{where, sep.data()};
     std::ranges::copy(pipeline, dst);
 
-    return where.str();
+    // remove the trailing separator
+    std::string res = where.str();
+    res.resize(res.size() - sep.size());
+
+    return res;
 }
 
 size_t Compiler::File::LineNum() const {

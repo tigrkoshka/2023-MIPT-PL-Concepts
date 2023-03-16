@@ -44,15 +44,15 @@ IE IE::Builder::UnprocessedCommandForFormat(cmd::Format format,
 
 EE EE::Builder::ExecPointerOutOfMemory(arch::Address address) {
     std::ostringstream ss;
-    ss << "execution pointer is outside of memory (size " << arch::kMemorySize
-       << "): " << std::hex << address;
+    ss << std::hex << "execution pointer is outside of memory (size 0x"
+       << arch::kMemorySize << "): 0x" << address;
     return EE{ss.str()};
 }
 
 EE EE::Builder::StackPointerOutOfMemory(arch::Address address) {
     std::ostringstream ss;
-    ss << "address is outside of memory (size " << arch::kMemorySize
-       << "): " << std::hex << address;
+    ss << std::hex << "address is outside of memory (size 0x"
+       << arch::kMemorySize << "): 0x" << address;
     return EE{ss.str()};
 }
 
@@ -80,21 +80,21 @@ EE EE::Builder::RegisterIsBlocked(arch::Register reg) {
 
 EE EE::Builder::AddressOutOfMemory(arch::Address address) {
     std::ostringstream ss;
-    ss << "trying to access address outside of memory (size "
-       << arch::kMemorySize << "): " << std::hex << address;
+    ss << std::hex << "trying to access address outside of memory (size 0x"
+       << arch::kMemorySize << "): 0x" << address;
     return EE{ss.str()};
 }
 
 EE EE::Builder::CodeSegmentBlocked(arch::Address address) {
     std::ostringstream ss;
-    ss << "trying to access address inside a blocked code segment" << std::hex
-       << address;
+    ss << "trying to access address inside a blocked code segment: 0x"
+       << std::hex << address;
     return EE{ss.str()};
 }
 
 EE EE::Builder::ConstantsSegmentBlocked(arch::Address address) {
     std::ostringstream ss;
-    ss << "trying to access address inside a blocked constants segment"
+    ss << "trying to access address inside a blocked constants segment: 0x"
        << std::hex << address;
     return EE{ss.str()};
 }

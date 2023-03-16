@@ -73,14 +73,20 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
 
     std::vector<ExecData> files_data(files.size());
     FilesDataMap files_data_map;
-    size_t code_size = 0;
+    size_t code_size      = 0;
+    size_t constants_size = 0;
     for (size_t i = 0; i < files.size(); ++i) {
-        FileCompiler file_compiler{files[i], labels, entrypoint};
+        FileCompiler file_compiler{files[i],
+                                   labels,
+                                   entrypoint,
+                                   code_size,
+                                   constants_size};
 
         files_data[i]                  = std::move(file_compiler).PrepareData();
         files_data_map[files[i].get()] = &files_data[i];
 
         code_size += files_data[i].Code().size();
+        constants_size += files_data[i].Constants().size();
     }
 
     if (!entrypoint->Seen()) {

@@ -277,7 +277,7 @@ bool Compiler::FileCompiler::TryProcessConstant() {
 
     if (std::exchange(latest_word_was_label_, false)) {
         labels_->RecordConstantLabel(latest_label_,
-                                     CurrConstAddress(),
+                                     prev_constants_size_ + CurrConstAddress(),
                                      latest_label_pos_);
     }
 
@@ -526,7 +526,7 @@ cmd::Bin Compiler::FileCompiler::MustParseCommand() {
 
     if (std::exchange(latest_word_was_label_, false)) {
         labels_->RecordCommandLabel(latest_label_,
-                                    CurrCmdAddress(),
+                                    prev_code_size_ + CurrCmdAddress(),
                                     latest_label_pos_);
     }
 

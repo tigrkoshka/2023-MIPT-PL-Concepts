@@ -29,7 +29,8 @@ FE FE::Builder::TooSmallForHeader(size_t size, const std::string& path) {
 FE FE::Builder::TooBigForMemory(size_t size, const std::string& path) {
     std::ostringstream ss;
     ss << "the combined size of the code and constants segments is " << size
-       << ", which is greater than the memory size " << arch::kMemorySize
+       << ", which is greater than the memory size 0x" << std::hex
+       << arch::kMemorySize
        << ", so the code and the constants do not fit into the memory";
     return {ss.str(), path};
 }

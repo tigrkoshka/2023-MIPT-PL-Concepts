@@ -1,0 +1,75 @@
+include utils.krm
+
+# accepts two arguments: a base and a uint32 value to be printed
+#
+# if the base is greater than 36, an error message is printed and
+# the execution is exited with an error code 1
+print_uint32:
+    # load the base into r0 and the uint32 value to r1
+    loadr2 r0 r14 3
+
+    # if the value < base print it as a digit and return ...
+    cmp r1 r0 0
+    jl __print_uint32.out
+
+    # ... else recurse
+    __print_uint32.recurse:
+        # ensure (r1,r2) represent a uint64 value equal to the uint32 from r1
+        # by setting the r2 register to 0
+        lc r2 0
+
+        # put value / base to r1,
+        # and value % base to r2
+        div r1 r0 0
+
+        # push the base and the remainder as local variables
+        push r2 0
+        push r0 0
+
+        # prepare for call
+        push r13 0
+        mov r13 r14 0
+
+        # push the base and the quotient as the arguments
+        push r1 0
+        push r0 0
+
+        # recurse
+        calli print_uint32
+
+        # pop the base into r0 and
+        # the remainder (which indicates the current character to print) into r1
+        pop r0 0
+        pop r1 0
+
+    __print_uint32.out:
+        # prepare for call
+        push r13 0
+        mov r13 r14 0
+
+        # push the base and the value as arguments
+        push r1 0
+        push r0 0
+
+        # print the current character
+        calli __print_digit
+
+        # return
+        ret 0
+
+# like print_uint32, but accepts only the value argument and prints
+# its decimal representation
+print_uint32_decimal:
+    # load the uint32 value into r0
+    loadr2 r0 r14 3
+
+    # store the base value (10) in r1
+    lc r1 10
+
+    # push the base and the value as the arguments
+    push r0 0
+    push r1 0
+
+    # reuse the printing function
+    calli print_uint32
+
