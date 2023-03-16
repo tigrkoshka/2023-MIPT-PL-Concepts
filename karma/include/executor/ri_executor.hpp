@@ -15,11 +15,11 @@ class Executor::RIExecutor : public CommonExecutor {
    private:
     using ExecutionError = errors::executor::ExecutionError::Builder;
 
-    using Args      = karma::detail::specs::cmd::args::RIArgs;
+    using Args      = detail::specs::cmd::args::RIArgs;
     using Operation = std::function<MaybeReturnCode(Args)>;
 
    private:
-    static karma::detail::specs::arch::Word ImmWord(const Args&);
+    static detail::specs::arch::Word ImmWord(const Args&);
 
    private:
     Operation HALT();
@@ -40,7 +40,7 @@ class Executor::RIExecutor : public CommonExecutor {
     Operation LC();
 
    public:
-    using Map = std::unordered_map<karma::detail::specs::cmd::Code, Operation>;
+    using Map = std::unordered_map<detail::specs::cmd::Code, Operation>;
     Map GetMap();
 };
 

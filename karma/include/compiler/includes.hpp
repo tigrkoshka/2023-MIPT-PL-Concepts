@@ -13,14 +13,13 @@
 
 namespace karma {
 
-class Compiler::IncludesManager
-    : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::IncludesManager : detail::utils::traits::NonCopyableMovable {
    private:
     using InternalError = errors::compiler::InternalError::Builder;
     using CompileError  = errors::compiler::CompileError::Builder;
 
    private:
-    std::vector<std::filesystem::path> GetIncludes(
+    static std::vector<std::filesystem::path> GetIncludes(
         const std::unique_ptr<File>&);
 
     void ProcessFileIncludes(const std::unique_ptr<File>&);

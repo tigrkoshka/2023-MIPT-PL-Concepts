@@ -8,9 +8,9 @@
 
 namespace karma {
 
-class Compiler::ExecData : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::ExecData : detail::utils::traits::NonCopyableMovable {
    private:
-    using Segment = std::vector<karma::detail::specs::arch::Word>;
+    using Segment = std::vector<detail::specs::arch::Word>;
 
    public:
     Segment& Code();
@@ -20,8 +20,8 @@ class Compiler::ExecData : karma::detail::utils::traits::NonCopyableMovable {
     [[nodiscard]] const Segment& Constants() const;
 
    private:
-    std::vector<karma::detail::specs::arch::Word> code_;
-    std::vector<karma::detail::specs::arch::Word> constants_;
+    std::vector<detail::specs::arch::Word> code_;
+    std::vector<detail::specs::arch::Word> constants_;
 };
 
 }  // namespace karma

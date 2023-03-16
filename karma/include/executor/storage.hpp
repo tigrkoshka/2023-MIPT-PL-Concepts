@@ -14,18 +14,18 @@
 
 namespace karma {
 
-class Executor::Storage : karma::detail::utils::traits::NonCopyableMovable {
+class Executor::Storage : detail::utils::traits::NonCopyableMovable {
    private:
     using ExecutionError = errors::executor::ExecutionError::Builder;
 
     using Config = Executor::Config;
-    using Word   = karma::detail::specs::arch::Word;
+    using Word   = detail::specs::arch::Word;
 
    public:
     explicit Storage(Config config = Config())
         : base_config_(std::move(config)) {}
 
-    void PrepareForExecution(const karma::Exec::Data& exec_data,
+    void PrepareForExecution(const Exec::Data& exec_data,
                              const Config& config = Config());
 
     void CheckPushAllowed();
@@ -33,8 +33,8 @@ class Executor::Storage : karma::detail::utils::traits::NonCopyableMovable {
     // do not provide the const variants of the methods below,
     // because the storage is never meant to be const
 
-    Word& Reg(karma::detail::specs::arch::Register);
-    Word& Mem(karma::detail::specs::arch::Address);
+    Word& Reg(detail::specs::arch::Register);
+    Word& Mem(detail::specs::arch::Address);
     Word& Flags();
 
    private:
@@ -45,11 +45,11 @@ class Executor::Storage : karma::detail::utils::traits::NonCopyableMovable {
     Config curr_config_{base_config_};
 
     std::vector<Word> memory_ =
-        std::vector<Word>(karma::detail::specs::arch::kMemorySize);
+        std::vector<Word>(detail::specs::arch::kMemorySize);
     size_t curr_code_end_{0};
     size_t curr_constants_end_{0};
 
-    std::array<Word, karma::detail::specs::arch::kNRegisters> registers_{};
+    std::array<Word, detail::specs::arch::kNRegisters> registers_{};
     Word flags_{0};
 };
 

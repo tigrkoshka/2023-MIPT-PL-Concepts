@@ -15,15 +15,15 @@ class Executor::RRExecutor : public CommonExecutor {
    private:
     using ExecutionError = errors::executor::ExecutionError::Builder;
 
-    using Args      = karma::detail::specs::cmd::args::RRArgs;
+    using Args      = detail::specs::cmd::args::RRArgs;
     using Operation = std::function<MaybeReturnCode(Args)>;
 
    private:
-    karma::detail::specs::arch::Word LHSWord(const Args&);
-    karma::detail::specs::arch::Double LHSDouble(const Args&);
+    detail::specs::arch::Word LHSWord(const Args&);
+    detail::specs::arch::Double LHSDouble(const Args&);
 
-    karma::detail::specs::arch::Word RHSWord(const Args&);
-    karma::detail::specs::arch::Double RHSDouble(const Args&);
+    detail::specs::arch::Word RHSWord(const Args&);
+    detail::specs::arch::Double RHSDouble(const Args&);
 
    private:
     Operation ADD();
@@ -51,7 +51,7 @@ class Executor::RRExecutor : public CommonExecutor {
     Operation CALL();
 
    public:
-    using Map = std::unordered_map<karma::detail::specs::cmd::Code, Operation>;
+    using Map = std::unordered_map<detail::specs::cmd::Code, Operation>;
     Map GetMap();
 };
 

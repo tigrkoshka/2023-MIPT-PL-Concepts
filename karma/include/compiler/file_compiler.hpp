@@ -15,13 +15,12 @@
 
 namespace karma {
 
-class Compiler::FileCompiler
-    : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::FileCompiler : detail::utils::traits::NonCopyableMovable {
    private:
     using InternalError = errors::compiler::InternalError::Builder;
     using CompileError  = errors::compiler::CompileError::Builder;
 
-    using Segment = std::vector<karma::detail::specs::arch::Word>;
+    using Segment = std::vector<detail::specs::arch::Word>;
 
    private:
     [[nodiscard]] std::string Where() const;
@@ -47,20 +46,20 @@ class Compiler::FileCompiler
     void ProcessStringConstant();
     bool TryProcessConstant();
 
-    [[nodiscard]] karma::detail::specs::cmd::CodeFormat GetCodeFormat() const;
-    [[nodiscard]] karma::detail::specs::cmd::args::Register GetRegister() const;
-    [[nodiscard]] karma::detail::specs::cmd::args::Immediate GetImmediate(
+    [[nodiscard]] detail::specs::cmd::CodeFormat GetCodeFormat() const;
+    [[nodiscard]] detail::specs::cmd::args::Register GetRegister() const;
+    [[nodiscard]] detail::specs::cmd::args::Immediate GetImmediate(
         size_t size) const;
     // maybe writes to labels, so not marked const
-    [[nodiscard]] karma::detail::specs::cmd::args::Address GetAddress(
+    [[nodiscard]] detail::specs::cmd::args::Address GetAddress(
         bool is_entry = false);
 
-    karma::detail::specs::cmd::args::RMArgs GetRMArgs();
-    karma::detail::specs::cmd::args::RRArgs GetRRArgs();
-    karma::detail::specs::cmd::args::RIArgs GetRIArgs();
-    karma::detail::specs::cmd::args::JArgs GetJArgs();
+    detail::specs::cmd::args::RMArgs GetRMArgs();
+    detail::specs::cmd::args::RRArgs GetRRArgs();
+    detail::specs::cmd::args::RIArgs GetRIArgs();
+    detail::specs::cmd::args::JArgs GetJArgs();
 
-    karma::detail::specs::cmd::Bin MustParseCommand();
+    detail::specs::cmd::Bin MustParseCommand();
 
     void ProcessCurrLine(bool is_first_line = false);
 

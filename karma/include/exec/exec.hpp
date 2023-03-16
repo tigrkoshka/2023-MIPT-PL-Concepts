@@ -22,7 +22,7 @@ class Exec : detail::utils::traits::Static {
     using ExecFileError = errors::exec::ExecFileError;
 
    public:
-    struct Data : karma::detail::utils::traits::NonCopyableMovable {
+    struct Data : detail::utils::traits::NonCopyableMovable {
         detail::specs::arch::Address entrypoint{0};
         detail::specs::arch::Address initial_stack{
             detail::specs::arch::kMemorySize - 1};

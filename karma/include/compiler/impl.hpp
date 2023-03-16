@@ -17,7 +17,7 @@
 
 namespace karma {
 
-class Compiler::Impl : karma::detail::utils::traits::Static {
+class Compiler::Impl : detail::utils::traits::Static {
    private:
     using InternalError = errors::compiler::InternalError::Builder;
     using CompileError  = errors::compiler::CompileError::Builder;
@@ -29,7 +29,7 @@ class Compiler::Impl : karma::detail::utils::traits::Static {
     static void FillLabels(const FilesDataMap&,
                            std::shared_ptr<Labels>&,
                            std::shared_ptr<Entrypoint>&);
-    static karma::Exec::Data PrepareExecData(const Files&);
+    static Exec::Data PrepareExecData(const Files&);
 
     static void CompileImpl(const std::string& src, const std::string& dst);
 

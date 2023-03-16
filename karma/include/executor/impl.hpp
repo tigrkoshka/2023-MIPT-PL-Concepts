@@ -23,7 +23,7 @@ class Executor::Impl : detail::utils::traits::NonCopyableMovable {
     using ExecutionError = errors::executor::ExecutionError::Builder;
 
    private:
-    MaybeReturnCode ExecuteCmd(karma::detail::specs::cmd::Bin);
+    MaybeReturnCode ExecuteCmd(detail::specs::cmd::Bin);
     ReturnCode ExecuteImpl(const std::string& exec, const Config& = Config());
 
    public:

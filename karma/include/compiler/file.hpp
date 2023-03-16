@@ -13,7 +13,7 @@
 
 namespace karma {
 
-class Compiler::File : karma::detail::utils::traits::NonCopyableMovable {
+class Compiler::File : detail::utils::traits::NonCopyableMovable {
    private:
     using InternalError = errors::compiler::InternalError::Builder;
     using CompileError  = errors::compiler::CompileError::Builder;
@@ -21,7 +21,7 @@ class Compiler::File : karma::detail::utils::traits::NonCopyableMovable {
    private:
     static void TrimComment(std::string& line);
 
-    [[nodiscard]] karma::detail::utils::Generator<const File*> ToRoot() const;
+    [[nodiscard]] detail::utils::Generator<const File*> ToRoot() const;
 
    public:
     explicit File(std::filesystem::path path, const File* parent = nullptr)

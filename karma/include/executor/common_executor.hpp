@@ -16,49 +16,46 @@ class Executor::CommonExecutor : public CommandExecutor {
     using ExecutionError = errors::executor::ExecutionError::Builder;
 
    protected:
-    static void CheckBitwiseRHS(karma::detail::specs::arch::Word,
-                                karma::detail::specs::cmd::Code);
+    static void CheckBitwiseRHS(detail::specs::arch::Word,
+                                detail::specs::cmd::Code);
 
-    karma::detail::specs::arch::TwoWords GetTwoRegisters(
-        karma::detail::specs::cmd::args::Register low);
+    detail::specs::arch::TwoWords GetTwoRegisters(
+        detail::specs::cmd::args::Register low);
 
-    void PutTwoRegisters(karma::detail::specs::arch::TwoWords,
-                         karma::detail::specs::cmd::args::Receiver);
+    void PutTwoRegisters(detail::specs::arch::TwoWords,
+                         detail::specs::cmd::args::Receiver);
 
     template <std::totally_ordered T>
     void WriteComparisonToFlags(T lhs, T rhs) {
         auto cmp_res = lhs <=> rhs;
 
         if (cmp_res < 0) {  // NOLINT(hicpp-use-nullptr,modernize-use-nullptr)
-            Flags() = karma::detail::specs::flags::kLess;
+            Flags() = detail::specs::flags::kLess;
             return;
         }
 
         if (cmp_res > 0) {  // NOLINT(hicpp-use-nullptr,modernize-use-nullptr)
-            Flags() = karma::detail::specs::flags::kGreater;
+            Flags() = detail::specs::flags::kGreater;
             return;
         }
 
         // condition "cmp_res == 0" is true
         // because lhs and rhs are comparable
         // because of the template type constraint
-        Flags() = karma::detail::specs::flags::kEqual;
+        Flags() = detail::specs::flags::kEqual;
     }
 
-    void Divide(karma::detail::specs::arch::TwoWords,
-                karma::detail::specs::arch::TwoWords,
-                karma::detail::specs::cmd::args::Receiver);
+    void Divide(detail::specs::arch::TwoWords,
+                detail::specs::arch::TwoWords,
+                detail::specs::cmd::args::Receiver);
 
-    void Push(karma::detail::specs::arch::Word);
+    void Push(detail::specs::arch::Word);
 
-    void Pop(karma::detail::specs::cmd::args::Receiver,
-             karma::detail::specs::arch::Word);
+    void Pop(detail::specs::cmd::args::Receiver, detail::specs::arch::Word);
 
-    void Jump(karma::detail::specs::flags::Flag,
-              karma::detail::specs::cmd::args::Address);
+    void Jump(detail::specs::flags::Flag, detail::specs::cmd::args::Address);
 
-    karma::detail::specs::cmd::args::Address Call(
-        karma::detail::specs::cmd::args::Address);
+    detail::specs::cmd::args::Address Call(detail::specs::cmd::args::Address);
     void Return();
 };
 
