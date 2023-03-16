@@ -59,8 +59,9 @@ library is either of type `karma::errors::Error` or of a type derived
 from `karma::errors::Error`.
 
 Note that this does not guarantee that any exception thrown
-by the public methods of the karma library has a type listed above,
-just that it can be caught as a `karma::errors::Error`.
+by the public methods of the karma library has a type listed
+[above](#exported-symbols), just that it can be caught as
+a `karma::errors::Error`.
 
 Therefore, an exception-safe karma library usage either only
 uses exported methods without the `Must` prefix, or looks somewhat like this:
