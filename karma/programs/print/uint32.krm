@@ -27,8 +27,7 @@ print_uint32:
         push r0 0
 
         # prepare for call
-        push r13 0
-        mov r13 r14 0
+        prc 0
 
         # push the base and the quotient as the arguments
         push r1 0
@@ -44,8 +43,7 @@ print_uint32:
 
     __print_uint32.out:
         # prepare for call
-        push r13 0
-        mov r13 r14 0
+        prc 0
 
         # push the base and the value as arguments
         push r1 0

@@ -52,41 +52,49 @@ void Executor::CommonExecutor::Divide(arch::TwoWords lhs,
 
 void Executor::CommonExecutor::Push(arch::Word value) {
     CheckPushAllowed();
-    Mem(Reg(arch::kStackRegister)--) = value;
+    Mem(Reg(arch::kStackRegister, kInternalUse)--) = value;
 }
 
 void Executor::CommonExecutor::Pop(args::Receiver recv, arch::Word mod) {
-    Reg(recv) = Mem(++Reg(arch::kStackRegister)) + mod;
+    Reg(recv) = Mem(++Reg(arch::kStackRegister, kInternalUse)) + mod;
 }
 
 void Executor::CommonExecutor::Jump(flags::Flag flag, args::Address dst) {
     if ((Flags() & flag) != 0) {
-        Reg(arch::kInstructionRegister) = dst;
+        Reg(arch::kInstructionRegister, kInternalUse) = dst;
     }
+}
+
+void Executor::CommonExecutor::PrepareCall() {
+    Push(Reg(arch::kCallFrameRegister, kInternalUse));
+
+    Reg(arch::kCallFrameRegister, kInternalUse) =
+        Reg(arch::kStackRegister, kInternalUse);
 }
 
 arch::Address Executor::CommonExecutor::Call(args::Address callee) {
     // remember the return address to return from this function
-    arch::Address ret = Reg(arch::kInstructionRegister);
+    arch::Address ret = Reg(arch::kInstructionRegister, kInternalUse);
 
     // push the return address to the stack
     Push(ret);
 
     // push the stack pointer before the function arguments
-    Push(Reg(arch::kCallFrameRegister));
+    Push(Reg(arch::kCallFrameRegister, kInternalUse));
 
     // store the stack pointer value before the function local variables
-    Reg(arch::kCallFrameRegister) = Reg(arch::kStackRegister);
+    Reg(arch::kCallFrameRegister, kInternalUse) = Reg(arch::kStackRegister);
 
     // next executed instruction is the first one from the callee
-    Reg(arch::kInstructionRegister) = callee;
+    Reg(arch::kInstructionRegister, kInternalUse) = callee;
 
     return ret;
 }
 
 void Executor::CommonExecutor::Return() {
     // move the stack to before the function local variables
-    Reg(arch::kStackRegister) = Reg(arch::kCallFrameRegister);
+    Reg(arch::kStackRegister, kInternalUse) =
+        Reg(arch::kCallFrameRegister, kInternalUse);
 
     // pop the value of the stack pointer before the function arguments
     Pop(arch::kCallFrameRegister, 0);
@@ -95,7 +103,7 @@ void Executor::CommonExecutor::Return() {
     Pop(arch::kInstructionRegister, 0);
 
     // move the stack to before the function arguments
-    Reg(arch::kStackRegister) = Reg(arch::kCallFrameRegister);
+    Reg(arch::kStackRegister, kInternalUse) = Reg(arch::kCallFrameRegister);
 
     // restore the call frame register to the stack pointer value before
     // the caller's local variables

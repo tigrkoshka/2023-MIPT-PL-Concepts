@@ -22,9 +22,12 @@ class Executor::CommandExecutor : detail::utils::traits::NonCopyableMovable {
         : storage_(std::move(storage)){};
 
    protected:
+    static const bool kInternalUse = true;
+
     void CheckPushAllowed();
 
-    detail::specs::arch::Word& Reg(detail::specs::arch::Register);
+    detail::specs::arch::Word& Reg(detail::specs::arch::Register,
+                                   bool internal_usage = false);
     detail::specs::arch::Word& Mem(detail::specs::arch::Address);
     detail::specs::arch::Word& Flags();
 

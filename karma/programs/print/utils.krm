@@ -75,8 +75,7 @@ __print_digit:
 
     ____print_digit.base_greater_than_36_error:
         # prepare for call
-        push r13 0
-        mov r13 r14 0
+        prc 0
 
         # push the address of the error string as the argument
         la r0 .__print_digit.base_greater_than_36_error_msg
@@ -93,8 +92,7 @@ __print_digit:
 
     ____print_digit.value_not_less_than_base_error:
         # prepare for call
-        push r13 0
-        mov r13 r14 0
+        prc 0
 
         # push the address of the error string as the argument
         la r0 .__print_digit.value_not_less_than_base_error_msg

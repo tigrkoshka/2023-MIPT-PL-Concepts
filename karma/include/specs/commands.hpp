@@ -99,6 +99,7 @@ enum Code : Bin {
 
     // Function calls
 
+    PRC,
     CALL,
     CALLI,
     RET,

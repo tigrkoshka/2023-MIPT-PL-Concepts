@@ -13,7 +13,7 @@ namespace flags = detail::specs::flags;
 
 Executor::JExecutor::Operation Executor::JExecutor::JMP() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(arch::kInstructionRegister) = args.addr;
+        Reg(arch::kInstructionRegister, kInternalUse) = args.addr;
         return {};
     };
 }
@@ -60,6 +60,13 @@ Executor::JExecutor::Operation Executor::JExecutor::JG() {
     };
 }
 
+Executor::JExecutor::Operation Executor::JExecutor::PRC() {
+    return [this](Args) -> MaybeReturnCode {
+        PrepareCall();
+        return {};
+    };
+}
+
 Executor::JExecutor::Operation Executor::JExecutor::CALLI() {
     return [this](Args args) -> MaybeReturnCode {
         Call(args.addr);
@@ -83,6 +90,7 @@ Executor::JExecutor::Map Executor::JExecutor::GetMap() {
         {cmd::JL,    JL()   },
         {cmd::JGE,   JGE()  },
         {cmd::JG,    JG()   },
+        {cmd::PRC,   PRC()  },
         {cmd::CALLI, CALLI()},
         {cmd::RET,   RET()  },
     };

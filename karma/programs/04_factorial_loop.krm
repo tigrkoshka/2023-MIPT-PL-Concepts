@@ -13,8 +13,7 @@ fact:                     # a non-recursive function calculating the factorial o
 
 main:
     syscall r0 100        # read an integer from stdin to r0
-    push r13 0            # push the stack pointer value before the caller's local variables
-    mov r13 r14 0         # remember the stack pointer value before the function arguments
+    prc 0                 # prepare for call
     push r0 0             # put r0+0 to the stack as the fact argument
     calli fact            # call fact, the function will put the result to r0
     syscall r0 102        # print r0 to stdout

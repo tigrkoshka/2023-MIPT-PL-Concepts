@@ -55,6 +55,7 @@ class Executor::CommonExecutor : public CommandExecutor {
 
     void Jump(detail::specs::flags::Flag, detail::specs::cmd::args::Address);
 
+    void PrepareCall();
     detail::specs::cmd::args::Address Call(detail::specs::cmd::args::Address);
     void Return();
 };

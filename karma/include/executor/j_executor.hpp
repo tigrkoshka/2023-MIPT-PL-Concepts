@@ -22,6 +22,7 @@ class Executor::JExecutor : public CommonExecutor {
     Operation JL();
     Operation JGE();
     Operation JG();
+    Operation PRC();
     Operation CALLI();
     Operation RET();
 

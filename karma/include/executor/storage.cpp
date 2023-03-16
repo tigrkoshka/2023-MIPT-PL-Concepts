@@ -37,12 +37,12 @@ void Executor::Storage::CheckPushAllowed() {
     }
 }
 
-arch::Word& Executor::Storage::Reg(arch::Register reg) {
+arch::Word& Executor::Storage::Reg(arch::Register reg, bool internal_usage) {
     if (reg >= arch::kNRegisters) {
         throw ExecutionError::InvalidRegister(reg);
     }
 
-    if (curr_config_.RegisterIsBlocked(reg)) {
+    if (!internal_usage && curr_config_.RegisterIsBlocked(reg)) {
         throw ExecutionError::RegisterIsBlocked(reg);
     }
 

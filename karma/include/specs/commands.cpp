@@ -103,6 +103,7 @@ const std::unordered_map<Code, Format> kCodeToFormat = {
 
  // Function calls
 
+    {PRC,     J },
     {CALL,    RR},
     {CALLI,   J },
     {RET,     J },
@@ -186,6 +187,7 @@ const std::unordered_map<std::string, Code> kNameToCode = {
 
  // Function calls
 
+    {"prc",     PRC    },
     {"call",    CALL   },
     {"calli",   CALLI  },
     {"ret",     RET    },

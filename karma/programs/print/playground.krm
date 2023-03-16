@@ -8,8 +8,7 @@ main:
     lc r1 16
 
     # prepare for call
-    push r13 0
-    mov r13 r14 0
+    prc 0
 
     # push the value as the argument
     push r0 0

@@ -16,7 +16,7 @@ namespace arch = detail::specs::arch;
 namespace cmd  = detail::specs::cmd;
 
 Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
-    storage_->Reg(arch::kInstructionRegister)++;
+    storage_->Reg(arch::kInstructionRegister, true)++;
 
     auto code = cmd::GetCode(command);
     if (!cmd::kCodeToFormat.contains(code)) {
@@ -73,7 +73,8 @@ Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec,
     storage_->PrepareForExecution(data, config);
 
     while (true) {
-        arch::Address curr_address = storage_->Reg(arch::kInstructionRegister);
+        arch::Address curr_address =
+            storage_->Reg(arch::kInstructionRegister, true);
 
         if (curr_address >= arch::kMemorySize) {
             throw ExecutionError::ExecPointerOutOfMemory(curr_address);

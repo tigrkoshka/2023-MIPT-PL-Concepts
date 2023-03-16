@@ -33,7 +33,7 @@ class Executor::Storage : detail::utils::traits::NonCopyableMovable {
     // do not provide the const variants of the methods below,
     // because the storage is never meant to be const
 
-    Word& Reg(detail::specs::arch::Register);
+    Word& Reg(detail::specs::arch::Register, bool internal_usage = false);
     Word& Mem(detail::specs::arch::Address);
     Word& Flags();
 

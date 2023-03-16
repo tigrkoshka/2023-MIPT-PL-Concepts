@@ -1,7 +1,5 @@
 include uint32.krm
 
-include uint64.krm
-
 include double.krm
 
 include char.krm
