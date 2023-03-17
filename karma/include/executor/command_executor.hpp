@@ -26,9 +26,14 @@ class Executor::CommandExecutor : detail::utils::traits::NonCopyableMovable {
 
     void CheckPushAllowed();
 
-    detail::specs::arch::Word& Reg(detail::specs::arch::Register,
-                                   bool internal_usage = false);
-    detail::specs::arch::Word& Mem(detail::specs::arch::Address);
+    [[nodiscard]] detail::specs::arch::Word RReg(
+        detail::specs::arch::Register, bool internal_usage = false) const;
+    [[nodiscard]] detail::specs::arch::Word RMem(
+        detail::specs::arch::Address) const;
+
+    detail::specs::arch::Word& WReg(detail::specs::arch::Register,
+                                    bool internal_usage = false);
+    detail::specs::arch::Word& WMem(detail::specs::arch::Address);
     detail::specs::arch::Word& Flags();
 
    private:

@@ -30,11 +30,13 @@ class Executor::Storage : detail::utils::traits::NonCopyableMovable {
 
     void CheckPushAllowed();
 
-    // do not provide the const variants of the methods below,
-    // because the storage is never meant to be const
+    [[nodiscard]] Word RReg(detail::specs::arch::Register,
+                            bool internal_usage = false) const;
+    [[nodiscard]] Word RMem(detail::specs::arch::Address,
+                            bool internal_usage = false) const;
 
-    Word& Reg(detail::specs::arch::Register, bool internal_usage = false);
-    Word& Mem(detail::specs::arch::Address);
+    Word& WReg(detail::specs::arch::Register, bool internal_usage = false);
+    Word& WMem(detail::specs::arch::Address, bool internal_usage = false);
     Word& Flags();
 
    private:

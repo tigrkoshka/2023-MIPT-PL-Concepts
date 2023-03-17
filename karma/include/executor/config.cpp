@@ -10,133 +10,172 @@
 
 namespace karma {
 
+using Config = Executor::Config;
+
 namespace arch = detail::specs::arch;
 
-Executor::Config& Executor::Config::SetBlockedRegisters(const Registers& regs) {
+void Config::AccessConfig::SetBlockedRegisters(const Registers& regs) {
     blocked_registers_ = regs;
-    return *this;
 }
 
-Executor::Config& Executor::Config::SetBlockedRegisters(Registers&& regs) {
+void Config::AccessConfig::SetBlockedRegisters(Registers&& regs) {
     blocked_registers_ = std::move(regs);
-    return *this;
 }
 
-Executor::Config& Executor::Config::BlockRegisters(const Registers& regs) {
+void Config::AccessConfig::BlockRegisters(const Registers& regs) {
     blocked_registers_.insert(regs.begin(), regs.end());
-    return *this;
 }
 
-Executor::Config& Executor::Config::UnblockRegisters(const Registers& regs) {
+void Config::AccessConfig::UnblockRegisters(const Registers& regs) {
     auto remove = [&regs](auto const& elem) {
         return regs.contains(elem);
     };
 
     std::erase_if(blocked_registers_, remove);
-    return *this;
 }
 
-Executor::Config& Executor::Config::BlockUtilityRegisters() {
+void Config::AccessConfig::BlockUtilityRegisters() {
     BlockRegisters(kUtilityRegisters);
-    return *this;
 }
 
-Executor::Config& Executor::Config::UnblockUtilityRegisters() {
+void Config::AccessConfig::UnblockUtilityRegisters() {
     UnblockRegisters(kUtilityRegisters);
-    return *this;
 }
 
-Executor::Config& Executor::Config::SetCodeSegmentBlock(bool block) {
+void Config::AccessConfig::SetCodeSegmentBlock(bool block) {
     code_segment_blocked_ = block;
-    return *this;
 }
 
-Executor::Config& Executor::Config::BlockCodeSegment() {
+void Config::AccessConfig::BlockCodeSegment() {
     code_segment_blocked_ = true;
-    return *this;
 }
 
-Executor::Config& Executor::Config::UnblockCodeSegment() {
+void Config::AccessConfig::UnblockCodeSegment() {
     code_segment_blocked_ = false;
-    return *this;
 }
 
-Executor::Config& Executor::Config::SetConstantsSegmentBlock(bool block) {
+void Config::AccessConfig::SetConstantsSegmentBlock(bool block) {
     constants_segment_blocked_ = block;
-    return *this;
 }
 
-Executor::Config& Executor::Config::BlockConstantsSegment() {
+void Config::AccessConfig::BlockConstantsSegment() {
     constants_segment_blocked_ = true;
-    return *this;
 }
 
-Executor::Config& Executor::Config::UnblockConstantsSegment() {
+void Config::AccessConfig::UnblockConstantsSegment() {
     constants_segment_blocked_ = false;
+}
+
+// NOLINTNEXTLINE(fuchsia-overloaded-operator)
+Config::AccessConfig& Config::AccessConfig::operator&=(
+    const AccessConfig& rhs) {
+    BlockRegisters(rhs.blocked_registers_);
+
+    SetCodeSegmentBlock(code_segment_blocked_ || rhs.code_segment_blocked_);
+
+    SetConstantsSegmentBlock(constants_segment_blocked_ ||
+                             rhs.constants_segment_blocked_);
+
     return *this;
 }
 
-Executor::Config& Executor::Config::BoundStack(size_t stack_size) {
+bool Config::AccessConfig::RegisterIsBlocked(arch::Register reg) const {
+    return blocked_registers_.contains(reg);
+}
+
+bool Config::AccessConfig::CodeSegmentIsBlocked() const {
+    return code_segment_blocked_;
+}
+
+bool Config::AccessConfig::ConstantsSegmentIsBlocked() const {
+    return constants_segment_blocked_;
+}
+
+const Config::Registers Config::AccessConfig::kUtilityRegisters = {
+    arch::kCallFrameRegister,
+    arch::kStackRegister,
+    arch::kInstructionRegister,
+};
+
+void Config::BoundStack(size_t stack_size) {
     if (stack_size >= arch::kMemorySize) {
         max_stack_size_ = std::nullopt;
-        return *this;
+        return;
     }
 
     max_stack_size_ = stack_size;
-    return *this;
 }
 
-Executor::Config& Executor::Config::UnboundStack() {
+void Config::UnboundStack() {
     max_stack_size_ = std::nullopt;
-    return *this;
 }
 
-Executor::Config& Executor::Config::Strict() {
-    BlockUtilityRegisters();
-    BlockCodeSegment();
-    BlockConstantsSegment();
+void Config::Strict() {
+    read_write_.BlockRegisters({
+        arch::kCallFrameRegister,
+        arch::kInstructionRegister,
+    });
+    write_.BlockRegisters({arch::kStackRegister});
 
-    return *this;
+    read_write_.BlockCodeSegment();
+    write_.BlockConstantsSegment();
+}
+
+void Config::ExtraStrict() {
+    read_write_.BlockUtilityRegisters();
+    read_write_.BlockCodeSegment();
+    read_write_.BlockConstantsSegment();
 }
 
 // NOLINTNEXTLINE(fuchsia-overloaded-operator)
-Executor::Config& Executor::Config::operator&=(const Executor::Config& other) {
-    BlockRegisters(other.blocked_registers_);
+Config& Config::operator&=(const Config& rhs) {
+    write_ &= rhs.write_;
+    read_write_ &= rhs.read_write_;
 
-    SetCodeSegmentBlock(code_segment_blocked_ || other.code_segment_blocked_);
-
-    SetConstantsSegmentBlock(constants_segment_blocked_ ||
-                             other.constants_segment_blocked_);
-
-    if (max_stack_size_ && other.max_stack_size_) {
-        BoundStack(std::min(*max_stack_size_, *other.max_stack_size_));
-    } else if (other.max_stack_size_) {
-        BoundStack(*other.max_stack_size_);
+    if (max_stack_size_ && rhs.max_stack_size_) {
+        BoundStack(std::min(*max_stack_size_, *rhs.max_stack_size_));
+    } else if (rhs.max_stack_size_) {
+        BoundStack(*rhs.max_stack_size_);
     }
 
     return *this;
 }
 
 // NOLINTNEXTLINE(fuchsia-overloaded-operator)
-Executor::Config Executor::Config::operator&(const Config& rhs) {
+Config Config::operator&(const Config& rhs) {
     Config lhs = *this;
     lhs &= rhs;
     return lhs;
 }
 
-bool Executor::Config::RegisterIsBlocked(arch::Register reg) const {
-    return blocked_registers_.contains(reg);
+bool Config::RegisterIsWriteBlocked(uint32_t reg) const {
+    return write_.RegisterIsBlocked(reg) ||  //
+           read_write_.RegisterIsBlocked(reg);
 }
 
-bool Executor::Config::CodeSegmentIsBlocked() const {
-    return code_segment_blocked_;
+bool Config::RegisterIsReadWriteBlocked(uint32_t reg) const {
+    return read_write_.RegisterIsBlocked(reg);
 }
 
-bool Executor::Config::ConstantsSegmentIsBlocked() const {
-    return constants_segment_blocked_;
+bool Config::CodeSegmentIsWriteBlocked() const {
+    return write_.CodeSegmentIsBlocked() ||  //
+           read_write_.CodeSegmentIsBlocked();
 }
 
-size_t Executor::Config::MaxStackSize() const {
+bool Config::CodeSegmentIsReadWriteBlocked() const {
+    return read_write_.CodeSegmentIsBlocked();
+}
+
+bool Config::ConstantsSegmentIsWriteBlocked() const {
+    return write_.ConstantsSegmentIsBlocked() ||  //
+           read_write_.ConstantsSegmentIsBlocked();
+}
+
+bool Config::ConstantsSegmentIsReadWriteBlocked() const {
+    return read_write_.ConstantsSegmentIsBlocked();
+}
+
+size_t Config::MaxStackSize() const {
     if (!max_stack_size_) {
         return arch::kMemorySize;
     }
@@ -144,14 +183,8 @@ size_t Executor::Config::MaxStackSize() const {
     return *max_stack_size_;
 }
 
-size_t Executor::Config::MinStackAddress() const {
+size_t Config::MinStackAddress() const {
     return arch::kMemorySize - MaxStackSize();
 }
-
-const Executor::Config::Registers Executor::Config::kUtilityRegisters = {
-    arch::kCallFrameRegister,
-    arch::kStackRegister,
-    arch::kInstructionRegister,
-};
 
 }  // namespace karma

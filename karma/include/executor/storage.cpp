@@ -37,30 +37,63 @@ void Executor::Storage::CheckPushAllowed() {
     }
 }
 
-arch::Word& Executor::Storage::Reg(arch::Register reg, bool internal_usage) {
+arch::Word Executor::Storage::RReg(arch::Register reg,
+                                   bool internal_usage) const {
     if (reg >= arch::kNRegisters) {
         throw ExecutionError::InvalidRegister(reg);
     }
 
-    if (!internal_usage && curr_config_.RegisterIsBlocked(reg)) {
+    if (!internal_usage && curr_config_.RegisterIsReadWriteBlocked(reg)) {
         throw ExecutionError::RegisterIsBlocked(reg);
     }
 
     return registers_.at(reg);
 }
 
-arch::Word& Executor::Storage::Mem(arch::Address address) {
+arch::Word Executor::Storage::RMem(arch::Address address,
+                                   bool internal_usage) const {
     if (address >= arch::kMemorySize) {
         throw ExecutionError::AddressOutOfMemory(address);
     }
 
-    if (curr_config_.CodeSegmentIsBlocked() && address < curr_code_end_) {
+    if (!internal_usage && curr_config_.CodeSegmentIsReadWriteBlocked() &&
+        address < curr_code_end_) {
         throw ExecutionError::CodeSegmentBlocked(address);
     }
 
-    if (curr_config_.ConstantsSegmentIsBlocked() &&  //
-        address >= curr_code_end_ &&                 //
-        address < curr_constants_end_) {
+    if (!internal_usage && curr_config_.ConstantsSegmentIsReadWriteBlocked() &&
+        address >= curr_code_end_ && address < curr_constants_end_) {
+        throw ExecutionError::ConstantsSegmentBlocked(address);
+    }
+
+    return memory_.at(address);
+}
+
+arch::Word& Executor::Storage::WReg(arch::Register reg, bool internal_usage) {
+    if (reg >= arch::kNRegisters) {
+        throw ExecutionError::InvalidRegister(reg);
+    }
+
+    if (!internal_usage && curr_config_.RegisterIsWriteBlocked(reg)) {
+        throw ExecutionError::RegisterIsBlocked(reg);
+    }
+
+    return registers_.at(reg);
+}
+
+arch::Word& Executor::Storage::WMem(arch::Address address,
+                                    bool internal_usage) {
+    if (address >= arch::kMemorySize) {
+        throw ExecutionError::AddressOutOfMemory(address);
+    }
+
+    if (!internal_usage && curr_config_.CodeSegmentIsWriteBlocked() &&
+        address < curr_code_end_) {
+        throw ExecutionError::CodeSegmentBlocked(address);
+    }
+
+    if (!internal_usage && curr_config_.CodeSegmentIsWriteBlocked() &&
+        address >= curr_code_end_ && address < curr_constants_end_) {
         throw ExecutionError::ConstantsSegmentBlocked(address);
     }
 

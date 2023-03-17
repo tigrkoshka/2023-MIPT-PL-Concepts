@@ -13,47 +13,75 @@ class Executor::Config {
    private:
     using Registers = std::unordered_set<uint32_t>;
 
+   private:
+    class AccessConfig {
+       private:
+        friend class Config;
+
+       public:
+        void SetBlockedRegisters(const Registers&);
+        void SetBlockedRegisters(Registers&&);
+
+        void BlockRegisters(const Registers&);
+        void UnblockRegisters(const Registers&);
+
+        void BlockUtilityRegisters();
+        void UnblockUtilityRegisters();
+
+        void SetCodeSegmentBlock(bool);
+        void BlockCodeSegment();
+        void UnblockCodeSegment();
+
+        void SetConstantsSegmentBlock(bool);
+        void BlockConstantsSegment();
+        void UnblockConstantsSegment();
+
+       private:
+        // NOLINTNEXTLINE(fuchsia-overloaded-operator)
+        AccessConfig& operator&=(const AccessConfig&);
+
+        [[nodiscard]] bool RegisterIsBlocked(uint32_t reg) const;
+        [[nodiscard]] bool CodeSegmentIsBlocked() const;
+        [[nodiscard]] bool ConstantsSegmentIsBlocked() const;
+
+       private:
+        static const Registers kUtilityRegisters;
+
+        Registers blocked_registers_;
+
+        bool code_segment_blocked_{false};
+        bool constants_segment_blocked_{false};
+    };
+
    public:
-    Config& SetBlockedRegisters(const Registers&);
-    Config& SetBlockedRegisters(Registers&&);
+    void BoundStack(size_t stack_size);
+    void UnboundStack();
 
-    Config& BlockRegisters(const Registers&);
-    Config& UnblockRegisters(const Registers&);
-
-    Config& BlockUtilityRegisters();
-    Config& UnblockUtilityRegisters();
-
-    Config& SetCodeSegmentBlock(bool);
-    Config& BlockCodeSegment();
-    Config& UnblockCodeSegment();
-
-    Config& SetConstantsSegmentBlock(bool);
-    Config& BlockConstantsSegment();
-    Config& UnblockConstantsSegment();
-
-    Config& BoundStack(size_t stack_size);
-    Config& UnboundStack();
-
-    Config& Strict();
+    void Strict();
+    void ExtraStrict();
 
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     Config& operator&=(const Config&);
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
-    Executor::Config operator&(const Config&);
+    Config operator&(const Config&);
 
-    [[nodiscard]] bool RegisterIsBlocked(uint32_t reg) const;
-    [[nodiscard]] bool CodeSegmentIsBlocked() const;
-    [[nodiscard]] bool ConstantsSegmentIsBlocked() const;
+    [[nodiscard]] bool RegisterIsWriteBlocked(uint32_t reg) const;
+    [[nodiscard]] bool RegisterIsReadWriteBlocked(uint32_t reg) const;
+
+    [[nodiscard]] bool CodeSegmentIsWriteBlocked() const;
+    [[nodiscard]] bool CodeSegmentIsReadWriteBlocked() const;
+
+    [[nodiscard]] bool ConstantsSegmentIsWriteBlocked() const;
+    [[nodiscard]] bool ConstantsSegmentIsReadWriteBlocked() const;
+
     [[nodiscard]] size_t MaxStackSize() const;
     [[nodiscard]] size_t MinStackAddress() const;
 
    private:
-    static const Registers kUtilityRegisters;
-
-    Registers blocked_registers_;
-    bool code_segment_blocked_{false};
-    bool constants_segment_blocked_{false};
     std::optional<size_t> max_stack_size_;
+
+    AccessConfig write_;
+    AccessConfig read_write_;
 };
 
 }  // namespace karma

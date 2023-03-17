@@ -13,7 +13,7 @@ namespace cmd  = detail::specs::cmd;
 namespace args = cmd::args;
 
 arch::Word Executor::RRExecutor::LHSWord(const Args& args) {
-    return Reg(args.recv);
+    return RReg(args.recv);
 }
 
 arch::Double Executor::RRExecutor::LHSDouble(const Args& args) {
@@ -21,7 +21,7 @@ arch::Double Executor::RRExecutor::LHSDouble(const Args& args) {
 }
 
 arch::Word Executor::RRExecutor::RHSWord(const Args& args) {
-    return Reg(args.src) + static_cast<arch::Word>(args.mod);
+    return RReg(args.src) + static_cast<arch::Word>(args.mod);
 }
 
 arch::Double Executor::RRExecutor::RHSDouble(const Args& args) {
@@ -30,14 +30,14 @@ arch::Double Executor::RRExecutor::RHSDouble(const Args& args) {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::ADD() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.recv) += RHSWord(args);
+        WReg(args.recv) += RHSWord(args);
         return {};
     };
 }
 
 Executor::RRExecutor::Operation Executor::RRExecutor::SUB() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.recv) -= RHSWord(args);
+        WReg(args.recv) -= RHSWord(args);
         return {};
     };
 }
@@ -64,7 +64,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::SHL() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = RHSWord(args);
         CheckBitwiseRHS(rhs, cmd::SHL);
-        Reg(args.recv) <<= rhs;
+        WReg(args.recv) <<= rhs;
         return {};
     };
 }
@@ -73,7 +73,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::SHR() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = RHSWord(args);
         CheckBitwiseRHS(rhs, cmd::SHR);
-        Reg(args.recv) >>= rhs;
+        WReg(args.recv) >>= rhs;
         return {};
     };
 }
@@ -82,7 +82,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::AND() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = RHSWord(args);
         CheckBitwiseRHS(rhs, cmd::AND);
-        Reg(args.recv) &= rhs;
+        WReg(args.recv) &= rhs;
         return {};
     };
 }
@@ -91,7 +91,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::OR() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = RHSWord(args);
         CheckBitwiseRHS(rhs, cmd::OR);
-        Reg(args.recv) |= rhs;
+        WReg(args.recv) |= rhs;
         return {};
     };
 }
@@ -100,7 +100,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::XOR() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = RHSWord(args);
         CheckBitwiseRHS(rhs, cmd::XOR);
-        Reg(args.recv) ^= rhs;
+        WReg(args.recv) ^= rhs;
         return {};
     };
 }
@@ -122,7 +122,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::DTOI() {
 
         // static cast does not produce UB, because the resulting
         // value fits into arch::Word due to the check above
-        Reg(args.recv) = static_cast<arch::Word>(floor(dbl));
+        WReg(args.recv) = static_cast<arch::Word>(floor(dbl));
         return {};
     };
 }
@@ -181,14 +181,14 @@ Executor::RRExecutor::Operation Executor::RRExecutor::CMPD() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::MOV() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.recv) = RHSWord(args);
+        WReg(args.recv) = RHSWord(args);
         return {};
     };
 }
 
 Executor::RRExecutor::Operation Executor::RRExecutor::LOADR() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.recv) = Mem(RHSWord(args));
+        WReg(args.recv) = RMem(RHSWord(args));
         return {};
     };
 }
@@ -197,15 +197,15 @@ Executor::RRExecutor::Operation Executor::RRExecutor::LOADR2() {
     return [this](Args args) -> MaybeReturnCode {
         args::Address address = RHSWord(args);
 
-        Reg(args.recv)     = Mem(address);
-        Reg(args.recv + 1) = Mem(address + 1);
+        WReg(args.recv)     = RMem(address);
+        WReg(args.recv + 1) = RMem(address + 1);
         return {};
     };
 }
 
 Executor::RRExecutor::Operation Executor::RRExecutor::STORER() {
     return [this](Args args) -> MaybeReturnCode {
-        Mem(RHSWord(args)) = Reg(args.recv);
+        WMem(RHSWord(args)) = RReg(args.recv);
         return {};
     };
 }
@@ -214,15 +214,15 @@ Executor::RRExecutor::Operation Executor::RRExecutor::STORER2() {
     return [this](Args args) -> MaybeReturnCode {
         args::Address address = RHSWord(args);
 
-        Mem(address)     = Reg(args.recv);
-        Mem(address + 1) = Reg(args.recv + 1);
+        WMem(address)     = RReg(args.recv);
+        WMem(address + 1) = RReg(args.recv + 1);
         return {};
     };
 }
 
 Executor::RRExecutor::Operation Executor::RRExecutor::CALL() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.recv) = Call(RHSWord(args));
+        WReg(args.recv) = Call(RHSWord(args));
         return {};
     };
 }

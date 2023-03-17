@@ -13,7 +13,7 @@ namespace flags = detail::specs::flags;
 
 Executor::JExecutor::Operation Executor::JExecutor::JMP() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(arch::kInstructionRegister, kInternalUse) = args.addr;
+        WReg(arch::kInstructionRegister, kInternalUse) = args.addr;
         return {};
     };
 }

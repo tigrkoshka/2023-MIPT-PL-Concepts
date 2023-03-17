@@ -9,37 +9,37 @@ namespace cmd = detail::specs::cmd;
 
 Executor::RMExecutor::Operation Executor::RMExecutor::LA() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.reg) = args.addr;
+        WReg(args.reg) = args.addr;
         return {};
     };
 }
 
 Executor::RMExecutor::Operation Executor::RMExecutor::LOAD() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.reg) = Mem(args.addr);
+        WReg(args.reg) = RMem(args.addr);
         return {};
     };
 }
 
 Executor::RMExecutor::Operation Executor::RMExecutor::LOAD2() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.reg)     = Mem(args.addr);
-        Reg(args.reg + 1) = Mem(args.addr + 1);
+        WReg(args.reg)     = RMem(args.addr);
+        WReg(args.reg + 1) = RMem(args.addr + 1);
         return {};
     };
 }
 
 Executor::RMExecutor::Operation Executor::RMExecutor::STORE() {
     return [this](Args args) -> MaybeReturnCode {
-        Mem(args.addr) = Reg(args.reg);
+        WMem(args.addr) = RReg(args.reg);
         return {};
     };
 }
 
 Executor::RMExecutor::Operation Executor::RMExecutor::STORE2() {
     return [this](Args args) -> MaybeReturnCode {
-        Mem(args.addr)     = Reg(args.reg);
-        Mem(args.addr + 1) = Reg(args.reg + 1);
+        WMem(args.addr)     = RReg(args.reg);
+        WMem(args.addr + 1) = RReg(args.reg + 1);
         return {};
     };
 }

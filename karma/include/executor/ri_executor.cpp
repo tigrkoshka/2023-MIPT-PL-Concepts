@@ -34,14 +34,14 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SYSCALL() {
     return [this](Args args) -> MaybeReturnCode {
         switch (auto code = static_cast<syscall::Code>(ImmWord(args))) {
             case syscall::EXIT: {
-                return Reg(args.reg);
+                return RReg(args.reg);
             }
 
             case syscall::SCANINT: {
                 std::make_signed_t<arch::Word> val{};
                 std::cin >> val;
 
-                Reg(args.reg) = static_cast<arch::Word>(val);
+                WReg(args.reg) = static_cast<arch::Word>(val);
                 break;
             }
 
@@ -55,7 +55,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SYSCALL() {
 
             case syscall::PRINTINT: {
                 using Int = std::make_signed_t<arch::Word>;
-                std::cout << static_cast<Int>(Reg(args.reg)) << std::flush;
+                std::cout << static_cast<Int>(RReg(args.reg)) << std::flush;
                 break;
             }
 
@@ -69,16 +69,16 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SYSCALL() {
                 syscall::Char val{};
                 std::cin >> val;
 
-                Reg(args.reg) = static_cast<arch::Word>(val);
+                WReg(args.reg) = static_cast<arch::Word>(val);
                 break;
             }
 
             case syscall::PUTCHAR: {
-                if (Reg(args.reg) > syscall::kMaxChar) {
-                    throw ExecutionError::InvalidPutCharValue(Reg(args.reg));
+                if (RReg(args.reg) > syscall::kMaxChar) {
+                    throw ExecutionError::InvalidPutCharValue(RReg(args.reg));
                 }
 
-                std::cout << static_cast<syscall::Char>(Reg(args.reg))
+                std::cout << static_cast<syscall::Char>(RReg(args.reg))
                           << std::flush;
                 break;
             }
@@ -94,21 +94,21 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SYSCALL() {
 
 Executor::RIExecutor::Operation Executor::RIExecutor::ADDI() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.reg) += ImmWord(args);
+        WReg(args.reg) += ImmWord(args);
         return {};
     };
 }
 
 Executor::RIExecutor::Operation Executor::RIExecutor::SUBI() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.reg) -= ImmWord(args);
+        WReg(args.reg) -= ImmWord(args);
         return {};
     };
 }
 
 Executor::RIExecutor::Operation Executor::RIExecutor::MULI() {
     return [this](Args args) -> MaybeReturnCode {
-        auto res = static_cast<arch::TwoWords>(Reg(args.reg)) *
+        auto res = static_cast<arch::TwoWords>(RReg(args.reg)) *
                    static_cast<arch::TwoWords>(ImmWord(args));
 
         PutTwoRegisters(res, args.reg);
@@ -127,7 +127,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::DIVI() {
 
 Executor::RIExecutor::Operation Executor::RIExecutor::NOT() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.reg) = ~Reg(args.reg);
+        WReg(args.reg) = ~RReg(args.reg);
         return {};
     };
 }
@@ -136,7 +136,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SHLI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
         CheckBitwiseRHS(rhs, cmd::SHLI);
-        Reg(args.reg) <<= rhs;
+        WReg(args.reg) <<= rhs;
         return {};
     };
 }
@@ -145,7 +145,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SHRI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
         CheckBitwiseRHS(rhs, cmd::SHRI);
-        Reg(args.reg) >>= rhs;
+        WReg(args.reg) >>= rhs;
         return {};
     };
 }
@@ -154,7 +154,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::ANDI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
         CheckBitwiseRHS(rhs, cmd::ANDI);
-        Reg(args.reg) &= rhs;
+        WReg(args.reg) &= rhs;
         return {};
     };
 }
@@ -163,7 +163,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::ORI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
         CheckBitwiseRHS(rhs, cmd::ORI);
-        Reg(args.reg) |= rhs;
+        WReg(args.reg) |= rhs;
         return {};
     };
 }
@@ -172,21 +172,21 @@ Executor::RIExecutor::Operation Executor::RIExecutor::XORI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
         CheckBitwiseRHS(rhs, cmd::XORI);
-        Reg(args.reg) ^= rhs;
+        WReg(args.reg) ^= rhs;
         return {};
     };
 }
 
 Executor::RIExecutor::Operation Executor::RIExecutor::CMPI() {
     return [this](Args args) -> MaybeReturnCode {
-        WriteComparisonToFlags(Reg(args.reg), ImmWord(args));
+        WriteComparisonToFlags(RReg(args.reg), ImmWord(args));
         return {};
     };
 }
 
 Executor::RIExecutor::Operation Executor::RIExecutor::PUSH() {
     return [this](Args args) -> MaybeReturnCode {
-        Push(Reg(args.reg) + ImmWord(args));
+        Push(RReg(args.reg) + ImmWord(args));
         return {};
     };
 }
@@ -200,7 +200,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::POP() {
 
 Executor::RIExecutor::Operation Executor::RIExecutor::LC() {
     return [this](Args args) -> MaybeReturnCode {
-        Reg(args.reg) = ImmWord(args);
+        WReg(args.reg) = ImmWord(args);
         return {};
     };
 }
