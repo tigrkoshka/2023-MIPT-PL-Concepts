@@ -87,6 +87,18 @@ is specified by the 20-bit \textit{unsigned} memory address operand.
 Since any 20-bit unsigned value represents a valid memory address, no execution
 error can occur in this case.
 
+Note that since the \hyperlink{functions:prologue}{function call prologue}
+pushes the values from the \St{r15} and the \St{r13} registers to the stack,
+after the prologue execution, the arguments start from the third latest value
+in the stack. For example the first argument can be stored to the \St{r0} register
+via a \hspace{-0.1cm}\St{
+        \makebox[1.0cm][l]{loadr}
+        \makebox[0.40cm][l]{r0}
+        \makebox[0.60cm][l]{r14}
+        \makebox[0.20cm][l]{3}
+    }
+\hspace{-0.2cm} command (note the non-zero source modifier operand).
+
 
 \vspace{-0.35cm}
 \paragraph{\St{ret}}\
