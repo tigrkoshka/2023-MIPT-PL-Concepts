@@ -54,6 +54,9 @@ class Executor::Config {
     };
 
    public:
+    AccessConfig& WriteAccess();
+    AccessConfig& ReadWriteAccess();
+
     void BoundStack(size_t stack_size);
     void UnboundStack();
 

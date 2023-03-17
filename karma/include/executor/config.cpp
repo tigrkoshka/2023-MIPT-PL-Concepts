@@ -97,6 +97,14 @@ const Config::Registers Config::AccessConfig::kUtilityRegisters = {
     arch::kInstructionRegister,
 };
 
+Config::AccessConfig& Config::WriteAccess() {
+    return write_;
+}
+
+Config::AccessConfig& Config::ReadWriteAccess() {
+    return read_write_;
+}
+
 void Config::BoundStack(size_t stack_size) {
     if (stack_size >= arch::kMemorySize) {
         max_stack_size_ = std::nullopt;
