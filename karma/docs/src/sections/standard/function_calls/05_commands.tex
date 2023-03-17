@@ -1,6 +1,13 @@
-\subsubsection{Function call commands}
+\hypertarget{functions:commands}{
+    \subsubsection{Function call commands}
+}
 
 \cmdtable{Function call comands}{
+
+    \hline
+
+    50 & \hypertarget{functions:cmd:prc}{\St{prc}} & \Ss{J} & 
+    \St{prc\kern 0.35em 0} & Prepare for a function call \\
 
     \hline
 
@@ -21,18 +28,57 @@
 
 }
 
+\vspace{0.5cm}
+
+These commands implement the
+\hypertarget{functions:convention}{\St{Karma} calling convention} and encourage
+the convention usage.
+
+They do not provide any functionality that cannot be achieved using other
+instructions (see the \hyperlink{functions:call}{Function call procedure} and
+the \hyperlink{functions:return}{Return from a function procedure} sections
+above for the explicit sets of commands that perform the same actions).
+
+Therefore, as described in the
+\hyperlink{functions:introduction}{Introduction: calling conventions}
+section, the \St{Karma} calling convention does not \textit{enforce}
+anything.
+One may choose to follow a different convention in their code, but then
+they will be unable to use these commands and must perform all the utility
+actions required by their convention manually.
+
+\vspace{-0.3cm}
+\paragraph{\St{prc}}\
+
+This command must be \textit{explicitly} executed before pushing the function
+arguments to the stack.
+It performs the preparatory actions described \hyperlink{functions:prep}{above}.
+
+This is the only additional (to the pushing the function arguments to the stack)
+explicit action required for the function call.
+The rest of utility actions are performed automatically by
+the \St{call}/\St{calli} and the \St{ret} commands.
+
+After this command and before the subsequent \St{call} or \St{calli} command
+all values pushed to the stack are considered the function arguments.
+
+The memory address operand is ignored, but per our convention must be present
+for simplicity.
+
+\vspace{-0.3cm}
 \paragraph{\St{call}, \St{calli}}\
 
 These commands perform the transfer of control from the caller to the callee
-by executing the function call prologue and storing the address
-of the next instruction to be executed (i.e.\ the first instruction of the callee)
-to \St{r15}.
+by executing the \hyperlink{functions:prologue}{function call prologue}
+and storing the address of the next instruction to be executed
+(i.e.\ the first instruction of the callee) to \St{r15}.
 The \St{call} command additionally stores a copy of the return address
 into the provided receiver register.
 
 For the \St{call} command the address of the next instruction to be executed
 is obtained from the specified operands in the
-\hyperlink{types:twos_complement}{common manner}.
+\hyperlink{types:twos_complement}{common}
+\hyperlink{types:twos_complement}{manner}.
 If this value does not represent a valid address,
 i.e.\ is greater or equal to $2^{20}$, an execution error occurs.
 
@@ -43,10 +89,11 @@ error can occur in this case.
 
 
 \vspace{-0.35cm}
-
 \paragraph{\St{ret}}\
 
 This command performs the transfer of control from the callee back to the caller
-by executing the function call epilogue, after which the \St{r15} register
-contains the return address (see \hyperlink{functions:return}{above} for details).
-The memory address operand is ignored.
+by executing the \hyperlink{functions:return}{function call epilogue},
+after which the \St{r15} register contains the return address.
+
+The memory address operand is ignored, but per our convention must be present
+for simplicity.

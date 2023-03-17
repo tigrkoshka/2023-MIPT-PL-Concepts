@@ -7,23 +7,24 @@
     the results have to be explicitly stored back to the memory if necessary
     (see \hyperlink{cmd:data_transfer}{Data transfer commands} for details)
 
-    \item A Von Neumann architecture of the \St{Karma} computer implies that
+    \item A \href{https://en.wikipedia.org/wiki/Von_Neumann_architecture}
+    {Von Neumann architecture} of the \St{Karma} computer implies that
     both the machine code of the program and the stack are inside the
     global address space.
     The former is placed at its beginning, and the latter starts at its end
     and grows backwards
 
-    \item The stack is \textit{unbounded}, i.e.\ it does not have any size
-    limits besides the address space size
+    \item By default, the stack is \textit{unbounded}, i.e.\ it does not
+    have any size limits besides the address space size
 
-    \item Our system allows to write data to any memory cells, including
-    the ones occupied by the machine code itself
+    \item By default, our system allows to write data to any memory cells,
+    including the ones occupied by the machine code itself.
     Therefore, theoretically, a program might overwrite itself during runtime,
     although such behaviour is considered a bad practice
 
-    \item The same applies to the registers: any register, except for
-    \St{flags}, may be passed as an operand to any command
-    (that accepts a register operand).
+    \item The same applies to the registers: by default, any register,
+    except for the \St{flags} register, may be passed as an operand to any
+    command (that accepts a register operand).
     That includes the \St{r14} and \St{r15} registers, which are meant
     for utility purposes.
     Manually modifying the values of these registers, while allowed,

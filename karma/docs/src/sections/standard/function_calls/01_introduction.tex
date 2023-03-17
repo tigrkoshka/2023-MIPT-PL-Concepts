@@ -1,7 +1,9 @@
-\subsubsection{Introduction: calling conventions}
+\hypertarget{functions:introduction}{
+	\subsubsection{Introduction: calling conventions}
+}
 
 This section defines the rules by which the execution of one part of the code
-(\textit{caller}) can be delayed until another part (\textit{callee})
+(the \textit{caller}) can be delayed until another part (the \textit{callee})
 is executed.
 The callee is often also referred to as a \textit{subprogram} or
 a \textit{function}, and the delay process is called a \textit{function call}.
@@ -31,11 +33,11 @@ need to be resolved, such as:
 
     \item Whether and how metadata describing the arguments is passed? \\
     The metadata may include the number of arguments, the description
-    of their position, or some other technical information.
+    of their position, or some other technical information
 
     \item How the functions that take a variable number of arguments
     (\textit{variadic functions}) are handled? \\
-    Options include passing the number of arguments as one an argument
+    Options include passing the number of arguments as an argument
     itself placed in an obvious position, placing the variable arguments
     in an array in the memory and passing the pointer to it, or keeping
     track of the number of arguments in a separate register
@@ -49,7 +51,7 @@ need to be resolved, such as:
     This question refers to the arguments passed to the caller,
     the caller's \textit{local variables}, i.e.\ the values it places
     in the registers, on the stack and in the memory, and the additional
-    values (if any) used internally for the function call itself.
+    values (if any) used internally for the function call itself
 
     \item Which registers are guaranteed to have the same value
     when the callee returns as they did when the callee was called? \\
@@ -73,6 +75,11 @@ Nothing on the architecture or the syntax level prevents one from not following
 it during their code development.
 However, that is considered a bad practice as it can lead to confusion and
 unexpected results for the code user.
+Besides, the assembler language often provides
+\hyperlink{functions:commands}{special commands} that internally
+perform the utility actions defined by the convention.
+If one wishes to not follow the convention, all the actions must be performed
+manually for every function call.
 
 Almost all calling conventions use the term \textit{stack frame}, which
 is a part of the stack related to a specific function.

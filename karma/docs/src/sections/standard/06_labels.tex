@@ -1,18 +1,18 @@
 \hypertarget{labels}{
-	\subsection{Labels}
+    \subsection{Labels}
 }
 
-Before a command or a constant either on the same or on a separate line 
-one may place a \textit{label}, which can be used later on in 
-the assembler code to indicate the memory address of 
+Before a command or a constant either on the same or on a separate line
+one may place a \textit{label}, which can be used later on in
+the assembler code to indicate the memory address of
 the command or constant it is placed before.
 
 Syntax:
 
 \begin{itemize}
-    \item A label must consist only of lowercase latin letters, digits, 
+    \item A label must consist only of lowercase latin letters, digits,
     underscores and dots
-    
+
     \item A label must not start with a digit
 
     \item A label must be followed by a colon
@@ -23,7 +23,8 @@ Syntax:
     \item A label must not conflict with predefined words
     (i.e.\ command names, directives, etc.)
 
-    \item The next word after the label must be a command name\\
+    \item The next word after the label must be a command name or
+    a constant type\\
     In particular, that means that there cannot be two consecutive
     labels pointing to the same command
 

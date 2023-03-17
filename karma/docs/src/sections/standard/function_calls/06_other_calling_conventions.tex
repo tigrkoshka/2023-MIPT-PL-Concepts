@@ -4,15 +4,20 @@
 
 The suggested calling convention has two drawbacks.
 
-The main one is that a programmer must explicitly manage the \St{r13} register
+The main one is that a programmer must explicitly use the \St{prc} command
 before pushing the function's arguments to the stack
-(see \hyperlink{functions:call}{above} for details).
+(see \hyperlink{functions:cmd:prc}{above} for details).
+However, the fact that \textit{some} instructions must be performed explicitly
+is an inherent part of any calling convention, and the fact that the \St{Karma}
+calling convention has but one necessary additional instruction is a good
+quality.
 
 Another one is that the \St{r13} register does not have one consistent semantics.
 Instead, it has two semantics (see \hyperlink{r13}{above} for details),
 one of which is only used during the function call procedure.
-This also leads to push its value to the stack twice during the function call
-procedure (see \hyperlink{functions:call}{above} for details).
+This also leads to the need to push its value to the stack twice
+during the function call procedure (see
+\hyperlink{functions:call}{above} for details).
 
 These drawbacks, however, allow for a major advantage of the \St{Karma} calling
 convention.
@@ -55,9 +60,10 @@ and local variables from the stack in one of the following manners:
     removal of the function arguments.
 \end{itemize}
 
-These other calling conventions may sometimes optimise the stack usage,
-but are mainly meant for the cases when the programmer writes the code in some
-higher level languages to be then compiled to assembler.
+These other calling conventions may sometimes optimise the stack usage
+or the function call procedure performance, but are mainly meant for
+the cases when the programmer writes the code in some higher level languages
+to be then compiled to assembler.
 In such a case, the compiler can substitute the correct value to increment
 the stack pointer by knowing at compile time the number of function arguments
 and local variables.

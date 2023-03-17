@@ -1,4 +1,6 @@
-\subsubsection{\St{Karma} calling convention}
+\hypertarget{functions:convention}{
+    \subsubsection{\St{Karma} calling convention}
+}
 
 \vspace{-0.2cm}
 
@@ -20,8 +22,8 @@ However, some actions still must be performed explicitly
 by the assembler code, that is an inevitable part of any calling convention.
 
 The preserved registers are \St{r13}, \St{r14} and \St{r15}.
-The semantics of the \St{r14} (stack pointer) register is described in
-the \hyperlink{smd:stack}{Stack-related commands} section, and the usage
+The semantics of the \St{r14} register is described in
+the \hyperlink{cmd:stack}{Stack-related commands} section, and the usage
 of the \St{r13} and \St{r15} registers is described below.
 
 \vspace{-0.5cm}
@@ -43,7 +45,6 @@ which is the stack pointer value before the local variables of the main
 the \hyperlink{directives:end}{\St{end} directive}.
 
 \vspace{-0.5cm}
-
 \paragraph{\St{r15} register}\
 
 The \St{r15} register \textit{always} contains the address of the next

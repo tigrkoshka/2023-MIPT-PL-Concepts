@@ -12,22 +12,20 @@
     &                                                                                             \\
 
     skip0:                & \# a supplemental function providing recursion                        \\
-    \qquad push r0 0      & \# push the current value to the stack ($\star$)                      \\
+    \qquad push r0 0      & \# push the current value to the stack ($\star$)                          \\
     \qquad subi r0 1      & \# decrement the current value by \St{1}                              \\
-    \qquad push r13 0     & \# push the stack pointer value before the caller's local variables   \\
-    \qquad mov r13 r14 0  & \# remember the stack pointer value before the function arguments     \\
+    \qquad prc 0          & \# prepare for the function call                                      \\
     \qquad push r0 0      & \# push the decremented value to stack as the \St{fact} argument      \\
     \qquad calli fact     & \# \St{r0} contains the result for the decremented value              \\
-    \qquad pop r2 0       & \# pop the value stored during the ($\star$) push to \St{r2}          \\
+    \qquad pop r2 0       & \# pop the value stored during the ($\star$) push to \St{r2}              \\
     \qquad mul r0 r2 0    & \# multiply the result for the decremented value by the current value \\
     \qquad ret 0          & \# return from function and remove the argument from the stack        \\
 
-    &                                                                                             \\
+    &                                                                                            \\
 
-    main:                 &                                                                       \\
+    main:                 &                                                                      \\
     \qquad syscall r0 100 & \# read an integer from \St{stdin} to \St{r0}                         \\
-    \qquad push r13 0     & \# push the stack pointer value before the caller's local variables   \\
-    \qquad mov r13 r14 0  & \# remember the stack pointer value before the function arguments     \\
+    \qquad prc 0          & \# prepare for the function call                                      \\
     \qquad push r0 0      & \# put \St{r0+0} to the stack as the \St{fact} argument               \\
     \qquad calli fact     & \# call \St{fact}, the function will put the result to \St{r0}        \\
     \qquad syscall r0 102 & \# print \St{r0} to \St{stdout}                                       \\

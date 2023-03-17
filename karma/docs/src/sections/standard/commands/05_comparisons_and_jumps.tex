@@ -44,7 +44,6 @@
 
     36 & \St{jg} & \Ss{J} & \Jcmd{jg}{03457} & Jump if greater \\
 }
-
 \paragraph{Flags register}\
 
 To allow for basic execution branching, an additional \St{flags} register
@@ -77,17 +76,16 @@ The semantics of those bits is described in Table 9.
 Several bits may be simultaneously filled.
 For example, if the latest comparison resulted in equality,
 the value of the \St{flags} register will be $110001_2$, because equality
-causes the `less/greater or equal' conditions to also be true.
+causes the `less or equal' and the `greater or equal' conditions
+to also be true.
 
 \vspace{-0.35cm}
-
 \paragraph{\St{cmp}, \St{cmpi}, \St{cmpd}}\
 
 These are comparison operators.
 They compare the two values provided by the operands and store the result to
 the \St{flags} register according to the \hyperlink{flags:bits}{\St{flags}
 register bits semantics} described above.
-These are the only commands that store values in the \St{flags} register.
 
 The \St{cmp} and \St{cmpi} command compare the \St{uint32} value from
 the receiver register to the \St{uint32} value obtained from the operands in
@@ -98,10 +96,11 @@ The \St{cmpd} command ignores the immediate value operand and compares the two
 For the \St{double} values storage please refer to
 \hyperlink{types:two_words_storage}{this section}.
 
+These are the only commands that store values in the \St{flags} register.
+
 \vspace{-0.35cm}
 
 \hypertarget{cmd:jump}{}
-
 \paragraph{Jump commands}\
 
 These commands implement execution branching.
@@ -116,6 +115,9 @@ the one stored in the provided memory address operand (because the \St{Karma}
 computer has a \href{https://en.wikipedia.org/wiki/Von_Neumann_architecture}
 {Von Neumann architecture}, the instructions' binaries are stored in
 the common address space).
+That is achieved by storing the provided memory address in the \St{r15} register
+(see the \hyperlink{functions:convention}{\St{Karma} calling convention}
+section for details).
 
 These are the only commands that read the value stored in the \St{flags}
 register.

@@ -2,11 +2,11 @@
 
 \St{Karma} is a computer with a
 \href{https://en.wikipedia.org/wiki/Von_Neumann_architecture}
-{Von Neumann architecture} having an address space of $2^{20}$ cells,
-one 32-bit \textit{machine word} each.
+{Von Neumann architecture} having an \textit{address space} of $2^{20}$
+\textit{cells}, one 32-bit \textit{machine word} each.
 
-The processor has 16 one-word (32 bits each) registers \St{r0}-\St{r15},
-as well as an additional \St{flags} register (also one-word).
+The processor has 16 one-word (32 bits each) \textit{registers}
+\St{r0}-\St{r15}, as well as an additional \St{flags} register (also one-word).
 Their usage is described in Table 1.
 
 \hypertarget{registers}{}
@@ -20,10 +20,10 @@ Their usage is described in Table 1.
         \begin{tabular}{| c | c |}
             \hline
             \St{r0} -- \St{r12} & Free usage                  \\
-            	\St{r13}         & Call frame pointer          \\
-            \St{r14}         & Stack head pointer          \\
-            \St{r15}         & Instruction pointer         \\
-            \St{flags}       & Comparison operation result \\
+            \St{r13}            & Call frame pointer          \\
+            \St{r14}            & Stack head pointer          \\
+            \St{r15}            & Instruction pointer         \\
+            \St{flags}          & Comparison operation result \\
             \hline
         \end{tabular}
     \end{table}
@@ -32,7 +32,8 @@ Their usage is described in Table 1.
 \vspace{-0.1cm}
 
 The usage of the \St{r14} register is described in
-the \hyperlink{cmd:stack}{Stack-related commands} section, the aim of
-the \St{r13} and the \St{r15} registers is discussed in the \hyperlink{cmd:calls}{Function calls}
-section, and the usage of the \St{flags} register is detailed in
+the \hyperlink{cmd:stack}{Stack-related commands} section,
+the \St{r13} and the \St{r15} registers are discussed in
+the \hyperlink{functions:convention}{\St{Karma} calling convention}
+section, and the bits of the \St{flags} register are detailed in
 the \hyperlink{cmd:flags}{Comparisons and jumps} section.

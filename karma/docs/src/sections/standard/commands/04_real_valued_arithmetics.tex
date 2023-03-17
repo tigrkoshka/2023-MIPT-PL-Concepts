@@ -36,7 +36,7 @@
 
 For the \St{double} values storage please refer to
 \hyperlink{types:two_words_storage}{this section}.
-For the double values representation please refer to
+For the double values memory representation please refer to
 \href{https://en.wikipedia.org/wiki/Floating-point_arithmetic}{Wiki},
 specifically to the
 \href{https://en.wikipedia.org/wiki/Floating-point_arithmetic#Floating-point_numbers}
@@ -45,7 +45,6 @@ specifically to the
 {Internal representation} sections.
 
 \vspace{-0.35cm}
-
 \paragraph{\St{itod}}\
 
 The source modifier is added to the source register in
@@ -54,18 +53,16 @@ the \hyperlink{types:twos_complement}{common manner}, after which the resulting
 starting from the specified receiver register.
 
 \vspace{-0.35cm}
-
 \paragraph{\St{dtoi}}\
 
 The source modifier is ignored, but per our agreement must be present for simplicity.
 
 The \St{double} value obtained from the two registers starting from the source
-register is converted to \St{uint32} and stored into the receiver register.
-If the value obtained after conversion does not fit into \St{uint32},
-an execution error occurs.
+register is converted to \St{uint32} by discarding the fractional part
+and stored into the receiver register.
+If the resulting value does not fit into a register, an execution error occurs.
 
 \vspace{-0.35cm}
-
 \paragraph{\St{Real-valued arithmetic operators}}\
 
 The source modifier is ignored for all real-valued arithmetic operators,

@@ -47,7 +47,6 @@
         &\text{r7} = \text{tmp}\ \%\ 7 \\
     } \\
 }
-
 \paragraph{\St{add}, \St{addi}, \St{sub}, \St{subi}}\
 
 These commands take two \St{uint32} values obtained from the specified operands
@@ -63,14 +62,13 @@ At the same time, if both terms of each operation were to be interpreted as
 \textit{signed} integral values in the 32-bit two's complement representation,
 the result, if interpreted as a \textit{signed} integral value in the same
 representation, would be mathematically correct.
-That is provided by the two's complement representation of the signed operands
+That is provided by the two's complement representation properties
 (see explanations for
 \href{https://en.wikipedia.org/wiki/Two\%27s_complement#Addition}{addition} and
 \href{https://en.wikipedia.org/wiki/Two\%27s_complement#Subtraction}
 {subtraction}).
 
 \vspace{-0.35cm}
-
 \paragraph{\St{mul}, \St{muli}}\
 
 These commands multiply two \St{uint32} values obtained from the specified
@@ -99,7 +97,6 @@ negative factors, they will firstly be converted to \St{uint32} by being taken
 modulo $2^{32}$.
 
 \vspace{-0.35cm}
-
 \paragraph{\St{div}, \St{divi}}\
 
 These commands accept a \St{uint64} dividend from the two registers starting
