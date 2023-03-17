@@ -81,10 +81,10 @@ class Executor::Config {
     [[nodiscard]] size_t MinStackAddress() const;
 
    private:
-    std::optional<size_t> max_stack_size_;
-
     AccessConfig write_;
     AccessConfig read_write_;
+
+    std::optional<size_t> max_stack_size_;
 };
 
 }  // namespace karma
