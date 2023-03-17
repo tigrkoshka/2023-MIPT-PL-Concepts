@@ -1,3 +1,47 @@
-\section{Execution configuration}
+\hypertarget{config}{
+	\section{Execution configuration}
+}
 
-% TODO:
+A \St{Karma} computer as a whole as well as any specific execution
+has a configuration.
+
+The configuration allows to:
+
+\begin{itemize}
+	\item block the access to some registers
+	\item block the access to the code segment of the memory
+	\item block the access to the constants segment of the memory
+	\item \textit{bound} the stack, i.e.\ specify the maximum stack size,
+	so that if the stack grows beyond it, a \textit{stack overflow} error occurs
+\end{itemize}
+
+The access to both the registers and the code and constants segments of
+the memory can be blocked either for writing (\textit{write block}) or for both
+reading and writing (\textit{read-write block}).
+The former raises an execution error in case a program tries to
+\textit{manually} modify the contents of the blocked register/data segment,
+but allows for the program to read the values from the register/data segment.
+The latter raises an execution error in case a program tries to
+\textit{manually} either modify or read the contents of the blocked
+register/data segment.
+
+Note that regardless of whether such blocks are put in place,
+the \St{r13}--\St{r15} registers will still be available for
+\textit{internal usage}, that is, via the \hyperlink{cmd:flags}{jumps},
+the \hyperlink{cmd:stack}{stack-related} and
+the \hyperlink{functions:commands}{function call} commands.
+The \St{r15} register will also be available for the \St{Karma} computer
+internal machinery to maintain the program execution
+(see the \hyperlink{r15}{\St{r15} register} section for details).
+
+The configuration for a specific execution is the \textit{strictest} combination
+of its own configuration and the common \St{Karma} computer configuration.
+That is, if a register or a memory segment is specified to be blocked in either
+one of them, it is blocked for the execution.
+Similarly, if the stack is specified to be bounded in either one of them,
+it is bounded for the execution.
+If it is specified to be bounded by both configurations,
+its resulting maximum size is the minimal one of the specified sizes.
+
+As stated \hyperlink{standard:notes}{above}, by default, no registers or
+memory segments are blocked, and the stack is unbounded.

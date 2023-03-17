@@ -1,4 +1,6 @@
-\subsection{Notes}
+\hypertarget{standard:notes}{
+	\subsection{Notes}
+}
 
 \begin{itemize}
     \item The \St{Karma} processor has a RISC architecture,
@@ -14,18 +16,18 @@
     The former is placed at its beginning, and the latter starts at its end
     and grows backwards
 
-    \item By default, the stack is \textit{unbounded}, i.e.\ it does not
-    have any size limits besides the address space size
+    \item \hyperlink{config}{By default}, the stack is \textit{unbounded}, 
+    i.e.\ it does not have any size limits besides the address space size
 
-    \item By default, our system allows to write data to any memory cells,
-    including the ones occupied by the machine code itself.
+    \item \hyperlink{config}{By default}, our system allows to write data 
+    to any memory cells, including the ones occupied by the machine code itself.
     Therefore, theoretically, a program might overwrite itself during runtime,
     although such behaviour is considered a bad practice
 
-    \item The same applies to the registers: by default, any register,
-    except for the \St{flags} register, may be passed as an operand to any
-    command (that accepts a register operand).
-    That includes the \St{r14} and \St{r15} registers, which are meant
+    \item The same applies to the registers: \hyperlink{config}{by default}, 
+    any register (except for the \St{flags} register) may be passed as 
+    an operand to any command (that accepts a register operand).
+    That includes the \St{r13}--\St{r15} registers, which are meant
     for utility purposes.
     Manually modifying the values of these registers, while allowed,
     is considered a bad practice and can lead to unexpected results
