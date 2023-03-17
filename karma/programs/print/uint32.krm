@@ -14,7 +14,7 @@ print_uint32:
 
     # ... else recurse
     __print_uint32.recurse:
-        # ensure (r1,r2) represent a uint64 value equal to the uint32 from r1
+        # ensure (r2,r1) represent a uint64 value equal to the uint32 from r1
         # by setting the r2 register to 0
         lc r2 0
 
@@ -70,4 +70,3 @@ print_uint32_decimal:
 
     # reuse the printing function
     calli print_uint32
-

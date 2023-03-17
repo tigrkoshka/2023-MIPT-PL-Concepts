@@ -4,12 +4,15 @@ print_string:
     loadr r0 r14 3
 
     loop:
+        # load the current character in r1
+        loadr r1 r0 0
+
         # break if the current character is '\0'
-        cmpi r0 0
+        cmpi r1 0
         jeq out
 
         # print the current character
-        syscall r0 105
+        syscall r1 105
 
         # proceed to the next character
         addi r0 1

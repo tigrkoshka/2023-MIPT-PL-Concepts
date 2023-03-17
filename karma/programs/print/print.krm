@@ -1,7 +1,7 @@
-include uint32.krm
-
-include double.krm
-
 include char.krm
 
 include string.krm
+
+include uint32.krm
+
+include double.krm

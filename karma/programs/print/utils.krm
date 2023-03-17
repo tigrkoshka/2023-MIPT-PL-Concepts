@@ -1,8 +1,9 @@
+include char.krm
 include string.krm
 
-.zero_char:    char '0'
-.a_char:       char 'a'
-.newline_char: char '\n'
+.__zero_char:    char '0'
+.__a_char:       char 'a'
+.__newline_char: char '\n'
 
 # accepts two arguments: a base and a one-digit value of that base
 #
@@ -43,9 +44,16 @@ __print_digit:
     # if value < 10 get the respective decimal digit by adding
     # the value of the '0' char to our value, print it and return
     ____print_digit.as_decimal_digit:
-        load r0 .zero_char
+        # r0 = '0'
+        load r0 .__zero_char
+
+        # r1 = r0 + r1 [= '0' + r1]
         add r1 r0 0
+
+        # print the current digit (the decimal digit)
         syscall r1 105
+
+        # return
         ret 0
 
     ############################################################################
@@ -60,29 +68,44 @@ __print_digit:
     # in range [10, 36), so value - 10 is in range [0, 26) and there are exactly
     # 26 latin letters (this is the reason for the bound on the allowed base
     ____print_digit.as_latin_letter:
-        load r0 .a_char
+        # r0 = 'a'
+        load r0 .__a_char
+
+        # r1 = r0 + (r1 - 10) [= 'a' + (r1 - 10)]
         subi r1 10
         add r1 r0 0
+
+        # print the current digit (the lowercase latin latter)
         syscall r1 105
+
+        # return
         ret 0
 
     ############################################################################
     ####                               Errors                               ####
     ############################################################################
 
-    .__print_digit.base_greater_than_36_error_msg:     string "cannot print a digit when the specified base is greater than 35"
-    .__print_digit.value_not_less_than_base_error_msg: string "the specified value cannot be represented using a single digit in the specified base"
+    .__print_digit.base_greater_than_36_error_msg:
+        string "error: the base must not be greater than 36"
+    .__print_digit.value_not_less_than_base_error_msg:
+        string "error: the specified value cannot be represented using a single digit in the specified base"
 
     ____print_digit.base_greater_than_36_error:
+        # store the address of the error message string to r0
+        la r0 .__print_digit.base_greater_than_36_error_msg
+
         # prepare for call
         prc 0
 
         # push the address of the error string as the argument
-        la r0 .__print_digit.base_greater_than_36_error_msg
         push r0 0
 
         # print the error string
         calli print_string
+
+        # print a newline character
+        prc 0
+        calli print_newline
 
         # store the exit code 1 to r0
         lc r0 1
@@ -91,15 +114,21 @@ __print_digit:
         syscall r0 0
 
     ____print_digit.value_not_less_than_base_error:
+        # store the address of the error message string to r0
+        la r0 .__print_digit.value_not_less_than_base_error_msg
+
         # prepare for call
         prc 0
 
         # push the address of the error string as the argument
-        la r0 .__print_digit.value_not_less_than_base_error_msg
         push r0 0
 
         # print the error string
         calli print_string
+
+        # print a newline character
+        prc 0
+        calli print_newline
 
         # store the exit code 1 to r0
         lc r0 1
