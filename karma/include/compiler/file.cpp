@@ -101,8 +101,11 @@ bool Compiler::File::GetToken(std::string& token) {
 }
 
 std::string Compiler::File::Where() const {
+    const std::string sep = "\n included from ";
+
     std::ostringstream where;
-    where << "at line " << LineNum() << " in ";
+    where << "at line " << LineNum() << "\n"
+          << std::string(sep.size() - 4, ' ') << "in ";
 
     auto files    = ToRoot();
     auto get_path = [](const File* file) -> std::string {
@@ -115,7 +118,6 @@ std::string Compiler::File::Where() const {
     //       currently defines in <experimental/iterator>
     //       that does exactly what is needed, but we do not
     //       want to use experimental features, so here is a workaround
-    std::string sep = "\n included from ";
 
     std::ostream_iterator<std::string> dst{where, sep.data()};
     std::ranges::copy(pipeline, dst);

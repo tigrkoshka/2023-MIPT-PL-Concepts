@@ -1,4 +1,4 @@
-include utils.krm
+.__newline_char: char '\n'
 
 # does not accept arguments, prints a newline character
 print_newline:
@@ -10,7 +10,6 @@ print_newline:
 
   # return
   ret 0
-
 
 # accepts a single argument: the character to be printed
 print_char:

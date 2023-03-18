@@ -1,3 +1,328 @@
 include utils.krm
 
+.__double_fractional_part_separator: char '.'
+
+# accepts two arguments: the base and the two-word double value
+__print_double_integral_part:
+    # load the base to r0
+    loadr r0 r14 3
+
+    # save the base as double to (r2,r1)
+    itod r1 r0 0
+
+    # load the double value in (r4,r3)
+    loadr2 r3 r14 4
+
+    # compare the base to the value
+    cmpd r1 r3 0
+
+    # if the base is greater than the value, print a single digit ...
+    jg __print_double_integral_part.out
+
+    # ... else recurse
+    __print_double_integral_part.loop:
+        # copy the value to (r6,r5)
+        mov r5 r3 0
+        mov r6 r4 0
+
+        # (r6,r5) /= base [(r6,r5) is the "quotient"]
+        divd r5 r1 0
+
+        # get the floor of the quotient as a double
+        dtoi r5 r5 0
+        itod r5 r5 0
+
+        # (r8,r7) = (r6,r5) * base [floor("quotient") * base]
+        mov r7 r5 0
+        mov r8 r6 0
+        muld r7 r1 0
+
+        #  (r10,r9) = (r4,r3) - (r8,r7)
+        # [(r10,r9) =  value  - floor("quotient") * base, i.e. "remainder"]
+        mov r9 r3 0
+        mov r10 r4 0
+        subd r9 r7 0
+
+        # save the remainder as a local variable
+        push r10 0
+        push r9 0
+
+        # prepare for recursive call
+        prc 0
+
+        # push the base and the quotient as the arguments for the recursive call
+        push r6 0
+        push r5 0
+        push r0 0
+
+        # the recursive call
+        calli __print_double_integral_part
+
+        # restore the remainder from the local stack frame to (r4,r3)
+        pop r3 0
+        pop r4 0
+
+    __print_double_integral_part.out:
+        # store the integral part of the remainder (from (r4,r3)) in r0
+        dtoi r0 r3 0
+
+        # restore the base from the arguments
+        loadr r1 r14 3
+
+        # prepare for remainder printing as a digit
+        prc 0
+
+        # push the base and the remainder as arguments for digit printing
+        push r0 0
+        push r1 0
+
+        # print the current character
+        #
+        # use the unsafe method in "production mode" for efficiency
+        # switch this to call the safe __print_digit in debug
+        #
+        # the safe function can only detect bugs and not user-input-related
+        # errors, because the base was check in the beginning of
+        # the print_double function, and the function must not try to print
+        # values greater than base by design
+        calli __print_digit_unsafe
+
+        # return
+        ret 0
+
+# accepts three arguments: the base, the two-word double value, and
+# the precision (i.e. the number of digits in the fractional part)
+__print_double_fractional_part:
+    # load the base into r0
+    loadr r0 r14 3
+
+    # save the base as double to (r2,r1)
+    itod r1 r0 0
+
+    # load the double value into (r4,r3)
+    loadr2 r3 r14 4
+
+    # (r6,r5) = the integral part of the value as a double
+    dtoi r5 r3 0
+    itod r5 r5 0
+
+    #  (r8,r7) = (r4,r3) - (r6,r5)
+    # [(r8,r7) =  value  - floor(value), i.e. fractional part]
+    mov r7 r3 0
+    mov r8 r4 0
+    subd r7 r5 0
+
+    # load the precision to r12 as the loop remaining iterations counter
+    loadr r12 r14 6
+
+    ____print_double_fractional_part.loop:
+        # n_iterations = precision
+        cmpi r12 0
+        jeq ____print_double_fractional_part.out
+
+        # (r8,r7) *= base
+        # [multiply the fractional part by base to get its next digit]
+        muld r7 r1 0
+
+        # the next digit is the integral part of the resulting value
+        dtoi r9 r7 0
+
+        # (r11,r10) contains the double representation of the next digit
+        itod r10 r9 0
+
+        # subtract the next digit value from (r8,r7),
+        # i.e. (r8,r7) after this contains the fractional part of the initial
+        # value with the current digit (and all digits before that) skipped
+        subd r7 r10 0
+
+        # store the resulting value as a local variable
+        push r8 0
+        push r7 0
+
+        # prepare for digits printing
+        prc 0
+
+        # push the base and the uint32 representation
+        # of the next digit as arguments
+        push r9 0
+        push r0 0
+
+        # print the current character
+        #
+        # use the unsafe method in "production mode" for efficiency
+        # switch this to call the safe __print_digit in debug
+        #
+        # the safe function can only detect bugs and not user-input-related
+        # errors, because the base was check in the beginning of
+        # the print_double function, and the function must not try to print
+        # values greater than base by design
+        calli __print_digit_unsafe
+
+        # restore (r8,r7) from the local stack frame
+        pop r7 0
+        pop r8 0
+
+        # restore the base from the arguments
+        loadr r0 r14 3
+
+        # save the base as double to (r2,r1)
+        itod r1 r0 0
+
+        # decrease left iterations counter
+        subi r12 1
+
+        # continue the loop
+        jmp ____print_double_fractional_part.loop
+
+    ____print_double_fractional_part.out:
+        ret 0
+
+# accepts three arguments: the base, the two-word double value, and
+# the precision (i.e. the number of digits in the fractional part)
 print_double:
+    # load the base into r0
+    loadr r0 r14 3
+
+    # check the base
+    prc 0
+    push r0 0
+    calli __check_base
+
+    # load the base back into r0
+    loadr r0 r14 3
+
+    # load the double value in (r2,r1)
+    loadr2 r1 r14 4
+
+    # print the integral part
+    prc 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli __print_double_integral_part
+
+    # print the dot
+    load r0 .__double_fractional_part_separator
+    syscall r0 105
+
+    # load the base to r0
+    loadr r0 r14 3
+
+    # load the double value in (r2,r1)
+    loadr2 r1 r14 4
+
+    # load the precision in r3
+    loadr2 r3 r14 6
+
+    # print the fractional part
+    prc 0
+    push r3 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli __print_double_fractional_part
+
+    # return
+    ret 0
+
+# like print_double, but accepts only the value and the precision arguments,
+# and prints its decimal representation with the specified
+# precision (i.e. defaults the base parameter to 10)
+print_double_decimal:
+    # load the double value into (r1,r0)
+    loadr2 r0 r14 3
+
+    # load the precision into r2
+    loadr r2 r14 5
+
+    # store the default base value (10) in r3
+    lc r3 10
+
+    # prepare for print_double call
+    prc 0
+
+    # push the base, the value and the precision as the arguments
+
+    # precision (third argument)
+    push r2 0
+
+    # value (second argument)
+    push r1 0
+    push r0 0
+
+    # base (first argument)
+    push r3 0
+
+    # reuse the printing function
+    calli print_double
+
+    # return
+    ret 0
+
+# like print_double, but accepts only the base and the value arguments,
+# and prints the specified value in the specified base
+# with a precision equal to 5 (i.e. defaults the precision parameter to 5)
+print_double_default_precision:
+    # load the base into (r0)
+    loadr r0 r14 3
+
+    # load the value into (r2,r1)
+    loadr2 r1 r14 4
+
+    # store the default precision value (5) in r3
+    lc r3 5
+
+    # prepare for print_double call
+    prc 0
+
+    # push the base, the value and the precision as the arguments
+
+    # precision (third argument)
+    push r3 0
+
+    # value (second argument)
+    push r2 0
+    push r1 0
+
+    # base (first argument)
+    push r0 0
+
+    # reuse the printing function
+    calli print_double
+
+    # return
+    ret 0
+
+# like print_double, but accepts only the value argument,
+# and prints its decimal representation with the precision equal to 5
+# (i.e. defaults the base parameter to 10 and the precision parameter to 5)
+print_double_decimal_default_precision:
+    # load the value into (r1,r0)
+    loadr2 r0 r14 3
+
+    # store the default base value (10) in r2
+    lc r2 10
+
+    # store the default precision value (5) in r3
+    lc r3 5
+
+    # prepare for print_double call
+    prc 0
+
+    # push the base, the value and the precision as the arguments
+
+    # precision (third argument)
+    push r3 0
+
+    # value (second argument)
+    push r1 0
+    push r0 0
+
+    # base (first argument)
+    push r2 0
+
+    # reuse the printing function
+    calli print_double
+
+    # return
+    ret 0

@@ -102,7 +102,7 @@ CE CE::Builder::ConsecutiveLabels(Label curr, Label prev) {
 CE CE::Builder::LabelRedefinition(Label label, Where previous_pos) {
     std::ostringstream ss;
     ss << "label " << std::quoted(label.value)
-       << " redefinition, previous definition was " << previous_pos;
+       << " redefinition,\n\nprevious definition was " << previous_pos;
     return {ss.str(), label.where};
 }
 

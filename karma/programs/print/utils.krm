@@ -1,45 +1,81 @@
+include errors.krm
 include char.krm
 include string.krm
 
 .__zero_char:    char '0'
 .__a_char:       char 'a'
-.__newline_char: char '\n'
 
 # accepts two arguments: a base and a one-digit value of that base
 #
 # an error message is printed and the execution
 # is exited with an error code 1 in the following cases:
 #
-#    - the base is greater than 36
+#    - the base is less than 2 or greater than 36
 #
 #    - the value cannot be represented using a single digit
 #      in the specified base (i.e. is greater or equal to the base)
 __print_digit:
-    # load the base into r0 and the value in r1
+    # load the base into r0
+    loadr r0 r14 3
+
+    # check the base
+    prc 0
+    push r0 0
+    calli __check_base
+
+    # load the base back into r0 and the value into r1
     loadr2 r0 r14 3
 
-    ############################################################################
-    ####               Check that base is not greater than 36               ####
-    ############################################################################
-
-    cmpi r0 36
-    jg ____print_digit.base_greater_than_36_error
-
-    ############################################################################
-    ####                 Check that value is less than base                 ####
-    ############################################################################
-
+    # check that value is less than base
     cmp r1 r0 0
     jge ____print_digit.value_not_less_than_base_error
 
-    ############################################################################
-    ####              Try to print the value as a decimal digit             ####
-    ############################################################################
+    # if we passed all checks, we enter the unsafe part
+    jmp __print_digit_unsafe
+
+    .____print_digit.value_not_less_than_base_error_msg:
+        string "error: the specified value cannot be represented using a single digit in the specified base"
+
+    ____print_digit.value_not_less_than_base_error:
+        # store the address of the error message string to r0
+        la r0 .____print_digit.value_not_less_than_base_error_msg
+        jmp ____print_digit.print_error_message_and_exit
+
+    ____print_digit.print_error_message_and_exit:
+        # prepare for call
+        prc 0
+
+        # push the address of the error string as the argument
+        push r0 0
+
+        # print the error string
+        calli print_string
+
+        # print a newline character
+        prc 0
+        calli print_newline
+
+        # store the exit code 1 to r0
+        lc r0 1
+
+        # stop execution with exit code 1 from r0
+        syscall r0 0
+
+__print_digit_unsafe:
+    # load the base into r0 and the value into r1
+    loadr2 r0 r14 3
 
     # value <=> 10
     cmpi r1 10
+
     # if value >= 10, print it as a letter
     jge ____print_digit.as_latin_letter
+
+    # ... else print it as a decimal digit
+    # (this command is not needed since the decimal digit printing block comes
+    # immediately after this, but we put it here as an else clause sample)
+    #
+    # jmp ____print_digit.as_decimal_digit
 
     # if value < 10 get the respective decimal digit by adding
     # the value of the '0' char to our value, print it and return
@@ -56,17 +92,14 @@ __print_digit:
         # return
         ret 0
 
-    ############################################################################
-    ####                  Print the value as a latin letter                 ####
-    ############################################################################
-
     # if value >= 10, get the respective lowercase latin letter by adding
     # the value of the 'a' char to our value minus 10, print it and return
     #
     # note: the resulting char is guaranteed to be a lowercase latin letter
-    # due to the checks above: 10 <= value < base <= 36, so the value is
-    # in range [10, 36), so value - 10 is in range [0, 26) and there are exactly
-    # 26 latin letters (this is the reason for the bound on the allowed base
+    # if we came here from the safe function __print_digit due to the checks
+    # in it: 10 <= value < base <= 36, so the value is in range [10, 36),
+    # so value - 10 is in range [0, 26) and there are exactly 26 latin letters
+    # (this is the reason for the bound on the allowed base)
     ____print_digit.as_latin_letter:
         # r0 = 'a'
         load r0 .__a_char
@@ -80,58 +113,3 @@ __print_digit:
 
         # return
         ret 0
-
-    ############################################################################
-    ####                               Errors                               ####
-    ############################################################################
-
-    .__print_digit.base_greater_than_36_error_msg:
-        string "error: the base must not be greater than 36"
-    .__print_digit.value_not_less_than_base_error_msg:
-        string "error: the specified value cannot be represented using a single digit in the specified base"
-
-    ____print_digit.base_greater_than_36_error:
-        # store the address of the error message string to r0
-        la r0 .__print_digit.base_greater_than_36_error_msg
-
-        # prepare for call
-        prc 0
-
-        # push the address of the error string as the argument
-        push r0 0
-
-        # print the error string
-        calli print_string
-
-        # print a newline character
-        prc 0
-        calli print_newline
-
-        # store the exit code 1 to r0
-        lc r0 1
-
-        # stop execution with exit code 1 from r0
-        syscall r0 0
-
-    ____print_digit.value_not_less_than_base_error:
-        # store the address of the error message string to r0
-        la r0 .__print_digit.value_not_less_than_base_error_msg
-
-        # prepare for call
-        prc 0
-
-        # push the address of the error string as the argument
-        push r0 0
-
-        # print the error string
-        calli print_string
-
-        # print a newline character
-        prc 0
-        calli print_newline
-
-        # store the exit code 1 to r0
-        lc r0 1
-
-        # stop execution with exit code 1 from r0
-        syscall r0 0

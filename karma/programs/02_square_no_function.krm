@@ -1,15 +1,41 @@
-aim: string "This program calculates the square of a positive number\n"
-invite: string "Please enter a positive number: "
+include print/char
+include print/string
+
+.aim: string "This program calculates the square of a positive number\n"
+.invite: string "Please enter a positive number: "
 
 main:
-    syscall r0 100        # read an integer from stdin to r0
-    mov r2 r0 0           # copy from r0 to r2
-    mul r0 r2 0           # a pair of registers (r0,r1) contains the square
-    syscall r0 102        # print from r0 to stdout (i.e. the lower bits)
-    lc r0 20              # store the constant 20 ('\n') to r0
-    syscall r0 105        # print '\n' from r0 to stdout
-    lc r0 10              # store the constant 10 ('\n') to r0
-    syscall r0 105        # print '\n' from r0 to stdout
-    lc r0 0               # set return code to 0
-    syscall r0 0          # exit the program with code 0 from r0
-end main                  # start execution from label main
+    # print the aim of the program
+    la r0 .aim
+    prc 0
+    push r0 0
+    calli print_string
+
+    # print the invite
+    la r0 .invite
+    prc 0
+    push r0 0
+    calli print_string
+
+    # get the integer from stdin
+    syscall r0 100
+
+    # copy from r0 to r2
+    mov r2 r0 0
+
+    # a pair of registers (r1,r0) contains the square
+    mul r0 r2 0
+
+    # print from r0 to stdout (i.e. the lower bits)
+    prc 0
+    push r0 0
+    calli print_uint32_decimal
+
+    # print an additional newline
+    prc 0
+    calli print_newline
+
+    # exit program with code 0
+    lc r0 0
+    syscall r0 0
+end main

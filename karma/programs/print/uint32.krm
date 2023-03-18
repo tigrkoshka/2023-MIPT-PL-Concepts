@@ -1,16 +1,37 @@
+include errors.krm
 include utils.krm
 
 # accepts two arguments: a base and a uint32 value to be printed
 #
-# if the base is greater than 36, an error message is printed and
-# the execution is exited with an error code 1
+# if the base is less than 2 or greater than 36, an error message is printed,
+# and the execution is exited with an error code 1
 print_uint32:
-    # load the base into r0 and the uint32 value to r1
+    # load the base into r0
+    loadr r0 r14 3
+
+    # check the base
+    prc 0
+    push r0 0
+    calli __check_base
+
+    # load the base back into r0 and the uint32 value to r1
     loadr2 r0 r14 3
 
-    # if the value < base print it as a digit and return ...
+    # check the base
+    prc 0
+    push r0 0
+    calli __check_base
+
     cmp r1 r0 0
+
+    # if the value < base print it as a digit and return ...
     jl __print_uint32.out
+
+    # ... else recurse
+    # (this command is not needed since the recurse block comes immediately
+    # after this, but we put it here as an else clause sample)
+    #
+    # jmp __print_uint32.recurse
 
     # ... else recurse
     __print_uint32.recurse:
@@ -50,23 +71,41 @@ print_uint32:
         push r0 0
 
         # print the current character
-        calli __print_digit
+        #
+        # use the unsafe method in "production mode" for efficiency
+        # switch this to call the safe __print_digit in debug
+        #
+        # the safe function can only detect bugs and not user-input-related
+        # errors, because the base was check in the beginning of
+        # the print_uint32 function, and the function must not try to print
+        # values greater than base by design
+        calli __print_digit_unsafe
 
         # return
         ret 0
 
 # like print_uint32, but accepts only the value argument and prints
-# its decimal representation
+# its decimal representation (i.e. defaults the base parameter to 10)
 print_uint32_decimal:
     # load the uint32 value into r0
     loadr2 r0 r14 3
 
-    # store the base value (10) in r1
+    # store the default base value (10) in r1
     lc r1 10
 
+    # prepare for the print_uint32 call
+    prc 0
+
     # push the base and the value as the arguments
+
+    # value (the second argument
     push r0 0
+
+    # base (the first argument)
     push r1 0
 
     # reuse the printing function
     calli print_uint32
+
+    # return
+    ret 0

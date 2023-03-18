@@ -80,6 +80,10 @@ Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec,
             throw ExecutionError::ExecPointerOutOfMemory(curr_address);
         }
 
+        // do not check if the current command address is out of the initial
+        // code segment to allow for programs to write and execute the code
+        // at runtime (bad practice, but should be allowed in assembler)
+
         if (MaybeReturnCode return_code =
                 ExecuteCmd(storage_->RMem(curr_address, true))) {
             return *return_code;

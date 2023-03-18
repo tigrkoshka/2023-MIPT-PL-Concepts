@@ -1,14 +1,21 @@
-hello_world: string "Hello, world!\n"
+include print/string.krm
+
+.hello_world: string "Hello, world!\n"
 
 main:
-    la r0 hello_world     # load the address of the string to r0
-    loop:                 # a while loop
-        cmpi r0 0         # check if the current character is ‘\0’
-        jeq out           # if we have encountered the ‘\0’ character, break the cycle
-        syscall r0 105    # print the current character from r0 to stdout
-        addi r0 1         # proceed to the next character
-        jmp loop          # continue the loop
-    out:                  # out of the while loop
-        lc r0 0           # set return code to 0
-        syscall r0 0      # exit the program with code 0 from r0
+    # store the address of the string to r0
+    la r0 .hello_world
+
+    # prepare for call
+    prc 0
+
+    # push the address of the string as the argument
+    push r0 0
+
+    # print the string
+    calli print_string
+
+    # exit the program with code 0
+    lc r0 0
+    syscall r0 0
 end main

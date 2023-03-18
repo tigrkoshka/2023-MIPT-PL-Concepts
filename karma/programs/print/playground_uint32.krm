@@ -1,0 +1,96 @@
+include char.krm
+include string.krm
+include uint32.krm
+
+.enter_value_invite:
+  string "Enter the value: "
+.enter_base_invite:
+  string "Enter the base: "
+
+main:
+    ############################################################################
+    ####                Print the invitation to enter a value               ####
+    ############################################################################
+
+    # store the address of the invite string to r0
+    la r0 .enter_value_invite
+
+    # prepare for the call
+    prc 0
+
+    # push the address of the invite string as an argument
+    push r0 0
+
+    # print the invite string
+    calli print_string
+
+    ############################################################################
+    ####                       Get the value from stdin                     ####
+    ############################################################################
+
+    # get the value to print
+    syscall r0 100
+
+    # save the value as the local variable
+    push r0 0
+
+    ############################################################################
+    ####                Print the invitation to enter a base                ####
+    ############################################################################
+
+    # store the address of the invite string to r0
+    la r0 .enter_base_invite
+
+    # prepare for the call
+    prc 0
+
+    # push the address of the invite string as an argument
+    push r0 0
+
+    # print the invite string
+    calli print_string
+
+    ############################################################################
+    ####                       Get the base from stdin                      ####
+    ############################################################################
+
+    syscall r1 100
+
+    ############################################################################
+    ####                    Get the value from the stack                    ####
+    ############################################################################
+
+    pop r0 0
+
+    ############################################################################
+    ####                   Call the print_uint32 function                   ####
+    ############################################################################
+
+    # prepare for call
+    prc 0
+
+    # push the value as the second argument
+    push r0 0
+    # push the base as the first argument
+    push r1 0
+
+    # call the printing function
+    calli print_uint32
+
+    ############################################################################
+    ####                      Print an additional '\n'                      ####
+    ############################################################################
+
+    prc 0
+    calli print_newline
+
+    ############################################################################
+    ####                          Exit with code 0                          ####
+    ############################################################################
+
+    # set the exit code to 0
+    lc r0 0
+
+    # exit the program with code 0 from r0
+    syscall r0 0
+end main
