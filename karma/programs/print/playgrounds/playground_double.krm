@@ -96,7 +96,7 @@ main:
     ####                   Call the print_double function                   ####
     ############################################################################
 
-    # prepare for call
+    # prepare for the call
     prc 0
 
     # push the precision as the third argument
