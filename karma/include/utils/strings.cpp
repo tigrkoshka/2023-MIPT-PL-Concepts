@@ -40,16 +40,11 @@ const std::unordered_map<char, char> kEscapeSequences{
 const std::unordered_map<char, char> kUnescapeSequences =
     map::Revert(kEscapeSequences);
 
-std::string Escape(const std::string& str, size_t start, size_t end) {
-    size_t end_pos = end;
-    if (end_pos == std::string::npos) {
-        end_pos = str.size();
-    }
-
+std::string Escape(const std::string& str) {
     std::string res;
-    res.reserve(end_pos - start);
+    res.reserve(str.size());
 
-    for (size_t curr_pos = start; curr_pos < end_pos; ++curr_pos) {
+    for (size_t curr_pos = 0; curr_pos < str.size(); ++curr_pos) {
         if (!kUnescapeSequences.contains(str[curr_pos])) {
             res += str[curr_pos];
             continue;
@@ -62,15 +57,10 @@ std::string Escape(const std::string& str, size_t start, size_t end) {
     return res;
 }
 
-void Unescape(std::string& str, size_t start, size_t end) {
-    size_t end_pos = end;
-    if (end_pos == std::string::npos) {
-        end_pos = str.size();
-    }
-
+void Unescape(std::string& str) {
     size_t write_pos = 0;
 
-    for (size_t curr_pos = start; curr_pos < end_pos; ++curr_pos, ++write_pos) {
+    for (size_t curr_pos = 0; curr_pos < str.size(); ++curr_pos, ++write_pos) {
         char curr = str[curr_pos];
         if (curr != '\\') {
             str[write_pos] = curr;
@@ -79,7 +69,7 @@ void Unescape(std::string& str, size_t start, size_t end) {
 
         ++curr_pos;
 
-        if (curr_pos == end_pos) {
+        if (curr_pos == str.size()) {
             str[write_pos] = '\\';
             break;
         }

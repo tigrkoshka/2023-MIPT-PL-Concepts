@@ -1,7 +1,9 @@
 # Executor
 
+## Overview
+
 This directory provides the execution part of the public interface
-of the [karma library](../../include).
+of the [karma library](..).
 
 ## Dependencies
 

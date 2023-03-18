@@ -1,7 +1,9 @@
 # Compiler
 
+## Overview
+
 This directory provides the compiling part of the public interface
-of the [karma library](../../include).
+of the [karma library](..).
 
 ## Dependencies
 

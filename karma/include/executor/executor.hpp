@@ -62,11 +62,11 @@ class Executor {
     // cannot use default value for Config, because it is declared
     // in another file, which includes this one
 
-    ReturnCode MustExecute(const std::string& exec);
-    ReturnCode Execute(const std::string& exec);
+    ReturnCode MustExecute(const std::string& exec_path);
+    ReturnCode Execute(const std::string& exec_path);
 
-    ReturnCode MustExecute(const std::string& exec, const Config&);
-    ReturnCode Execute(const std::string& exec, const Config&);
+    ReturnCode MustExecute(const std::string& exec_path, const Config&);
+    ReturnCode Execute(const std::string& exec_path, const Config&);
 
    private:
     std::unique_ptr<Impl> impl_;

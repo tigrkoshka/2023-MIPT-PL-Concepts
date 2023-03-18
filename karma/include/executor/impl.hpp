@@ -30,8 +30,9 @@ class Executor::Impl : detail::utils::traits::NonCopyableMovable {
     explicit Impl(Config config = Config())
         : storage_(std::make_shared<Storage>(std::move(config))) {}
 
-    ReturnCode MustExecute(const std::string& exec, const Config& = Config());
-    ReturnCode Execute(const std::string& exec, const Config& = Config());
+    ReturnCode MustExecute(const std::string& exec_path,
+                           const Config& = Config());
+    ReturnCode Execute(const std::string& exec_path, const Config& = Config());
 
    private:
     std::shared_ptr<Storage> storage_ = std::make_shared<Storage>();

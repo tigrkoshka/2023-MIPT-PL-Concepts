@@ -18,22 +18,22 @@ Executor::Executor(Config config)
 
 Executor::~Executor() = default;
 
-Executor::ReturnCode Executor::MustExecute(const std::string& exec) {
-    return MustExecute(exec, Config());
+Executor::ReturnCode Executor::MustExecute(const std::string& exec_path) {
+    return MustExecute(exec_path, Config());
 }
 
-Executor::ReturnCode Executor::Execute(const std::string& exec) {
-    return Execute(exec, Config());
+Executor::ReturnCode Executor::Execute(const std::string& exec_path) {
+    return Execute(exec_path, Config());
 }
 
-Executor::ReturnCode Executor::MustExecute(const std::string& exec,
+Executor::ReturnCode Executor::MustExecute(const std::string& exec_path,
                                            const Config& config) {
-    return impl_->MustExecute(exec, config);
+    return impl_->MustExecute(exec_path, config);
 }
 
-Executor::ReturnCode Executor::Execute(const std::string& exec,
+Executor::ReturnCode Executor::Execute(const std::string& exec_path,
                                        const Config& config) {
-    return impl_->Execute(exec, config);
+    return impl_->Execute(exec_path, config);
 }
 
 }  // namespace karma

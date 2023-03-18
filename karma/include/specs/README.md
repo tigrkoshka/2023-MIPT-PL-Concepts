@@ -1,13 +1,15 @@
 # Specs
 
+## Overview
+
 This directory provides type definitions and constants defined
 in the Karma assembler standard, which are used throughout
-the [karma library](../../include).
+the [karma library](..).
 
 ## Dependencies
 
 The declarations of the symbols from this directory are not dependent
-on any other parts of the [karma library](../../include).
+on any other parts of the [karma library](..).
 
 The definitions of some symbols from this directory are dependent
 on the symbols provided by the [utils directory](../utils).

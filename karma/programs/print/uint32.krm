@@ -75,7 +75,7 @@ print_uint32:
         # use the unsafe method in "production mode" for efficiency
         # switch this to call the safe __print_digit in debug
         #
-        # the safe function can only detect bugs and not user-input-related
+        # the safe function can only detect bugs and not user input related
         # errors, because the base was check in the beginning of
         # the print_uint32 function, and the function must not try to print
         # values greater than base by design

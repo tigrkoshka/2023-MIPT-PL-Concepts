@@ -66,9 +66,9 @@ Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
     }
 }
 
-Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec,
+Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec_path,
                                                  const Config& config) {
-    Exec::Data data = Exec::Read(exec);
+    Exec::Data data = Exec::Read(exec_path);
 
     storage_->PrepareForExecution(data, config);
 
@@ -91,12 +91,12 @@ Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec,
     }
 }
 
-Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
+Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec_path,
                                                  const Config& config) {
     using std::string_literals::operator""s;
 
     try {
-        return ExecuteImpl(exec, config);
+        return ExecuteImpl(exec_path, config);
     } catch (const errors::Error& e) {
         throw e;
     } catch (const std::exception& e) {
@@ -107,10 +107,10 @@ Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec,
     }
 }
 
-Executor::ReturnCode Executor::Impl::Execute(const std::string& exec,
+Executor::ReturnCode Executor::Impl::Execute(const std::string& exec_path,
                                              const Config& config) {
     try {
-        return MustExecute(exec, config);
+        return MustExecute(exec_path, config);
     } catch (const errors::Error& e) {
         std::cout << e.what() << std::endl;
         return 1;

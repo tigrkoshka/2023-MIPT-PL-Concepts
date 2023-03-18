@@ -48,7 +48,7 @@ uint64_t Join(uint32_t low, uint32_t high);
  * \n\n
  * (because the two's complement representation of an integral value is
  * dependant on the size of the integral type representing it)
- * \n \n
+ * \n\n
  * This behavior is consistent with the aim of this function,
  * which is to capture the signed integral value, and not its representation
  *
@@ -57,10 +57,13 @@ uint64_t Join(uint32_t low, uint32_t high);
  * if \p bit_size is greater than <tt>sizeof(Uint) * kByteSize</tt>
  *
  * @note
- * This is a reverse function for \b GetUnsignedBits, that is:
- *
- * <tt> ∀ value, bit_size ↪ GetSignedValue(GetUnsignedBits(value, bit_size),
- * bit_size) == value </tt>
+ * This is a reverse function for \b GetUnsignedBits, that is:\n
+ * \n
+ * For all possible values of \p value and \p bit_size:\n
+ * \n
+ * <tt>
+ * GetSignedValue(GetUnsignedBits(value, bit_size), bit_size) == value
+ * </tt>
  */
 template <std::unsigned_integral Uint>
 std::make_signed_t<Uint> GetSignedValue(Uint bits, size_t bit_size) {
@@ -108,7 +111,7 @@ std::make_signed_t<Uint> GetSignedValue(Uint bits, size_t bit_size) {
  *
  * @param
  * bit_size is the size of the resulting two's complement
- * representation of the provided \value
+ * representation of the provided \p value
  *
  * @return
  * The two's complement representation of size \p bit_size
@@ -124,10 +127,13 @@ std::make_signed_t<Uint> GetSignedValue(Uint bits, size_t bit_size) {
  * if \p bit_size is greater than <tt>sizeof(Int) * kByteSize</tt>
  *
  * @note
- * This is a reverse function for \b GetSignedValue, that is:
- *
- * <tt> ∀ bits, bit_size ↪ GetUnsignedBits(GetSignedValue(bits, bit_size),
- * bit_size) == bits </tt>
+ * This is a reverse function for \b GetSignedValue, that is:\n
+ * \n
+ * For all possible values of \p bits and \p bit_size:\n
+ * \n
+ * <tt>
+ * GetUnsignedBits(GetSignedValue(bits, bit_size), bit_size) == bits
+ * </tt>
  */
 template <std::signed_integral Int>
 std::make_unsigned_t<Int> GetUnsignedBits(Int value, size_t bit_size) {
