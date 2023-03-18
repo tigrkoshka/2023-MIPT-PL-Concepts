@@ -53,7 +53,7 @@ karma::
 
 ## Classes
 
-### Compiler, Disassembler
+### Compiler and Disassembler
 
 The `karma::Compiler` and the `karma::Disassembler` classes provide only
 static methods for compiling Karma assembler programs and decompiling
