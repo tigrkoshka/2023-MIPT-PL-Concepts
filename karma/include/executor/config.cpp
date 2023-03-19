@@ -208,12 +208,20 @@ size_t Config::MinStackAddress() const {
 std::ostream& operator<<(std::ostream& out, const Config& config) {
     out << "write blocked registers: {";
     for (arch::Register reg : config.write_.blocked_registers_) {
+        if (!arch::kRegisterNumToName.contains(reg)) {
+            continue;
+        }
+
         out << arch::kRegisterNumToName.at(reg) << ", ";
     }
     out << "}" << std::endl;
 
     out << "read-write blocked registers: {";
     for (arch::Register reg : config.read_write_.blocked_registers_) {
+        if (!arch::kRegisterNumToName.contains(reg)) {
+            continue;
+        }
+
         out << arch::kRegisterNumToName.at(reg) << ", ";
     }
     out << "}" << std::endl;
