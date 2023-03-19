@@ -23,7 +23,12 @@ karma::
         Executor::                      // executor.hpp
         |       MustExecute
         |       Execute
-        |       Config                  // config.hpp
+        |       Config::                // config.hpp
+        |               /* 
+        |                * various methods for
+        |                * configuration
+        |                * setup and lookup
+        |                */
         |
         errors::                        // executor.hpp
                 executor::

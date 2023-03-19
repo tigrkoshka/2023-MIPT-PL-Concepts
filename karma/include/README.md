@@ -15,36 +15,36 @@ and three types of errors in the `karma::errors::<block_name>` namespace.
 ```c++
 karma::
         Compiler::                       // compiler block
-                MustCompile
-                Compile
-
+        |       MustCompile
+        |       Compile
+        |
         Executor::                       // executor block
-                MustExecute
-                Execute
-                Config::
-                        /* 
-                         * various methods for
-                         * configuration
-                         * setup and lookup
-                         */
-                
+        |       MustExecute
+        |       Execute
+        |       Config::
+        |               /* 
+        |                * various methods for
+        |                * configuration
+        |                * setup and lookup
+        |                */
+        |       
         Disassembler::                   // disassembler block
-                MustDisassemble
-                Disassemble
-                
+        |       MustDisassemble
+        |       Disassemble
+        |       
         errors::
                 Error
-                
+                |
                 compiler::               // compiler block
-                        Error
-                        InternalError
-                        CompileError
-                        
+                |       Error
+                |       InternalError
+                |       CompileError
+                |       
                 executor::               // executor block
-                        Error
-                        InternalError
-                        ExecutionError
-                        
+                |       Error
+                |       InternalError
+                |       ExecutionError
+                |       
                 disassembler::           // disassembler block
                         Error
                         InternalError

@@ -15,8 +15,7 @@ class Compiler::Entrypoint : detail::utils::traits::NonCopyableMovable {
     using MaybePos     = std::optional<std::string>;
 
    public:
-    void Record(detail::specs::arch::Address address,
-                const std::string& pos);
+    void Record(detail::specs::arch::Address address, const std::string& pos);
 
     void SetAddress(detail::specs::arch::Address address);
 

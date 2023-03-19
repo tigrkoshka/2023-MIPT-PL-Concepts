@@ -23,10 +23,10 @@ struct Static {
     // constructors since a Static object cannot be created, but we do that
     // for consistency
 
-    Static(const Static&) = delete;
+    Static(const Static&)            = delete;
     Static& operator=(const Static&) = delete;
 
-    Static(Static&&) = delete;
+    Static(Static&&)            = delete;
     Static& operator=(Static&&) = delete;
 };
 
