@@ -84,7 +84,7 @@ one of which has a `Must` prefix, and the other does not.
 
 The former throw exceptions (see [below](#exceptions)),
 while the latter wrap them in a `try-catch` block and print the exception
-info to `stdout`.
+info to `stderr`.
 
 The methods of the `karma::Compiler` and the `karma::Disassembler` classes
 do not return anything but rather output the results of
@@ -101,6 +101,7 @@ from it. The type `karma::errors::Error` itself is derived
 from `std::runtime_error`.
 
 > **Note**
+>
 > This does not guarantee that any exception thrown
 > by the public methods of the karma library has a type listed
 > [above](#exported-symbols), just that it can be caught as

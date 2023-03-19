@@ -1,7 +1,7 @@
 #include "impl.hpp"
 
 #include <exception>  // for exception
-#include <iostream>   // for cout, endl
+#include <iostream>   // for cerr, endl
 #include <string>     // for string
 
 #include "exec/exec.hpp"
@@ -16,8 +16,6 @@ namespace arch = detail::specs::arch;
 namespace cmd  = detail::specs::cmd;
 
 Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
-    storage_->WReg(arch::kInstructionRegister, true)++;
-
     auto code = cmd::GetCode(command);
     if (!cmd::kCodeToFormat.contains(code)) {
         throw ExecutionError::UnknownCommand(code);
@@ -80,6 +78,8 @@ Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec_path,
             throw ExecutionError::ExecPointerOutOfMemory(curr_address);
         }
 
+        storage_->WReg(arch::kInstructionRegister, true)++;
+
         // do not check if the current command address is out of the initial
         // code segment to allow for programs to write and execute the code
         // at runtime (bad practice, but should be allowed in assembler)
@@ -112,7 +112,7 @@ Executor::ReturnCode Executor::Impl::Execute(const std::string& exec_path,
     try {
         return MustExecute(exec_path, config);
     } catch (const errors::Error& e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
         return 1;
     }
 }

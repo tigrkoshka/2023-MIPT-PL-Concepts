@@ -28,7 +28,7 @@ class Executor {
 
    private:
     class Storage;
-    class CommandExecutor;
+    class ExecutorBase;
     class CommonExecutor;
     class RMExecutor;
     class RRExecutor;

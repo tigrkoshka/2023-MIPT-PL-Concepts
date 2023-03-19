@@ -50,6 +50,12 @@ void Executor::CommonExecutor::Divide(arch::TwoWords lhs,
     WReg(recv + 1) = static_cast<arch::Word>(remainder);
 }
 
+void Executor::CommonExecutor::Jump(flags::Flag flag, args::Address dst) {
+    if ((Flags() & flag) != 0) {
+        WReg(arch::kInstructionRegister, kInternalUse) = dst;
+    }
+}
+
 void Executor::CommonExecutor::Push(arch::Word value) {
     CheckPushAllowed();
     WMem(WReg(arch::kStackRegister, kInternalUse)--) = value;
@@ -57,12 +63,6 @@ void Executor::CommonExecutor::Push(arch::Word value) {
 
 void Executor::CommonExecutor::Pop(args::Receiver recv, arch::Word mod) {
     WReg(recv) = RMem(++WReg(arch::kStackRegister, kInternalUse)) + mod;
-}
-
-void Executor::CommonExecutor::Jump(flags::Flag flag, args::Address dst) {
-    if ((Flags() & flag) != 0) {
-        WReg(arch::kInstructionRegister, kInternalUse) = dst;
-    }
 }
 
 void Executor::CommonExecutor::PrepareCall() {

@@ -3,7 +3,7 @@
 #include <cstddef>     // for size_t
 #include <exception>   // for exception
 #include <filesystem>  // for path
-#include <iostream>    // for cout
+#include <iostream>    // for cerr
 #include <optional>    // for optional
 #include <string>      // for string
 #include <utility>     // for move
@@ -155,7 +155,7 @@ void Compiler::Impl::Compile(const std::string& src, const std::string& dst) {
     try {
         MustCompile(src, dst);
     } catch (const errors::Error& e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
     }
 }
 

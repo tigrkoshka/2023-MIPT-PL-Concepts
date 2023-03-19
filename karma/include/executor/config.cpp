@@ -118,21 +118,29 @@ void Config::UnboundStack() {
     max_stack_size_ = std::nullopt;
 }
 
-void Config::Strict() {
-    read_write_.BlockRegisters({
+Config Config::Strict() {
+    Config config;
+
+    config.read_write_.BlockRegisters({
         arch::kCallFrameRegister,
         arch::kInstructionRegister,
     });
-    write_.BlockRegisters({arch::kStackRegister});
+    config.write_.BlockRegisters({arch::kStackRegister});
 
-    read_write_.BlockCodeSegment();
-    write_.BlockConstantsSegment();
+    config.read_write_.BlockCodeSegment();
+    config.write_.BlockConstantsSegment();
+
+    return config;
 }
 
-void Config::ExtraStrict() {
-    read_write_.BlockUtilityRegisters();
-    read_write_.BlockCodeSegment();
-    read_write_.BlockConstantsSegment();
+Config Config::ExtraStrict() {
+    Config config;
+
+    config.read_write_.BlockUtilityRegisters();
+    config.read_write_.BlockCodeSegment();
+    config.read_write_.BlockConstantsSegment();
+
+    return config;
 }
 
 // NOLINTNEXTLINE(fuchsia-overloaded-operator)

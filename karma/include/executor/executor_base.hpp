@@ -9,16 +9,16 @@
 
 namespace karma {
 
-class Executor::CommandExecutor : detail::utils::traits::NonCopyableMovable {
+class Executor::ExecutorBase : detail::utils::traits::NonCopyableMovable {
    public:
     // delete the default constructor defined in NonCopyableMovable
-    CommandExecutor() = delete;
+    ExecutorBase() = delete;
 
     // do not make the following constructor explicit to be able to use it
     // to create children of CommandExecutor in a concise way
 
     // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
-    CommandExecutor(std::shared_ptr<Storage> storage)
+    ExecutorBase(std::shared_ptr<Storage> storage)
         : storage_(std::move(storage)){};
 
    protected:

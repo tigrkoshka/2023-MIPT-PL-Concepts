@@ -60,8 +60,8 @@ class Executor::Config {
     void BoundStack(size_t stack_size);
     void UnboundStack();
 
-    void Strict();
-    void ExtraStrict();
+    static Config Strict();
+    static Config ExtraStrict();
 
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     Config& operator&=(const Config&);

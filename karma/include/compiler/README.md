@@ -48,7 +48,7 @@ karma::
                         CompileError::Builder
 ```
 
-## Classes description
+## Design description
 
 ### Entrypoint and Labels
 

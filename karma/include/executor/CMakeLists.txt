@@ -7,7 +7,7 @@ add_library(
         rr_executor.cpp
         rm_executor.cpp
         common_executor.cpp
-        command_executor.cpp
+        executor_base.cpp
         storage.cpp
         config.cpp
         errors.cpp

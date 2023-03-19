@@ -5,7 +5,7 @@
 #include <filesystem>   // for path
 #include <fstream>      // for ofstream
 #include <iomanip>      // for setprecision
-#include <iostream>     // for cout
+#include <iostream>     // for cerr
 #include <sstream>      // for ostringstream
 #include <string>       // for string
 #include <type_traits>  // for make_signed_t
@@ -313,22 +313,26 @@ void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
 
 void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
                                          std::ostream& out) {
-    DisassembleImpl(exec_path, out);
+    using std::string_literals::operator""s;
+
+    try {
+        DisassembleImpl(exec_path, out);
+    } catch (const errors::Error& e) {
+        throw e;
+    } catch (const std::exception& e) {
+        throw errors::disassembler::Error(
+            "unexpected disassembler exception: "s + e.what());
+    } catch (...) {
+        throw errors::disassembler::Error("unexpected disassembler exception");
+    }
 }
 
 void Disassembler::Impl::Disassemble(const std::string& exec_path,
                                      std::ostream& out) {
     try {
-        DisassembleImpl(exec_path, out);
-    } catch (const errors::disassembler::Error& e) {
-        std::cout << e.what() << std::endl;
+        MustDisassemble(exec_path, out);
     } catch (const errors::Error& e) {
-        std::cout << e.what() << std::endl;
-    } catch (const std::exception& e) {
-        std::cout << "disassembler: unexpected exception: " << e.what()
-                  << std::endl;
-    } catch (...) {
-        std::cout << "disassembler: unexpected exception" << std::endl;
+        std::cerr << e.what() << std::endl;
     }
 }
 
@@ -377,7 +381,7 @@ void Disassembler::Impl::Disassemble(const std::string& exec_path,
     try {
         MustDisassemble(exec_path, dst);
     } catch (const errors::Error& e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
     }
 }
 

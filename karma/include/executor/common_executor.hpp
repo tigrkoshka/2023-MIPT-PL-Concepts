@@ -2,16 +2,16 @@
 
 #include <concepts>  // for totally_ordered
 
-#include "executor/command_executor.hpp"
 #include "executor/errors.hpp"
 #include "executor/executor.hpp"
+#include "executor/executor_base.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/flags.hpp"
 
 namespace karma {
 
-class Executor::CommonExecutor : public CommandExecutor {
+class Executor::CommonExecutor : public ExecutorBase {
    private:
     using ExecutionError = errors::executor::ExecutionError::Builder;
 
@@ -24,6 +24,10 @@ class Executor::CommonExecutor : public CommandExecutor {
 
     void PutTwoRegisters(detail::specs::arch::TwoWords,
                          detail::specs::cmd::args::Receiver);
+
+    void Divide(detail::specs::arch::TwoWords,
+                detail::specs::arch::TwoWords,
+                detail::specs::cmd::args::Receiver);
 
     template <std::totally_ordered T>
     void WriteComparisonToFlags(T lhs, T rhs) {
@@ -45,15 +49,11 @@ class Executor::CommonExecutor : public CommandExecutor {
         Flags() = detail::specs::flags::kEqual;
     }
 
-    void Divide(detail::specs::arch::TwoWords,
-                detail::specs::arch::TwoWords,
-                detail::specs::cmd::args::Receiver);
+    void Jump(detail::specs::flags::Flag, detail::specs::cmd::args::Address);
 
     void Push(detail::specs::arch::Word);
 
     void Pop(detail::specs::cmd::args::Receiver, detail::specs::arch::Word);
-
-    void Jump(detail::specs::flags::Flag, detail::specs::cmd::args::Address);
 
     void PrepareCall();
     detail::specs::cmd::args::Address Call(detail::specs::cmd::args::Address);
