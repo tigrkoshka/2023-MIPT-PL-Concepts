@@ -274,14 +274,14 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command,
         }
 
         case cmd::J: {
-            args::JArgs args = cmd::parse::J(command);
-
-            // do not confuse the reader with providing a label or
-            // a hexadecimal number as an unused operand
+            // do not confuse the reader with providing a label,
+            // a non-zero value ot a hexadecimal '0x0' as an unused operand
             if (cmd::kJIgnoreAddress.contains(code)) {
-                result << args.addr;
+                result << '0';
                 break;
             }
+
+            args::JArgs args = cmd::parse::J(command);
 
             if (std::optional<std::string> label =
                     labels.TryGetLabel(args.addr)) {

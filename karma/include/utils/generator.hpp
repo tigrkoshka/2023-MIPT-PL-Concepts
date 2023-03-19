@@ -137,9 +137,8 @@ class Generator {
             return handle_ == other.handle_;
         }
 
-        [[nodiscard]] bool operator!=(const Iterator& rhs) const noexcept {
-            return !(*this == rhs);
-        }
+        // operator != is defined automatically by the compiler since C++20,
+        // see https://clck.ru/33ox9D (CppReference)
 
         [[nodiscard]] const T& operator*() const noexcept {
             return *handle_.promise().GetValue();

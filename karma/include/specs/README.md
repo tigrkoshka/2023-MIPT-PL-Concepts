@@ -55,6 +55,7 @@ karma::
                         |       kCodeToFormat
                         |       kNameToCode
                         |       kCodeToName
+                        |       kJIgnoreAddress
                         |
                         |       args::
                         |       |       Register

@@ -26,7 +26,7 @@ std::string Disassembler::Labels::RecordConstantLabel(arch::Address address) {
 }
 
 void Disassembler::Labels::PrepareCommandLabels(const Exec::Data& data) {
-    auto constants_shift = static_cast<arch::Address>(data.code.size());
+    auto code_end_address = static_cast<arch::Address>(data.code.size());
 
     // use ordered set for the resulting labels indices
     // to be the same order as they appear in the code
@@ -42,7 +42,7 @@ void Disassembler::Labels::PrepareCommandLabels(const Exec::Data& data) {
             case cmd::RM: {
                 arch::Address addr = cmd::parse::RM(command).addr;
 
-                if (!constant_labels_.contains(constants_shift + addr)) {
+                if (addr < code_end_address) {
                     command_labels_addresses.insert(addr);
                 }
                 break;
@@ -53,7 +53,7 @@ void Disassembler::Labels::PrepareCommandLabels(const Exec::Data& data) {
 
                 // prevent unnecessary labels in RET and
                 if (!cmd::kJIgnoreAddress.contains(code) &&
-                    !constant_labels_.contains(constants_shift + addr)) {
+                    addr < code_end_address) {
                     command_labels_addresses.insert(addr);
                 }
                 break;

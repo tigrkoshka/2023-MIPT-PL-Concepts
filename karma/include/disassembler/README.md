@@ -49,31 +49,95 @@ karma::
 
 ### Labels
 
-The `Labels` class is used to
+The `Labels` class is used to assign labels to the constants and certain places
+of the code to make the disassembly (the result of disassembling) more
+human-readable.
+
+The labels assigned to the constants and the labels assigned to the instructions
+are stored separately.
+
+The constants labels are recoded using the `RecordConstantLabel` method that
+accepts the address of the constants, assigns it a label and returns the name
+of the assigned label.
+
+The command labels are assigned using the `PrepareCommandLabels` method.
+This method accepts the data extracted from the executable file
+(see [below](#impl) for details) and does the following:
+
+* Parses the code segment in search of `RM` and `J` type commands
+
+* Parses those commands and extracts their address operand
+
+* Skips the address and proceeds to the next command if one of
+  the following is true:
+
+    * the currently processed command is of `J` type and is contained by
+      the `karma::detail::specs::cmd::kJIgnoreAddress` set (i.e. if the operand
+      is ignored, see the [specs directory](../specs) for details)
+
+    * the address operand is outside the code segment, i.e. it either
+      refers to a constants (whose label should be assigned via
+      the `RecordConstantLabel` method) or to a place in the memory allocated
+      during runtime (i.e. such that there is no place in the disassembly
+      to put a label to represent this address)
+
+* If the conditions above do not apply, assigned a label to represent that
+  address
+
+* Additionally assigned a predefined `main` label to the entrypoint specified
+  by the provided exec data
+
+The `Labels` class also provides a `TryGetLabel` method, which searches for
+a label assigned to either a constant or a command and returns its name if one
+is found.
+
+> **Note**
+>
+> The difference of the design chosen to assign labels to the constants
+> versus to the commands is explained by the fact that we want to assign
+> a label to each constant regardless of whether that label will be used
+> somewhere in the code, but we only want to assign a label to an instruction
+> if it will be used as another command's argument to make the disassembly more
+> human-readable.
+>
+> Therefore, the constants segment needs to only be parsed once, and we can
+> combine producing the labels for the constants with generating their
+> declarations in the Karma assembler syntax. On the other hand, the code
+> segment needs to be parsed twice: once to get all the commands that we want
+> to assign labels to, and the second time to produce the commands in the Karma
+> assembler syntax using said labels.
+>
+> Consequently, the constants labels recording is managed in the respective
+> method of the `Impl` class (see [below](#impl) for details) and the `Labels`
+> class only provides a method to generate such labels. With regard to
+> the code segment, however, its first parsing is entirely decomposed into
+> the `Labels` class method, and the `Impl` class methods only use the results
+> it yields (see [below](#impl) for details).
 
 ### Impl
 
-The `Impl` class provides the business logic of the Karma executable file
-decompiling.
+The `Impl` class provides the main part of the business logic of the Karma
+executable file disassembling.
 
 The public methods of this class do the following:
 
-* Reads the executable file via `Exec::Read` (see the exec directory
+* Read the executable file via `Exec::Read` (see the exec directory
   [README](../exec/README.md) for details)
 
-* Creates a `Labels` class instance to assign labels to constants and certain
+* Create a `Labels` class instance to assign labels to constants and certain
   commands (see [above](#labels) for details)
 
-* Obtains the constants declarations by parsing the constants segment of
+* Obtain the constants declarations by parsing the constants segment of
   the executable file. The types of the constants are determined based on
   the one-word prefix before their values (see the *Constants* segment of
   the [docs](../../docs/Karma.pdf) for details). Each constant is assigned
-  a label, which is recorded in the `Labels` class instance
-
-* Calls the `PrepareCommandLabels` method of the `Labels` class instance
+  a label, which is recorded in the `Labels` class `RecordConstantLabel` method
   (see [above](#labels) for details)
 
-* Obtains the commands representation in the Karma assembler syntax by parsing
+* Call the `PrepareCommandLabels` method of the `Labels` class instance
+  (see [above](#labels) for details)
+
+* Obtain the commands representation in the Karma assembler syntax by parsing
   the code segment of the executable file. The commands are parsed via
   the functions in the `karma::specs::cmd::parse` namespace (see the specs
   directory [README](../specs/README.md) for details). If the current command
@@ -84,13 +148,19 @@ The public methods of this class do the following:
 >
 > For the `RM` and `J` type commands (except for the ones that ignore the
 > address operand) a label is tried to be used instead of a numeric value for
-> the address. The label is searched among the ones recorded in the `Labels`
-> class instance. Due to the constants labels recording and
-> the `PrepareCommandLabels` method of the `Labels` class instance logics
-> (see [above](#labels) for details), this attempt succeeds if and only if the
-> command's address operand is either inside the code or the constants segment.
+> the address.
+>
+> The label is searched the `Labels` class `TryGetLabel` method (see
+> [above](#labels) for details.
+>
+> Due to the logic of the constants labels recording and
+> the `PrepareCommandLabels` method of the `Labels` class (see [above](#labels)
+> for details), this attempt succeeds if and only if the command's address
+> operand is either inside the code or the constants segment.
+>
 > If the attempt failed, the address operand is written in a hexadecimal
-> representation.
+> representation (unless it is ignored, in which case a decimal `0` value
+> is written regardless of what the command's binary specified).
 
 * Finishes the disassembled program with an `end main` statement
 
