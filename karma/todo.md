@@ -8,6 +8,9 @@
     * Do not forget to update the main `compiler` directory
       [README](include/compiler/README.md) to specify this
 
+2. Decompiler: assign labels to the constants and to the function call and jump
+   commands address operands, then use them in the code
+
 ### General:
 
 1. Write a README in every folder (in the main one explain where are the tasks +
