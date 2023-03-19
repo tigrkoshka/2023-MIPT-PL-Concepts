@@ -28,6 +28,8 @@ struct InternalError::Builder : detail::utils::traits::Static {
                                                  Where);
 
     static InternalError EmptyWord(Where);
+
+    static InternalError NoEntrypointPosInLabelSubstitution();
 };
 
 struct CompileError::Builder : detail::utils::traits::Static {

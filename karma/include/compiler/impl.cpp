@@ -54,8 +54,15 @@ void Compiler::Impl::FillLabels(const FilesDataMap& files_data,
     if (std::optional<std::string> entry = labels->TryGetEntrypointLabel()) {
         std::optional<size_t> definition = labels->TryGetDefinition(*entry);
         if (!definition) {
-            throw CompileError::UndefinedLabel(
-                {*entry, *entrypoint->TryGetPos()});
+            std::optional<std::string> entry_pos = entrypoint->TryGetPos();
+            if (!entry_pos) {
+                // this is an internal error, because we have checked
+                // the presence of address in the Entrypoint on an earlier
+                // stage in the PrepareExecData method
+                throw InternalError::NoEntrypointPosInLabelSubstitution();
+            }
+
+            throw CompileError::UndefinedLabel({*entry, *entry_pos});
         }
 
         entrypoint->SetAddress(static_cast<args::Address>(*definition));
@@ -89,7 +96,8 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
         constants_size += files_data[i].Constants().size();
     }
 
-    if (!entrypoint->Seen()) {
+    std::optional<arch::Address> entrypoint_addr = entrypoint->TryGetAddress();
+    if (!entrypoint_addr) {
         throw CompileError::NoEntrypoint();
     }
 
@@ -98,7 +106,7 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
     FillLabels(files_data_map, labels, entrypoint);
 
     Exec::Data exec_data{
-        .entrypoint    = *entrypoint->TryGetAddress(),
+        .entrypoint    = *entrypoint_addr,
         .initial_stack = static_cast<arch::Word>(arch::kMemorySize - 1),
         .code          = std::vector<arch::Word>(),
         .constants     = std::vector<arch::Word>(),

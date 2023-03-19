@@ -22,8 +22,6 @@ class Compiler::Entrypoint : detail::utils::traits::NonCopyableMovable {
     [[nodiscard]] MaybeAddress TryGetAddress() const;
     [[nodiscard]] MaybePos TryGetPos() const;
 
-    [[nodiscard]] bool Seen() const;
-
    private:
     MaybeAddress address_;
     MaybePos pos_;

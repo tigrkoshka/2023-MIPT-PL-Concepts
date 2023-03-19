@@ -59,6 +59,13 @@ IE IE::Builder::EmptyWord(Where where) {
     return {"the current word is empty", where};
 }
 
+IE IE::Builder::NoEntrypointPosInLabelSubstitution() {
+    return IE{
+        "no entrypoint position is defined during the labels substitution "
+        "stage, although the entrypoint address is present, because otherwise "
+        "a compile error would have been thrown on an earlier stage"};
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 ///                            Compilation errors                            ///
 ////////////////////////////////////////////////////////////////////////////////

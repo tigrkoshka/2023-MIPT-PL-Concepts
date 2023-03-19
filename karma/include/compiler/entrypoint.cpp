@@ -27,8 +27,4 @@ Compiler::Entrypoint::MaybePos Compiler::Entrypoint::TryGetPos() const {
     return pos_;
 }
 
-bool Compiler::Entrypoint::Seen() const {
-    return address_ != std::nullopt;
-}
-
 }  // namespace karma
