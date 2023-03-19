@@ -1,7 +1,8 @@
 #include "commands.hpp"
 
-#include <string>
-#include <unordered_map>
+#include <string>         // for string
+#include <unordered_map>  // for unordered_map
+#include <unordered_set>  // for unordered_set
 
 #include "specs/architecture.hpp"
 #include "utils/map.hpp"
@@ -195,6 +196,8 @@ const std::unordered_map<std::string, Code> kNameToCode = {
 
 const std::unordered_map<Code, std::string> kCodeToName =
     utils::map::Revert(kNameToCode);
+
+const std::unordered_set<Code> kJIgnoreAddress = {PRC, RET};
 
 namespace parse {
 

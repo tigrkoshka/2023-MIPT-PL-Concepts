@@ -35,7 +35,9 @@ karma::                                     // disassembler.hpp
 
 ```c++
 karma::
-        Disassembler::Impl                  // impl.hpp
+        Disassembler:
+        |       Labels                      // labels.hpp
+        |       Impl                        // impl.hpp
         |
         errors::                            // errors.hpp
                 disassembler::
@@ -44,6 +46,10 @@ karma::
 ```
 
 ## Design description
+
+### Labels
+
+[comment]: <> (TODO)
 
 ### Impl
 
@@ -74,4 +80,5 @@ The public methods of this class do the following:
 ### Disassembler
 
 The `Disassembler` class is an exported static class simply wrapping the methods
-of the `Impl` class. It is also used as the namespace for the `Impl` class.
+of the `Impl` class. It is also used as the namespace for all the classes
+described above.

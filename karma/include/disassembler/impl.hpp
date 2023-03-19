@@ -28,15 +28,17 @@ class Disassembler::Impl : detail::utils::traits::Static {
     static std::string GetStringValue(const Segment& constants, size_t& pos);
 
     static void DisassembleConstants(const Segment& constants,
-                                     std::ostream& out);
+                                     std::ostream& out,
+                                     Labels& labels,
+                                     size_t code_size);
 
     static std::string GetRegister(detail::specs::cmd::args::Register);
 
-    static std::string GetCommandString(detail::specs::cmd::Bin);
+    static std::string GetCommandString(detail::specs::cmd::Bin, const Labels&);
 
     static void DisassembleCode(const Segment& code,
-                                size_t entrypoint,
-                                std::ostream& out);
+                                std::ostream& out,
+                                const Labels& labels);
 
     static void DisassembleImpl(const std::string& exec_path,
                                 std::ostream& out);

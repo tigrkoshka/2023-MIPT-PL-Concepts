@@ -1,6 +1,6 @@
-include char.krm
-include string.krm
-include uint32.krm
+include ../char.krm
+include ../string.krm
+include ../uint32.krm
 
 .enter_value_invite:
   string "Enter the value: "

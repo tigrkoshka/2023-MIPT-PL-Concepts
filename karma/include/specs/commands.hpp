@@ -4,6 +4,7 @@
 #include <string>         // for string
 #include <type_traits>    // for make_signed_t
 #include <unordered_map>  // for unordered_map
+#include <unordered_set>  // for unordered_set
 
 #include "specs/architecture.hpp"
 
@@ -116,6 +117,8 @@ extern const std::unordered_map<Format, std::string> kFormatToString;
 extern const std::unordered_map<Code, Format> kCodeToFormat;
 extern const std::unordered_map<std::string, Code> kNameToCode;
 extern const std::unordered_map<Code, std::string> kCodeToName;
+
+extern const std::unordered_set<Code> kJIgnoreAddress;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                   Args                                   ///

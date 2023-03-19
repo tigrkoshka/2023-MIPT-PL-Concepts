@@ -22,6 +22,7 @@ class Disassembler {
     friend struct errors::disassembler::DisassembleError;
 
    private:
+    class Labels;
     class Impl;
 
    public:
@@ -77,6 +78,7 @@ struct InternalError : Error {
 
 struct DisassembleError : Error {
    private:
+    friend class Disassembler::Labels;
     friend class Disassembler::Impl;
 
    private:

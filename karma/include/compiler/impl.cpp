@@ -96,8 +96,9 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
         constants_size += files_data[i].Constants().size();
     }
 
-    std::optional<arch::Address> entrypoint_addr = entrypoint->TryGetAddress();
-    if (!entrypoint_addr) {
+    // even if the entrypoint was defines via a label,
+    // the address should be recorded as 0 rather than std::nullopt
+    if (!entrypoint->TryGetAddress()) {
         throw CompileError::NoEntrypoint();
     }
 
@@ -106,7 +107,7 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
     FillLabels(files_data_map, labels, entrypoint);
 
     Exec::Data exec_data{
-        .entrypoint    = *entrypoint_addr,
+        .entrypoint    = *entrypoint->TryGetAddress(),
         .initial_stack = static_cast<arch::Word>(arch::kMemorySize - 1),
         .code          = std::vector<arch::Word>(),
         .constants     = std::vector<arch::Word>(),

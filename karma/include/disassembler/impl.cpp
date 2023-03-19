@@ -10,10 +10,12 @@
 #include <string>       // for string
 #include <type_traits>  // for make_signed_t
 
+#include "disassembler/labels.hpp"
 #include "exec/exec.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "specs/constants.hpp"
+#include "specs/syntax.hpp"
 #include "utils/error.hpp"
 #include "utils/strings.hpp"
 #include "utils/types.hpp"
@@ -25,6 +27,7 @@ namespace arch   = detail::specs::arch;
 namespace cmd    = detail::specs::cmd;
 namespace args   = cmd::args;
 namespace consts = detail::specs::consts;
+namespace syntax = detail::specs::syntax;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                      Disassembling a constant value                      ///
@@ -151,7 +154,9 @@ std::string Disassembler::Impl::GetStringValue(const Segment& constants,
 ////////////////////////////////////////////////////////////////////////////////
 
 void Disassembler::Impl::DisassembleConstants(const Segment& constants,
-                                              std::ostream& out) {
+                                              std::ostream& out,
+                                              Labels& labels,
+                                              size_t code_size) {
     size_t pos = 0;
 
     while (pos < constants.size()) {
@@ -160,6 +165,9 @@ void Disassembler::Impl::DisassembleConstants(const Segment& constants,
         if (!consts::kTypeToName.contains(type)) {
             throw DisassembleError::UnknownConstantType(type);
         }
+
+        auto curr_address         = static_cast<arch::Address>(code_size + pos);
+        std::string current_label = labels.RecordConstantLabel(curr_address);
 
         std::string value{};
 
@@ -188,7 +196,8 @@ void Disassembler::Impl::DisassembleConstants(const Segment& constants,
                 throw InternalError::UnprocessedConstantType(type);
         }
 
-        out << consts::kTypeToName.at(type) << " " << value << std::endl;
+        out << current_label << syntax::kLabelEnd << ' '
+            << consts::kTypeToName.at(type) << ' ' << value << std::endl;
     }
 }
 
@@ -204,7 +213,8 @@ std::string Disassembler::Impl::GetRegister(args::Register reg) {
     return arch::kRegisterNumToName.at(reg);
 }
 
-std::string Disassembler::Impl::GetCommandString(cmd::Bin command) {
+std::string Disassembler::Impl::GetCommandString(cmd::Bin command,
+                                                 const Labels& labels) {
     std::ostringstream result;
 
     cmd::Code code = cmd::GetCode(command);
@@ -224,6 +234,13 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command) {
             args::RMArgs args = cmd::parse::RM(command);
 
             result << GetRegister(args.reg) << " ";
+
+            if (std::optional<std::string> label =
+                    labels.TryGetLabel(args.addr)) {
+                result << *label;
+                break;
+            }
+
             result << "0x" << std::hex << args.addr;
 
             break;
@@ -259,6 +276,19 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command) {
         case cmd::J: {
             args::JArgs args = cmd::parse::J(command);
 
+            // do not confuse the reader with providing a label or
+            // a hexadecimal number as an unused operand
+            if (cmd::kJIgnoreAddress.contains(code)) {
+                result << args.addr;
+                break;
+            }
+
+            if (std::optional<std::string> label =
+                    labels.TryGetLabel(args.addr)) {
+                result << *label;
+                break;
+            }
+
             result << "0x" << std::hex << args.addr;
 
             break;
@@ -277,23 +307,20 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void Disassembler::Impl::DisassembleCode(const Segment& code,
-                                         size_t entrypoint,
-                                         std::ostream& out) {
-    for (size_t i = 0; i < entrypoint; ++i) {
-        out << GetCommandString(code[i]) << std::endl;
+                                         std::ostream& out,
+                                         const Labels& labels) {
+    for (size_t command_num = 0; command_num < code.size(); ++command_num) {
+        auto curr_address = static_cast<arch::Address>(command_num);
+        if (std::optional<std::string> label =
+                labels.TryGetLabel(curr_address)) {
+            out << std::endl << *label << syntax::kLabelEnd << std::endl;
+        }
+
+        out << "    " << GetCommandString(code[command_num], labels)
+            << std::endl;
     }
 
-    if (entrypoint != 0) {
-        out << std::endl;
-    }
-
-    out << "main:" << std::endl;
-
-    for (size_t i = entrypoint; i < code.size(); ++i) {
-        out << "    " << GetCommandString(code[i]) << std::endl;
-    }
-
-    out << "end main" << std::endl;
+    out << "end " << labels.MainLabel() << std::endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -304,11 +331,16 @@ void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
                                          std::ostream& out) {
     Exec::Data data = Exec::Read(exec_path);
 
-    DisassembleConstants(data.constants, out);
+    Labels labels;
 
+    DisassembleConstants(data.constants, out, labels, data.code.size());
+
+    // newline between constants and code
     out << std::endl;
 
-    DisassembleCode(data.code, data.entrypoint, out);
+    labels.PrepareCommandLabels(data);
+
+    DisassembleCode(data.code, out, labels);
 }
 
 void Disassembler::Impl::MustDisassemble(const std::string& exec_path,

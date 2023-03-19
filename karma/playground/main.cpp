@@ -1,17 +1,26 @@
 #include <iostream>
 #include <karma>
+#include <string>
+
+std::string Assembler(const std::string& filepath) {
+    return filepath + ".krm";
+}
+
+std::string Exec(const std::string& filepath) {
+    return filepath + ".a";
+}
 
 int main() {
-    karma::Compiler::MustCompile("../programs/print/playground_uint32.krm");
+    std::string filepath = "../programs/print/playgrounds/uint32";
+
+    karma::Compiler::Compile(Assembler(filepath));
 
     karma::Executor executor;
-    uint32_t ret_code =
-        executor.MustExecute("../programs/print/playground_uint32.a");
+    uint32_t ret_code = executor.Execute(Exec(filepath));
 
     std::cout << "executable returned code " << ret_code << std::endl;
 
-    karma::Disassembler::MustDisassemble(
-        "../programs/print/playground_uint32.a");
+    karma::Disassembler::Disassemble(Exec(filepath));
 
     return 0;
 }
