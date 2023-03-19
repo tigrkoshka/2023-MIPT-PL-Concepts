@@ -49,7 +49,7 @@ karma::
 
 ### Labels
 
-[comment]: <> (TODO)
+The `Labels` class is used to
 
 ### Impl
 
@@ -61,19 +61,36 @@ The public methods of this class do the following:
 * Reads the executable file via `Exec::Read` (see the exec directory
   [README](../exec/README.md) for details)
 
+* Creates a `Labels` class instance to assign labels to constants and certain
+  commands (see [above](#labels) for details)
+
 * Obtains the constants declarations by parsing the constants segment of
   the executable file. The types of the constants are determined based on
   the one-word prefix before their values (see the *Constants* segment of
-  the [docs](../../docs/Karma.pdf) for details)
+  the [docs](../../docs/Karma.pdf) for details). Each constant is assigned
+  a label, which is recorded in the `Labels` class instance
+
+* Calls the `PrepareCommandLabels` method of the `Labels` class instance
+  (see [above](#labels) for details)
 
 * Obtains the commands representation in the Karma assembler syntax by parsing
   the code segment of the executable file. The commands are parsed via
   the functions in the `karma::specs::cmd::parse` namespace (see the specs
-  directory [README](../specs/README.md) for details).
+  directory [README](../specs/README.md) for details). If the current command
+  address was assigned a label on the previous step, the label is put on
+  a separate line and an additional newline is put before it
 
-* Assigns a `main` label to the entrypoint address, i.e. places it before the
-  command that has the address specified as the entrypoint by the contents of
-  the executable file
+> **Note**
+>
+> For the `RM` and `J` type commands (except for the ones that ignore the
+> address operand) a label is tried to be used instead of a numeric value for
+> the address. The label is searched among the ones recorded in the `Labels`
+> class instance. Due to the constants labels recording and
+> the `PrepareCommandLabels` method of the `Labels` class instance logics
+> (see [above](#labels) for details), this attempt succeeds if and only if the
+> command's address operand is either inside the code or the constants segment.
+> If the attempt failed, the address operand is written in a hexadecimal
+> representation.
 
 * Finishes the disassembled program with an `end main` statement
 
