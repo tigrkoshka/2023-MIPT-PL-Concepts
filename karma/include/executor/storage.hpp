@@ -2,6 +2,7 @@
 
 #include <array>    // for array
 #include <cstddef>  // for size_t
+#include <ostream>  // for ostream
 #include <utility>  // for pair
 #include <vector>   // for vector
 
@@ -22,11 +23,12 @@ class Executor::Storage : detail::utils::traits::NonCopyableMovable {
     using Word   = detail::specs::arch::Word;
 
    public:
-    explicit Storage(Config config = Config())
+    explicit Storage(Config config)
         : base_config_(std::move(config)) {}
 
     void PrepareForExecution(const Exec::Data& exec_data,
-                             const Config& config = Config());
+                             const Config& config,
+                             std::ostream& log);
 
     void CheckPushAllowed();
 

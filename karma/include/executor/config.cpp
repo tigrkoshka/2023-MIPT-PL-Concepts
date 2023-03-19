@@ -1,6 +1,7 @@
 #include "config.hpp"
 
 #include <algorithm>      // for min
+#include <iostream>       // for ostream, ios
 #include <optional>       // for optional
 #include <unordered_set>  // for erase_if
 #include <utility>        // for move
@@ -201,6 +202,41 @@ size_t Config::MaxStackSize() const {
 
 size_t Config::MinStackAddress() const {
     return arch::kMemorySize - MaxStackSize();
+}
+
+// NOLINTNEXTLINE(fuchsia-overloaded-operator)
+std::ostream& operator<<(std::ostream& out, const Config& config) {
+    out << "write blocked registers: {";
+    for (arch::Register reg : config.write_.blocked_registers_) {
+        out << arch::kRegisterNumToName.at(reg) << ", ";
+    }
+    out << "}" << std::endl;
+
+    out << "read-write blocked registers: {";
+    for (arch::Register reg : config.read_write_.blocked_registers_) {
+        out << arch::kRegisterNumToName.at(reg) << ", ";
+    }
+    out << "}" << std::endl;
+
+    out << std::boolalpha << "code segment blocks: " << std::endl
+        << "    write:      " << config.write_.code_segment_blocked_
+        << std::endl
+        << "    read-write: " << config.read_write_.code_segment_blocked_
+        << std::endl
+        << "constants segment blocks: " << std::endl
+        << "    write:      " << config.write_.constants_segment_blocked_
+        << std::endl
+        << "    read-write: " << config.read_write_.constants_segment_blocked_
+        << std::endl;
+
+    out << "stack: ";
+    if (!config.max_stack_size_) {
+        out << "unbounded";
+    } else {
+        out << std::endl << "    max size: " << *config.max_stack_size_;
+    }
+
+    return out;
 }
 
 }  // namespace karma

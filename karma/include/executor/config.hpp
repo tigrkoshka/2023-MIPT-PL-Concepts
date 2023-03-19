@@ -11,12 +11,18 @@ namespace karma {
 
 class Executor::Config {
    private:
+    // NOLINTNEXTLINE(fuchsia-overloaded-operator)
+    friend std::ostream& operator<<(std::ostream&, const Config&);
+
+   private:
     using Registers = std::unordered_set<uint32_t>;
 
    private:
     class AccessConfig {
        private:
         friend class Config;
+        // NOLINTNEXTLINE(fuchsia-overloaded-operator)
+        friend std::ostream& operator<<(std::ostream&, const Config&);
 
        public:
         void SetBlockedRegisters(const Registers&);
@@ -86,5 +92,8 @@ class Executor::Config {
 
     std::optional<size_t> max_stack_size_;
 };
+
+// NOLINTNEXTLINE(fuchsia-overloaded-operator)
+std::ostream& operator<<(std::ostream&, const Executor::Config&);
 
 }  // namespace karma

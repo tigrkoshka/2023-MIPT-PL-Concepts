@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ostream>  // for ostream
-#include <string>   // for string
+#include <iostream>  // for ostream, clog
+#include <string>    // for string
 
 #include "utils/error.hpp"
 
@@ -42,15 +42,20 @@ class Disassembler {
 
    public:
     static void MustDisassemble(const std::string& exec_path,
-                                std::ostream& out);
-
-    static void Disassemble(const std::string& exec_path, std::ostream& out);
-
-    static void MustDisassemble(const std::string& exec_path,
-                                const std::string& dst = "");
+                                std::ostream& out,
+                                std::ostream& log = std::clog);
 
     static void Disassemble(const std::string& exec_path,
-                            const std::string& dst = "");
+                            std::ostream& out,
+                            std::ostream& log = std::clog);
+
+    static void MustDisassemble(const std::string& exec_path,
+                                const std::string& dst = "",
+                                std::ostream& log      = std::clog);
+
+    static void Disassemble(const std::string& exec_path,
+                            const std::string& dst = "",
+                            std::ostream& log      = std::clog);
 };
 
 namespace errors::disassembler {

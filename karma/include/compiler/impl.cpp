@@ -3,7 +3,7 @@
 #include <cstddef>     // for size_t
 #include <exception>   // for exception
 #include <filesystem>  // for path
-#include <iostream>    // for cerr
+#include <iostream>    // for ostream, cerr
 #include <optional>    // for optional
 #include <string>      // for string
 #include <utility>     // for move
@@ -73,7 +73,8 @@ void Compiler::Impl::FillLabels(const FilesDataMap& files_data,
 ///                                Prepare data                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
+Exec::Data Compiler::Impl::PrepareExecData(const Files& files,
+                                           std::ostream& log) {
     // TODO: multithreading
     std::shared_ptr<Labels> labels         = std::make_shared<Labels>();
     std::shared_ptr<Entrypoint> entrypoint = std::make_shared<Entrypoint>();
@@ -83,11 +84,16 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
     size_t code_size      = 0;
     size_t constants_size = 0;
     for (size_t i = 0; i < files.size(); ++i) {
+        log << "[compiler]: compiling " << files[i]->Path() << std::endl;
+
         FileCompiler file_compiler{files[i],
                                    labels,
                                    entrypoint,
                                    code_size,
                                    constants_size};
+
+        log << "[compiler]: successfully compiled " << files[i]->Path()
+            << std::endl;
 
         files_data[i]                  = std::move(file_compiler).PrepareData();
         files_data_map[files[i].get()] = &files_data[i];
@@ -104,7 +110,13 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
 
     labels->SetCodeSize(code_size);
 
+    log << "[compiler]: substituting labels" << std::endl;
+
     FillLabels(files_data_map, labels, entrypoint);
+
+    log << "[compiler]: successfully substituted labels" << std::endl;
+
+    log << "[compiler]: preparing exec data" << std::endl;
 
     Exec::Data exec_data{
         .entrypoint    = *entrypoint->TryGetAddress(),
@@ -118,6 +130,8 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
         utils::vector::Append(exec_data.constants, data.Constants());
     }
 
+    log << "[compiler]: successfully prepared exec data" << std::endl;
+
     return exec_data;
 }
 
@@ -126,10 +140,16 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void Compiler::Impl::CompileImpl(const std::string& src,
-                                 const std::string& dst) {
+                                 const std::string& dst,
+                                 std::ostream& log) {
+    log << "[compiler]: parsing includes" << std::endl;
+
     std::vector<std::unique_ptr<File>> files = IncludesManager().GetFiles(src);
 
-    Exec::Data data = PrepareExecData(files);
+    log << "[compiler]: successfully parsed includes, obtained " << files.size()
+        << " files" << std::endl;
+
+    Exec::Data data = PrepareExecData(files, log);
 
     std::string exec_path = dst;
     if (exec_path.empty()) {
@@ -141,35 +161,46 @@ void Compiler::Impl::CompileImpl(const std::string& src,
         exec_path = dst_path.string();
     }
 
+    log << "[compiler]: writing exec data to file" << std::endl;
+
     Exec::Write(data, exec_path);
+
+    log << "[compiler]: successfully written exec data to file" << std::endl;
 }
 
 void Compiler::Impl::MustCompile(const std::string& src,
-                                 const std::string& dst) {
+                                 const std::string& dst,
+                                 std::ostream& log) {
     using std::string_literals::operator""s;
 
     try {
-        CompileImpl(src, dst);
+        CompileImpl(src, dst, log);
     } catch (const errors::compiler::Error& e) {
+        log << "[compiler]: error: " << e.what() << std::endl;
         throw e;
     } catch (const errors::Error& e) {
+        log << "[compiler]: error: " << e.what() << std::endl;
         throw errors::compiler::Error(
             "error during compilation process "
             "(not directly related to the compilation itself): "s +
             e.what());
     } catch (const std::exception& e) {
+        log << "[compiler]: unexpected exception: " << e.what() << std::endl;
         throw errors::compiler::Error("unexpected exception in compiler: "s +
                                       e.what());
     } catch (...) {
+        log << "[compiler]: unexpected exception" << std::endl;
         throw errors::compiler::Error(
             "unexpected exception in compiler "
             "(no additional info can be provided)");
     }
 }
 
-void Compiler::Impl::Compile(const std::string& src, const std::string& dst) {
+void Compiler::Impl::Compile(const std::string& src,
+                             const std::string& dst,
+                             std::ostream& log) {
     try {
-        MustCompile(src, dst);
+        MustCompile(src, dst, log);
     } catch (const errors::Error& e) {
         std::cerr << e.what() << std::endl;
     }

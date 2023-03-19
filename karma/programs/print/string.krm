@@ -9,14 +9,14 @@ print_string:
 
         # break if the current character is '\0'
         cmpi r1 0
-        jeq out
+        jeq __print_string.out
 
         # print the current character
         syscall r1 105
 
         # proceed to the next character
         addi r0 1
-        jmp loop
+        jmp __print_string.loop
     __print_string.out:
         # return
         ret 0

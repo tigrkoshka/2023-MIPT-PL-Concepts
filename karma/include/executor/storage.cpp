@@ -1,5 +1,7 @@
 #include "storage.hpp"
 
+#include <ostream>  // for ostream
+
 #include "exec/exec.hpp"
 #include "executor/config.hpp"
 #include "specs/architecture.hpp"
@@ -11,8 +13,12 @@ namespace utils = detail::utils;
 namespace arch  = detail::specs::arch;
 
 void Executor::Storage::PrepareForExecution(const Exec::Data& exec_data,
-                                            const Config& config) {
+                                            const Config& config,
+                                            std::ostream& log) {
     curr_config_ = base_config_ & config;
+
+    log << "[executor]: current execution config:" << std::endl
+        << curr_config_ << std::endl;
 
     utils::vector::CopyToBegin(memory_, exec_data.code, exec_data.constants);
     curr_code_end_      = exec_data.code.size();

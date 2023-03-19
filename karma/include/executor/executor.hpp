@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>   // for uint32_t
+#include <iostream>  // for ostream, clog
 #include <memory>    // for unique_ptr
 #include <optional>  // for optional
 #include <string>    // for string
@@ -62,11 +63,17 @@ class Executor {
     // cannot use default value for Config, because it is declared
     // in another file, which includes this one
 
-    ReturnCode MustExecute(const std::string& exec_path);
-    ReturnCode Execute(const std::string& exec_path);
+    ReturnCode MustExecute(const std::string& exec_path,
+                           std::ostream& log = std::clog);
+    ReturnCode Execute(const std::string& exec_path,
+                       std::ostream& log = std::clog);
 
-    ReturnCode MustExecute(const std::string& exec_path, const Config&);
-    ReturnCode Execute(const std::string& exec_path, const Config&);
+    ReturnCode MustExecute(const std::string& exec_path,
+                           const Config&,
+                           std::ostream& log = std::clog);
+    ReturnCode Execute(const std::string& exec_path,
+                       const Config&,
+                       std::ostream& log = std::clog);
 
    private:
     std::unique_ptr<Impl> impl_;

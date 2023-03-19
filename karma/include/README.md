@@ -205,5 +205,3 @@ try {
     // handle any possible error
 }
 ```
-
-

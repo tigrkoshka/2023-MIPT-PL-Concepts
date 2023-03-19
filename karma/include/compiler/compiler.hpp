@@ -1,6 +1,7 @@
 #pragma once
 
-#include <string>  // for string
+#include <iostream>  // for ostream, clog
+#include <string>    // for string
 
 #include "utils/error.hpp"
 
@@ -46,8 +47,11 @@ class Compiler {
 
    public:
     static void MustCompile(const std::string& src,
-                            const std::string& dst = "");
-    static void Compile(const std::string& src, const std::string& dst = "");
+                            const std::string& dst = "",
+                            std::ostream& log      = std::clog);
+    static void Compile(const std::string& src,
+                        const std::string& dst = "",
+                        std::ostream& log      = std::clog);
 };
 
 namespace errors::compiler {

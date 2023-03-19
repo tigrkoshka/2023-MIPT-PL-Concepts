@@ -328,38 +328,61 @@ void Disassembler::Impl::DisassembleCode(const Segment& code,
 ////////////////////////////////////////////////////////////////////////////////
 
 void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
-                                         std::ostream& out) {
+                                         std::ostream& out,
+                                         std::ostream& log) {
+    log << "[disassembler]: reading the executable file" << std::endl;
+
     Exec::Data data = Exec::Read(exec_path);
+
+    log << "[disassembler]: successfully read the executable file" << std::endl;
 
     Labels labels;
 
+    log << "[disassembler]: disassembling constants" << std::endl;
+
     DisassembleConstants(data.constants, out, labels, data.code.size());
+
+    log << "[disassembler]: successfully disassembled constants" << std::endl;
 
     // newline between constants and code
     out << std::endl;
 
+    log << "[disassembler]: preparing commands labels" << std::endl;
+
     labels.PrepareCommandLabels(data);
 
+    log << "[disassembler]: successfully prepared commands labels" << std::endl;
+
+    log << "[disassembler]: disassembling commands" << std::endl;
+
     DisassembleCode(data.code, out, labels);
+
+    log << "[disassembler]: successfully disassembled commands" << std::endl;
 }
 
 void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
-                                         std::ostream& out) {
+                                         std::ostream& out,
+                                         std::ostream& log) {
     using std::string_literals::operator""s;
 
     try {
-        DisassembleImpl(exec_path, out);
+        DisassembleImpl(exec_path, out, log);
     } catch (const errors::disassembler::Error& e) {
+        log << "[disassembler]: error: " << e.what() << std::endl;
         throw e;
     } catch (const errors::Error& e) {
+        log << "[disassembler]: error: " << e.what() << std::endl;
         throw errors::disassembler::Error(
             "error during disassembling process: "
             "(not directly related to the disassembling itself): "s +
             e.what());
     } catch (const std::exception& e) {
+        log << "[disassembler]: unexpected exception: " << e.what()
+            << std::endl;
         throw errors::disassembler::Error(
             "unexpected exception in disassembler: "s + e.what());
     } catch (...) {
+        log << "[disassembler]: unexpected exception" << std::endl;
         throw errors::disassembler::Error(
             "unexpected exception in disassembler "
             "(no additional info can be provided)");
@@ -367,9 +390,10 @@ void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
 }
 
 void Disassembler::Impl::Disassemble(const std::string& exec_path,
-                                     std::ostream& out) {
+                                     std::ostream& out,
+                                     std::ostream& log) {
     try {
-        MustDisassemble(exec_path, out);
+        MustDisassemble(exec_path, out, log);
     } catch (const errors::Error& e) {
         std::cerr << e.what() << std::endl;
     }
@@ -380,7 +404,8 @@ void Disassembler::Impl::Disassemble(const std::string& exec_path,
 ////////////////////////////////////////////////////////////////////////////////
 
 void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
-                                         const std::string& dst) {
+                                         const std::string& dst,
+                                         std::ostream& log) {
     std::string real_dst = dst;
     if (real_dst.empty()) {
         std::filesystem::path src_path(exec_path);
@@ -396,26 +421,32 @@ void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
         throw InternalError::FailedToOpen(real_dst);
     }
 
-    return DisassembleImpl(exec_path, out);
+    return DisassembleImpl(exec_path, out, log);
 }
 
 void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
-                                         const std::string& dst) {
+                                         const std::string& dst,
+                                         std::ostream& log) {
     using std::string_literals::operator""s;
 
     try {
-        DisassembleImpl(exec_path, dst);
+        DisassembleImpl(exec_path, dst, log);
     } catch (const errors::disassembler::Error& e) {
+        log << "[disassembler]: error: " << e.what() << std::endl;
         throw e;
     } catch (const errors::Error& e) {
+        log << "[disassembler]: error: " << e.what() << std::endl;
         throw errors::disassembler::Error(
             "error during disassembling process: "
             "(not directly related to the disassembling itself): "s +
             e.what());
     } catch (const std::exception& e) {
+        log << "[disassembler]: unexpected exception: " << e.what()
+            << std::endl;
         throw errors::disassembler::Error(
             "unexpected exception in disassembler: "s + e.what());
     } catch (...) {
+        log << "[disassembler]: unexpected exception" << std::endl;
         throw errors::disassembler::Error(
             "unexpected exception in disassembler "
             "(no additional info can be provided)");
@@ -423,9 +454,10 @@ void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
 }
 
 void Disassembler::Impl::Disassemble(const std::string& exec_path,
-                                     const std::string& dst) {
+                                     const std::string& dst,
+                                     std::ostream& log) {
     try {
-        MustDisassemble(exec_path, dst);
+        MustDisassemble(exec_path, dst, log);
     } catch (const errors::Error& e) {
         std::cerr << e.what() << std::endl;
     }

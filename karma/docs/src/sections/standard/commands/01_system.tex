@@ -45,17 +45,15 @@ The semantics of those codes is described in Table 4:
             102  & \St{PRINTINT}    & Output a \St{uint32} to \St{stdout}                   & Source            \\
             103  & \St{PRINTDOUBLE} & Output \St{double} value to \St{stdout}               & Low bits source   \\
             104  & \St{GETCHAR}     & Get a single \St{ASCII} character from \St{stdin}     & Receiver          \\
-            105  & \St{PUTCHAR}     & Output a single \St{ASCII} character from \St{stdout} & Source            \\
+            105  & \St{PUTCHAR}     & Output a single \St{ASCII} character to \St{stdout} & Source            \\
             \hline
         \end{tabular}
     \end{table}
 }
 
 Specifying a value for the \St{syscall} immediate operand not listed in
-the table above leads to an error during compilation or execution
-(depending on whether such a value was originally specified in an assembler
-code or in a handcrafted executable file).
+the table above leads to an execution error.
 
 If the source register for the \St{PUTCHAR} system call contains a value greater
 than 255 (that is, not representing an \St{ASCII} character), an execution error
-will occur.
+occurs.

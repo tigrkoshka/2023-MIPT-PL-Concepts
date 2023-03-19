@@ -28,17 +28,17 @@ memory cell/register is \textit{always} considered to be the first one
     \subsubsection{Source modifier and immediate value: two's complement}
 }
 
-The \St{RR} and \St{RI} commands both accept a signed integral operand, which
+The \St{RR} and \St{RI} format commands both accept a signed integral operand, which
 cannot be straightforwardly represented using the basic types (because there
 are no signed integral basic types).
 
 The signed integral values always have the two's complement representation
 (see \href{https://en.wikipedia.org/wiki/Two\%27s_complement}{Wiki} for details).
-Such a representation is dependant on the bit size of the type that holds the
+Such a representation is dependent on the bit size of the type that holds the
 value.
 Therefore, in the binary representation of a command, the same value may
 be represented differently if it is a source modifier versus an immediate value.
-That occurs iff the value is negative.
+That occurs if and only if the value is negative.
 
 Before usage, both the source modifier and the immediate value are transformed
 to \St{uint32} using the 32-bit two's complement representation for
@@ -54,11 +54,13 @@ produces intuitive additive operations results
 Therefore, when specifying the source modifier, one does not need to think about
 the signed integral values representation, and may simply assume that
 the \textit{signed} source modifier value is added to the \textit{unsigned}
-source register value in a purely mathematical sense of things, after which
+source register value in the purely mathematical sense of things, after which
 the resulting value is taken modulo $2^{32}$.
 
 Note, that the addition of the source modifier to the source register value
 always happens \textit{before} the main operation (unless, of course,
 the command's documentation states that the source modifier is ignored).
-Therefore, all \Ss{RI} commands that do not ignore the source modifier
-effectively accept two \St{uint32} operands.
+Therefore, all the operations represented by \Ss{RI} format commands
+that do not ignore the source modifier effectively accept two \St{uint32}
+operands, the value from the receiver register and the sum of the value
+from the source register and the source modifier.

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>   // for shared_ptr
+#include <ostream>  // for ostream
 #include <string>   // for string
 #include <utility>  // for move
 
@@ -24,18 +25,26 @@ class Executor::Impl : detail::utils::traits::NonCopyableMovable {
 
    private:
     MaybeReturnCode ExecuteCmd(detail::specs::cmd::Bin);
-    ReturnCode ExecuteImpl(const std::string& exec, const Config& = Config());
+    ReturnCode ExecuteImpl(const std::string& exec,
+                           const Config&,
+                           std::ostream& log);
 
    public:
+    // delete the default constructor defined in NonCopyableMovable
+    Impl() = delete;
+
     explicit Impl(Config config = Config())
         : storage_(std::make_shared<Storage>(std::move(config))) {}
 
     ReturnCode MustExecute(const std::string& exec_path,
-                           const Config& = Config());
-    ReturnCode Execute(const std::string& exec_path, const Config& = Config());
+                           const Config&,
+                           std::ostream& log);
+    ReturnCode Execute(const std::string& exec_path,
+                       const Config&,
+                       std::ostream&);
 
    private:
-    std::shared_ptr<Storage> storage_ = std::make_shared<Storage>();
+    std::shared_ptr<Storage> storage_;
 
     // we store the maps as const to avoid accessing them via the operator[]
     // and to force ourselves to check the .contains method before calling .at
