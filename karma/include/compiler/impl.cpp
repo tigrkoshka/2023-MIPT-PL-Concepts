@@ -149,13 +149,20 @@ void Compiler::Impl::MustCompile(const std::string& src,
 
     try {
         CompileImpl(src, dst);
-    } catch (const errors::Error& e) {
+    } catch (const errors::compiler::Error& e) {
         throw e;
+    } catch (const errors::Error& e) {
+        throw errors::compiler::Error(
+            "error during compilation process "
+            "(not directly related to the compilation itself): "s +
+            e.what());
     } catch (const std::exception& e) {
-        throw errors::compiler::Error("unexpected compiler exception: "s +
+        throw errors::compiler::Error("unexpected exception in compiler: "s +
                                       e.what());
     } catch (...) {
-        throw errors::compiler::Error("unexpected compiler exception");
+        throw errors::compiler::Error(
+            "unexpected exception in compiler "
+            "(no additional info can be provided)");
     }
 }
 

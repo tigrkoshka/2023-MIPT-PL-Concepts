@@ -317,13 +317,20 @@ void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
 
     try {
         DisassembleImpl(exec_path, out);
-    } catch (const errors::Error& e) {
+    } catch (const errors::disassembler::Error& e) {
         throw e;
+    } catch (const errors::Error& e) {
+        throw errors::disassembler::Error(
+            "error during disassembling process: "
+            "(not directly related to the disassembling itself): "s +
+            e.what());
     } catch (const std::exception& e) {
         throw errors::disassembler::Error(
-            "unexpected disassembler exception: "s + e.what());
+            "unexpected exception in disassembler: "s + e.what());
     } catch (...) {
-        throw errors::disassembler::Error("unexpected disassembler exception");
+        throw errors::disassembler::Error(
+            "unexpected exception in disassembler "
+            "(no additional info can be provided)");
     }
 }
 
@@ -366,13 +373,20 @@ void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
 
     try {
         DisassembleImpl(exec_path, dst);
-    } catch (const errors::Error& e) {
+    } catch (const errors::disassembler::Error& e) {
         throw e;
+    } catch (const errors::Error& e) {
+        throw errors::disassembler::Error(
+            "error during disassembling process: "
+            "(not directly related to the disassembling itself): "s +
+            e.what());
     } catch (const std::exception& e) {
         throw errors::disassembler::Error(
-            "unexpected disassembler exception: "s + e.what());
+            "unexpected exception in disassembler: "s + e.what());
     } catch (...) {
-        throw errors::disassembler::Error("unexpected disassembler exception");
+        throw errors::disassembler::Error(
+            "unexpected exception in disassembler "
+            "(no additional info can be provided)");
     }
 }
 

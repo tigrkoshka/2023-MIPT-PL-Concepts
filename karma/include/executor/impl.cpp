@@ -97,13 +97,20 @@ Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec_path,
 
     try {
         return ExecuteImpl(exec_path, config);
-    } catch (const errors::Error& e) {
+    } catch (const errors::executor::Error& e) {
         throw e;
+    } catch (const errors::Error& e) {
+        throw errors::executor::Error(
+            "error during execution process: "
+            "(not directly related to the execution itself): "s +
+            e.what());
     } catch (const std::exception& e) {
-        throw errors::executor::Error("unexpected executor exception: "s +
+        throw errors::executor::Error("unexpected exception in executor: "s +
                                       e.what());
     } catch (...) {
-        throw errors::executor::Error("unexpected executor exception");
+        throw errors::executor::Error(
+            "unexpected exception in executor "
+            "(no additional info can be provided)");
     }
 }
 

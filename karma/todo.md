@@ -1,12 +1,6 @@
 ### Features:
 
-1. Make each block return an error of its `Error` type.
-    * the only thing that is not not in accordance with that is the
-      exec::Error, catch that in the `Must` prefixed functions.
-    * Do not forget to update the main `karma` library
-      [README](include/README.md) to specify this
-
-2. Multithreading in compilation
+1. Multithreading in compilation
     * The `Labels` and the `Entrypoint` should be their own in
       the `FileCompiler`, with later merging, because the labels
       definitions are dependant on the size of the previously compiled
