@@ -1,20 +1,19 @@
 \hypertarget{constants}{
-	\subsection{Constants}
+    \subsection{Constants}
 }
 
-One can define a constant of any \hyperlink{types:basic}{basic type} 
+One can define a constant of any \hyperlink{types:basic}{basic type}
 as well as of two additional types: \St{char} and \St{string}.
 
 Syntax sample: \St{uint32 123}
 
-For consistent disassembling purposes any constant's memory representation 
+For consistent disassembling purposes any constant's memory representation
 is preceded with a one-word unique type identifier.
 
 \vspace{-0.35cm}
-
 \paragraph{\St{uint32}, \St{uint64}}\
 
-These values may be represented in all the same 
+These values may be represented in all the same
 \hyperlink{operand:representation}{ways} as command operands.
 
 The negative values are processed in the \hyperlink{types:twos_complement}
@@ -28,12 +27,11 @@ For storage details see
 \hyperlink{types:two_words_storage}{the respective section}.
 
 \vspace{-0.35cm}
-
 \paragraph{\St{double}}\
 
 A \St{double} constant may be represented either in a decimal or
 a hexadecimal formats.
-Both these formats are described with the 
+Both these formats are described with the
 \href{https://en.cppreference.com/w/cpp/string/basic_string/stof}{std::stod}
 function of the C++ standard.
 
@@ -41,7 +39,6 @@ For storage details see
 \hyperlink{types:two_words_storage}{the respective section}.
 
 \vspace{-0.35cm}
-
 \paragraph{\St{char}}\
 
 A \St{char} constant value must be surrounded with single quotes.
@@ -57,18 +54,17 @@ The rest of the supported escape sequences are listed in the
 \href{https://en.cppreference.com/w/cpp/language/escape}{Simple escape sequences}
 table of the C++ standard.
 
-A \St{char} constant value is stored as a \St{uint32} 
+A \St{char} constant value is stored as a \St{uint32}
 from 0 to 255 inclusively in \St{ASCII} encoding.
 
 \vspace{-0.35cm}
-
 \paragraph{\St{string}}\
 
-A \St{string} constant value must be surrounded with double quotes. 
+A \St{string} constant value must be surrounded with double quotes.
 Such a value represents a sequence of \St{char} values.
 In particular, that means that all the same escape sequences are used.
 
-A \St{string} value is represented in memory as the respective 
-\St{char} values stored in consecutive memory cells followed by 
+A \St{string} value is represented in memory as the respective
+\St{char} values stored in consecutive memory cells followed by
 an additional \textit{zero character} (\St{ASCII} code 0).
 The zero character indicates the end of a \St{string}.

@@ -11,7 +11,7 @@
 
     \hline
 
-	40 & \St{la} & \Ss{RM} & \RIcmd{la}{r5}{0xab1f} &
+    40 & \St{la} & \Ss{RM} & \RIcmd{la}{r5}{0xab1f} &
     \St{$\text{r5} = \text{0xab1f}$} \\
 
     \hline
@@ -73,15 +73,15 @@
 }
 
 \vspace{-0.2cm}
-
 \paragraph{\St{lc}, \St{la}, \St{mov}}\
 
 These commands store the \St{uint32} value obtained from the operands in
 the {\hyperlink{types:twos_complement}{common manner} to the specified receiver
-register. The \St{la} command is similar to \St{lc}, but allows for labels usage (see \hyperlink{labels}{Labels} section for details).
+register.
+The \St{la} command is similar to \St{lc}, but allows for labels
+usage (see \hyperlink{labels}{Labels} section for details).
 
 \vspace{-0.35cm}
-
 \paragraph{Register-memory data transfer}\
 
 All the other commands are used to transfer data between the registers and
@@ -104,7 +104,8 @@ error at this stage cannot occur in this case.
 
 The commands with a `\St{2}' suffix perform the same action as the respective
 commands without the suffix twice: once with the register and the memory cell
-specified by the operands and then with the next register and the next memory cell.
+specified by the operands and then with the next register and the next
+memory cell.
 Therefore, the specified register cannot be \St{r15} and the specified memory
 cell cannot be \St{0xfffff} (there are no next ones for them).
 If such a situation does occur, it results in an execution error.
