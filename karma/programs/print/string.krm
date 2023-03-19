@@ -3,7 +3,7 @@ print_string:
     # load the pointer to the first character of the string to r0
     loadr r0 r14 3
 
-    loop:
+    __print_string.loop:
         # load the current character in r1
         loadr r1 r0 0
 
@@ -17,6 +17,6 @@ print_string:
         # proceed to the next character
         addi r0 1
         jmp loop
-    out:
+    __print_string.out:
         # return
         ret 0
