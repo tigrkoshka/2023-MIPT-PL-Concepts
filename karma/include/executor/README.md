@@ -132,11 +132,13 @@ instance, and the `GetMap` method of each of them is only used once.
 > One of the different designs considered for Karma commands implementation was
 > to make a `switch` statement for each command format, and implement
 > the commands' business logics inside the `case`s of those switch
-> statements. While `switch` statements are more efficient than calling
-> a stored `std::function`, this approach was dismissed, because it did not
-> allow for much decomposition and involved huge `switch` statements,
-> which tended to be bugprone, and which would only grow were new commands
-> to be introduced in the Karma assembler.
+> statements.
+>
+> While `switch` statements are more efficient than calling a stored
+> `std::function`, this approach was dismissed, because it did not allow for
+> much decomposition and involved huge `switch` statements, which tended
+> to be bugprone, and which would only grow were new commands to be introduced
+> in the Karma assembler.
 
 > **Note**
 >
@@ -145,13 +147,17 @@ instance, and the `GetMap` method of each of them is only used once.
 > classes static, accepting an `std::shared_prt` to the `Storage` class
 > instance, capturing this `std::shared_ptr` in the lambda expressions and
 > creating an instance of the `CommonExecutor` class inside each lambda.
-> This design was dismissed because of its two drawbacks. The first one
-> is that the `std::shared_ptr` needs to be copied for each command implementing
-> method of these classes, and were new commands to be introduces to the Karma
-> assembler, the number of such copies would grow. The second one is that the
-> need for each method to accept an `std::shared_ptr` and for each lambda
-> expression to create its own instance of the `CommonExecutor` class made
-> the code much less concise and its development inconvenient.
+>
+> This design was dismissed because of its two drawbacks.
+>
+> The first one is that the `std::shared_ptr` needs to be copied for each
+> command implementing method of these classes, and were new commands
+> to be introduces to the Karma assembler, the number of such copies would grow.
+>
+> The second one is that the need for each method to accept an `std::shared_ptr`
+> and for each lambda expression to create its own instance of
+> the `CommonExecutor` class made the code much less concise and its
+> development inconvenient.
 
 ### Impl
 
