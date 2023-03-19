@@ -1,9 +1,25 @@
+### Features:
+
+1. Make each block return an error of its `Error` type.
+    * the only thing that is not not in accordance with that is the
+      exec::Error, catch that in the `Must` prefixed functions.
+    * Do not forget to update the main `karma` library
+      [README](include/README.md) to specify this
+
+2. Multithreading in compilation
+    * The `Labels` and the `Entrypoint` should be their own in
+      the `FileCompiler`, with later merging, because the labels
+      definitions are dependant on the size of the previously compiled
+      code and constants.
+    * Do not forget to update the main `compiler` directory
+      [README](include/compiler/README.md) to specify this
+
 ### General:
 
 1. Write a README in every folder (in the main one explain where are the tasks +
    why so many C++ features are used) + list all namespaces
 2. See if some functions need doxygen comments (especially in utils)
-3. Write printf/scanf on Karma assembler
+3. Write printf on Karma assembler
 4. Review docs (latex + pdf), maybe add something
 
 ### Code refactor:
