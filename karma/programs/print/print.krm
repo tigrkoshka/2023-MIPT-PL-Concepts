@@ -3,7 +3,7 @@ include string.krm
 include uint32.krm
 include int32.krm
 include double.krm
-include uint64,krm
+include uint64.krm
 include int64.krm
 
 .__placeholder_escape: char '%'
@@ -194,7 +194,7 @@ printf:
                 jg __printf.no_argument_to_substitute_error.short
 
                 # load the argument to r0
-                load r0 r11 0
+                loadr r0 r11 0
                 addi r11 1 # advance to the next argument
 
                 ################################################################
@@ -394,65 +394,6 @@ printf:
                 jeq __printf.invalid_placeholder_l_error
 
                 ################################################################
-                ###                Determine the type to print               ###
-                ################################################################
-
-                load r1 .__placeholder.int.decimal.first
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.int64.decimal
-
-                load r1 .__placeholder.int.decimal.second
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.int64.decimal
-
-                load r1 .__placeholder.int.binary
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.int64.binary
-
-                load r1 .__placeholder.int.octal
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.int64.octal
-
-                load r1 .__placeholder.int.hexadecimal
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.int64.hexadecimal
-
-                load r1 .__placeholder.uint.decimal
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.uint64.decimal
-
-                load r1 .__placeholder.uint.binary
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.uint64.binary
-
-                load r1 .__placeholder.uint.octal
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.uint64.octal
-
-                load r1 .__placeholder.uint.hexadecimal
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.uint64.hexadecimal
-
-                load r1 .__placeholder.double.decimal
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.double.decimal
-
-                load r1 .__placeholder.double.binary
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.double.binary
-
-                load r1 .__placeholder.double.octal
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.double.octal
-
-                load r1 .__placeholder.double.hexadecimal
-                cmp r9 r1 0
-                jeq __printf.loop.process_placeholder.double.hexadecimal
-
-                # if no cases applied, throw an invalid placeholder error
-                jmp __printf.invalid_placeholder_error.long
-
-                ################################################################
                 ###          Load the two-word argument into (r1,r0)         ###
                 ################################################################
 
@@ -461,7 +402,7 @@ printf:
                 jg __printf.no_argument_to_substitute_error.long
 
                 # load the low bits of the argument to r0
-                load r0 r11 0
+                loadr r0 r11 0
                 addi r11 1 # advance to the second word of the argument
 
                 # check that there is the second word of the argument
@@ -469,8 +410,67 @@ printf:
                 jg __printf.no_argument_to_substitute_error.long.only_one_word
 
                 # load the high bits of the argument to r0
-                load r1 r11 0
+                loadr r1 r11 0
                 addi r11 1 # advance to the next argument
+
+                ################################################################
+                ###                Determine the type to print               ###
+                ################################################################
+
+                load r2 .__placeholder.int.decimal.first
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.int64.decimal
+
+                load r2 .__placeholder.int.decimal.second
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.int64.decimal
+
+                load r2 .__placeholder.int.binary
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.int64.binary
+
+                load r2 .__placeholder.int.octal
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.int64.octal
+
+                load r2 .__placeholder.int.hexadecimal
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.int64.hexadecimal
+
+                load r2 .__placeholder.uint.decimal
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.uint64.decimal
+
+                load r2 .__placeholder.uint.binary
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.uint64.binary
+
+                load r2 .__placeholder.uint.octal
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.uint64.octal
+
+                load r2 .__placeholder.uint.hexadecimal
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.uint64.hexadecimal
+
+                load r2 .__placeholder.double.decimal
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.double.decimal
+
+                load r2 .__placeholder.double.binary
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.double.binary
+
+                load r2 .__placeholder.double.octal
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.double.octal
+
+                load r2 .__placeholder.double.hexadecimal
+                cmp r9 r2 0
+                jeq __printf.loop.process_placeholder.double.hexadecimal
+
+                # if no cases applied, throw an invalid placeholder error
+                jmp __printf.invalid_placeholder_error.long
 
                 ################################################################
                 ###                           int64                          ###
@@ -478,19 +478,19 @@ printf:
 
                 __printf.loop.process_placeholder.int64.decimal:
                     lc r2 10 # base 10
-                    jmp __printf.loop.process_placeholder.long.int64
+                    jmp __printf.loop.process_placeholder.int64
 
                 __printf.loop.process_placeholder.int64.binary:
                     lc r2 2 # base 2
-                    jmp __printf.loop.process_placeholder.long.int64
+                    jmp __printf.loop.process_placeholder.int64
 
                 __printf.loop.process_placeholder.int64.octal:
                     lc r2 8 # base 8
-                    jmp __printf.loop.process_placeholder.long.int64
+                    jmp __printf.loop.process_placeholder.int64
 
                 __printf.loop.process_placeholder.int64.hexadecimal:
                     lc r2 16 # base 16
-                    jmp __printf.loop.process_placeholder.long.int64
+                    jmp __printf.loop.process_placeholder.int64
 
                 __printf.loop.process_placeholder.int64:
                     # save the utility values of the printf function
@@ -522,19 +522,19 @@ printf:
 
                 __printf.loop.process_placeholder.uint64.decimal:
                     lc r2 10 # base 10
-                    jmp __printf.loop.process_placeholder.long.uint64
+                    jmp __printf.loop.process_placeholder.uint64
 
                 __printf.loop.process_placeholder.uint64.binary:
                     lc r2 2 # base 2
-                    jmp __printf.loop.process_placeholder.long.uint64
+                    jmp __printf.loop.process_placeholder.uint64
 
                 __printf.loop.process_placeholder.uint64.octal:
                     lc r2 8 # base 8
-                    jmp __printf.loop.process_placeholder.long.uint64
+                    jmp __printf.loop.process_placeholder.uint64
 
                 __printf.loop.process_placeholder.uint64.hexadecimal:
                     lc r2 16 # base 16
-                    jmp __printf.loop.process_placeholder.long.uint64
+                    jmp __printf.loop.process_placeholder.uint64
 
                 __printf.loop.process_placeholder.uint64:
                     # save the utility values of the printf function

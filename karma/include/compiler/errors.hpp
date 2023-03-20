@@ -57,7 +57,7 @@ struct CompileError::Builder : detail::utils::traits::Static {
    public:
     // file
 
-    static CompileError FailedToOpen(const std::string& path);
+    static CompileError FailedToOpen(Where path);
 
     // includes
 

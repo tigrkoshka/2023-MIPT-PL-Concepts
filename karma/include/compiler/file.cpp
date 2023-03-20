@@ -56,7 +56,7 @@ void Compiler::File::Open() {
     stream_ = std::ifstream(path_);
 
     if (stream_.fail()) {
-        throw CompileError::FailedToOpen(path_);
+        throw CompileError::FailedToOpen(WhereNoLine());
     }
 
     line_ = 0;
@@ -100,12 +100,8 @@ bool Compiler::File::GetToken(std::string& token) {
     return static_cast<bool>(curr_line_ >> token);
 }
 
-std::string Compiler::File::Where() const {
-    const std::string sep = "\n included from ";
-
+std::string Compiler::File::WhereNoLine() const {
     std::ostringstream where;
-    where << "at line " << LineNum() << "\n"
-          << std::string(sep.size() - 4, ' ') << "in ";
 
     auto files    = ToRoot();
     auto get_path = [](const File* file) -> std::string {
@@ -119,14 +115,23 @@ std::string Compiler::File::Where() const {
     //       that does exactly what is needed, but we do not
     //       want to use experimental features, so here is a workaround
 
-    std::ostream_iterator<std::string> dst{where, sep.data()};
+    std::ostream_iterator<std::string> dst{where, kIncludedFromSep.data()};
     std::ranges::copy(pipeline, dst);
 
     // remove the trailing separator
     std::string res = where.str();
-    res.resize(res.size() - sep.size());
+    res.resize(res.size() - kIncludedFromSep.size());
 
     return res;
+}
+
+std::string Compiler::File::Where() const {
+    std::ostringstream where;
+    where << "at line " << LineNum() << "\n"
+          << std::string(kIncludedFromSep.size() - 4, ' ') << "in "
+          << WhereNoLine();
+
+    return where.str();
 }
 
 size_t Compiler::File::LineNum() const {
@@ -136,5 +141,7 @@ size_t Compiler::File::LineNum() const {
 const std::filesystem::path& Compiler::File::Path() const {
     return path_;
 }
+
+const std::string Compiler::File::kIncludedFromSep = "\n  included from ";
 
 }  // namespace karma

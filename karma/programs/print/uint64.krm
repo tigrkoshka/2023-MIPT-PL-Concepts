@@ -15,7 +15,8 @@ __uint64_to_double:
     itod r2 r9 0
 
     # prepare the 2^31 double value in (r5,r4)
-    lc r4 0x80000000
+    lc r4 1
+    shli r4 31
     itod r4 r4 0
 
     # prepare the 2 double value in (r7,r6)

@@ -38,6 +38,8 @@ class Compiler::File : detail::utils::traits::NonCopyableMovable {
 
     bool GetToken(std::string& token);
 
+    [[nodiscard]] std::string WhereNoLine() const;
+
     [[nodiscard]] std::string Where() const;
 
     [[nodiscard]] size_t LineNum() const;
@@ -45,6 +47,8 @@ class Compiler::File : detail::utils::traits::NonCopyableMovable {
     [[nodiscard]] const std::filesystem::path& Path() const;
 
    private:
+    static const std::string kIncludedFromSep;
+
     const std::filesystem::path path_;
     const File* parent_;
 

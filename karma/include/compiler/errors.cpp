@@ -72,9 +72,9 @@ IE IE::Builder::NoEntrypointPosInLabelSubstitution() {
 
 ///-----------------------------------File-----------------------------------///
 
-CE CE::Builder::FailedToOpen(const std::string& path) {
+CE CE::Builder::FailedToOpen(Where path) {
     std::ostringstream ss;
-    ss << "failed to open " << std::quoted(path);
+    ss << "failed to open " << path;
     return CE{ss.str()};
 }
 

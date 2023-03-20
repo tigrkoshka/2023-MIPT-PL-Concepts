@@ -1,6 +1,6 @@
 include base.krm
 include int32.krm
-include uint64
+include uint64.krm
 
 # accepts two arguments: a base and an int64 value to be printed
 #
@@ -23,7 +23,7 @@ __print_int64_unsafe:
     loadr r1 r14 4
 
     # load the sign bit into r3
-    loadr r3 .__sign_bit
+    load r3 .__sign_bit
 
     # check the sign bit of the int64 value
     and r3 r2 0
@@ -40,7 +40,7 @@ __print_int64_unsafe:
 
     __print_int64.negative:
         # print the minus sign
-        loadr r3 .__minus
+        load r3 .__minus
         syscall r3 105
 
         # get the modulo
