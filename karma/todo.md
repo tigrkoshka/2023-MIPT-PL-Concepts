@@ -8,8 +8,6 @@
     * Do not forget to update the main `compiler` directory
       [README](include/compiler/README.md) to specify this
 
-2. Printing library: print `int64`
-
 ### General:
 
 1. Write a README in every folder (in the main one explain where are the tasks +

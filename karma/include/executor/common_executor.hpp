@@ -16,8 +16,8 @@ class Executor::CommonExecutor : public ExecutorBase {
     using ExecutionError = errors::executor::ExecutionError::Builder;
 
    protected:
-    static void CheckBitwiseRHS(detail::specs::arch::Word,
-                                detail::specs::cmd::Code);
+    static void CheckBitwiseShiftRHS(detail::specs::arch::Word,
+                                     detail::specs::cmd::Code);
 
     detail::specs::arch::TwoWords GetTwoRegisters(
         detail::specs::cmd::args::Register low);

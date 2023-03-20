@@ -1,0 +1,127 @@
+include base.krm
+include int32.krm
+include uint64
+
+# accepts two arguments: a base and an int64 value to be printed
+#
+# if the base is less than 2 or greater than 36, an error message is printed,
+# and the execution is exited with an error code 1
+print_int64:
+    # load the base into r0
+    loadr r0 r14 3
+
+    # check the base
+    prc 0
+    push r0 0
+    calli __check_base
+
+__print_int64_unsafe:
+    # load the base into r0
+    loadr r0 r14 3
+
+    # load the int64 value into (r2,r1)
+    loadr r1 r14 4
+
+    # load the sign bit into r3
+    loadr r3 .__sign_bit
+
+    # check the sign bit of the int64 value
+    and r3 r2 0
+    cmpi r3 0
+
+    # if the bit is 0, simply print the positive value as uint64
+    jeq __print_int64.positive
+
+    # ... else print the negative value
+    # (this command is not needed since the negative value printing block comes
+    # immediately after this, but we put it here as an else clause sample)
+    #
+    # jmp __print_int64.negative
+
+    __print_int64.negative:
+        # print the minus sign
+        loadr r3 .__minus
+        syscall r3 105
+
+        # get the modulo
+        # see https://clck.ru/33p5Yo (Wiki) for details
+
+        # subtract 1
+
+        # remember (in the flags register) if the lower bits
+        # were 0 before subtraction
+        cmpi r1 0
+
+        # always subtract from low bits
+        subi r1 1
+
+        # if the low bits were not 0 before subtraction,
+        # the subtraction is done
+        jne __print_int64.negative.sub_done
+
+        # else subtract 1 from higher bits too
+        __print_int64.negative.sub_from_high:
+            subi r2 1
+        __print_int64.negative.sub_done:
+
+        # revert all bits
+        not r2 0
+        not r1 0
+
+        # this command is not needed since the positive value printing block
+        # comes immediately after this, but we put it here as a sample
+        # for the case the positive value printing block was somewhere else
+        #
+        # jmp __print_int64.positive
+
+    __print_int64.positive:
+        # prepare for the print_uint64 call
+        prc 0
+
+        # push the base and the value as arguments
+
+        # value (the second argument)
+        push r2 0
+        push r1 0
+
+        # base (the first argument)
+        push r0 0
+
+        # reuse the printing function
+        #
+        # use the unsafe function, because we have already checked the base
+        # above if the safe version of this function was initially called
+        calli __print_uint64_unsafe
+
+        # return
+        ret 0
+
+# like print_int64, but accepts only the value argument and prints
+# its decimal representation (i.e. defaults the base parameter to 10)
+print_int64_decimal:
+    # load the int64 value into (r1,r0)
+    loadr2 r0 r14 3
+
+    # store the default base value (10) in r2
+    lc r2 10
+
+    # prepare for the print_int64 call
+    prc 0
+
+    # push the base and the value as the arguments
+
+    # value (the second argument)
+    push r1 0
+    push r0 0
+
+    # base (the first argument)
+    push r2 0
+
+    # reuse the printing function
+    #
+    # use the unsafe function, because there is no need to check the base
+    # since 10 is a valid base
+    calli __print_int64_unsafe
+
+    # return
+    ret 0

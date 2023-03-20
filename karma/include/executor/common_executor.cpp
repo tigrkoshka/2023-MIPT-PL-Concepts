@@ -25,7 +25,8 @@ void Executor::CommonExecutor::PutTwoRegisters(arch::TwoWords value,
     WReg(lower + 1) = high;
 }
 
-void Executor::CommonExecutor::CheckBitwiseRHS(arch::Word rhs, cmd::Code code) {
+void Executor::CommonExecutor::CheckBitwiseShiftRHS(arch::Word rhs,
+                                                    cmd::Code code) {
     if (rhs >= sizeof(arch::Word) * utils::types::kByteSize) {
         throw ExecutionError::BitwiseRHSTooBig(rhs, code);
     }

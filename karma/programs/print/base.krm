@@ -1,8 +1,8 @@
 include char.krm
 
-# accepts one argument: a base
+# Accepts one argument: a base
 #
-# prints an error message and exits the execution with error code 1
+# Prints an error message and exits the execution with error code 1
 # if the base is less than 2 or greater than 36
 __check_base:
     # save the base in r0

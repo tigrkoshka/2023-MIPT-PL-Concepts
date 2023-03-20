@@ -3,7 +3,7 @@ include ../string.krm
 include ../uint32.krm
 
 .enter_value_invite:
-  string "Enter the value: "
+  string "Enter the uint32 value: "
 .enter_base_invite:
   string "Enter the base: "
 

@@ -1,6 +1,6 @@
 .__newline_char: char '\n'
 
-# does not accept arguments, prints a newline character
+# Does not accept arguments, prints a newline character
 print_newline:
     # r0 = '\n'
     load r0 .__newline_char
@@ -11,9 +11,9 @@ print_newline:
     # return
     ret 0
 
-# accepts a single argument: the character to be printed
+# Accepts a single argument: the character to be printed
 print_char:
-    # load the character to be printed to r0
+    # load the character to be printed into r0
     loadr r0 r14 3
 
     # print the character

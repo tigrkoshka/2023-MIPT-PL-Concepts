@@ -135,7 +135,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::NOT() {
 Executor::RIExecutor::Operation Executor::RIExecutor::SHLI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
-        CheckBitwiseRHS(rhs, cmd::SHLI);
+        CheckBitwiseShiftRHS(rhs, cmd::SHLI);
         WReg(args.reg) <<= rhs;
         return {};
     };
@@ -144,7 +144,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SHLI() {
 Executor::RIExecutor::Operation Executor::RIExecutor::SHRI() {
     return [this](Args args) -> MaybeReturnCode {
         arch::Word rhs = ImmWord(args);
-        CheckBitwiseRHS(rhs, cmd::SHRI);
+        CheckBitwiseShiftRHS(rhs, cmd::SHRI);
         WReg(args.reg) >>= rhs;
         return {};
     };
@@ -152,27 +152,21 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SHRI() {
 
 Executor::RIExecutor::Operation Executor::RIExecutor::ANDI() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Word rhs = ImmWord(args);
-        CheckBitwiseRHS(rhs, cmd::ANDI);
-        WReg(args.reg) &= rhs;
+        WReg(args.reg) &= ImmWord(args);
         return {};
     };
 }
 
 Executor::RIExecutor::Operation Executor::RIExecutor::ORI() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Word rhs = ImmWord(args);
-        CheckBitwiseRHS(rhs, cmd::ORI);
-        WReg(args.reg) |= rhs;
+        WReg(args.reg) |= ImmWord(args);
         return {};
     };
 }
 
 Executor::RIExecutor::Operation Executor::RIExecutor::XORI() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Word rhs = ImmWord(args);
-        CheckBitwiseRHS(rhs, cmd::XORI);
-        WReg(args.reg) ^= rhs;
+        WReg(args.reg) ^= ImmWord(args);
         return {};
     };
 }

@@ -1,17 +1,15 @@
 include ../char.krm
 include ../string.krm
-include ../double.krm
+include ../int32.krm
 
 .enter_value_invite:
-  string "Enter the double value: "
+  string "Enter the int32 value: "
 .enter_base_invite:
   string "Enter the base: "
-.enter_precision_invite:
-  string "Enter the precision: "
 
 main:
     ############################################################################
-    ####               Print the invitation to enter the value              ####
+    ####                Print the invitation to enter a value               ####
     ############################################################################
 
     # store the address of the invite string to r0
@@ -30,15 +28,14 @@ main:
     ####                       Get the value from stdin                     ####
     ############################################################################
 
-    # get the double value to print in (r1,r0)
-    syscall r0 101
+    # get the value to print
+    syscall r0 100
 
     # save the value as the local variable
-    push r1 0
     push r0 0
 
     ############################################################################
-    ####               Print the invitation to enter the base               ####
+    ####                Print the invitation to enter a base                ####
     ############################################################################
 
     # store the address of the invite string to r0
@@ -57,60 +54,28 @@ main:
     ####                       Get the base from stdin                      ####
     ############################################################################
 
-    syscall r0 100
-
-    # save the base as the local variable
-    push r0 0
+    syscall r1 100
 
     ############################################################################
-    ####             Print the invitation to enter the precision            ####
+    ####                    Get the value from the stack                    ####
     ############################################################################
 
-    # store the address of the invite string to r0
-    la r0 .enter_precision_invite
+    pop r0 0
 
-    # prepare for the call
+    ############################################################################
+    ####                   Call the print_uint32 function                   ####
+    ############################################################################
+
+    # prepare for call
     prc 0
-
-    # push the address of the invite string as an argument
-    push r0 0
-
-    # print the invite string
-    calli print_string
-
-    ############################################################################
-    ####                       Get the base from stdin                      ####
-    ############################################################################
-
-    syscall r0 100
-
-    ############################################################################
-    ####              Get the base and the value from the stack             ####
-    ############################################################################
-
-    pop r1 0
-    pop r2 0
-    pop r3 0
-
-    ############################################################################
-    ####                   Call the print_double function                   ####
-    ############################################################################
-
-    # prepare for the call
-    prc 0
-
-    # push the precision as the third argument
-    push r0 0
 
     # push the value as the second argument
-    push r3 0
-    push r2 0
-
+    push r0 0
     # push the base as the first argument
     push r1 0
 
     # call the printing function
-    calli print_double
+    calli print_int32
 
     ############################################################################
     ####                      Print an additional '\n'                      ####

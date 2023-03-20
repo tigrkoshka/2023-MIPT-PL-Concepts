@@ -5,9 +5,9 @@ include string.krm
 .__zero_char: char '0'
 .__a_char:    char 'a'
 
-# accepts two arguments: a base and a one-digit value of that base
+# Accepts two arguments: a base and a one-digit value of that base
 #
-# an error message is printed and the execution
+# An error message is printed and the execution
 # is exited with an error code 1 in the following cases:
 #
 #    - the base is less than 2 or greater than 36

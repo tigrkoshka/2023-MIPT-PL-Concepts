@@ -64,7 +64,7 @@ EE EE::Builder::StackOverflow(size_t max_stack_size) {
 
 EE EE::Builder::InvalidRegister(arch::Register reg) {
     std::ostringstream ss;
-    ss << "unknown register " << reg << "there are only " << arch::kNRegisters
+    ss << "unknown register " << reg << ", there are only " << arch::kNRegisters
        << "registers besides the flags register (from "
        << arch::kRegisterNumToName.at(arch::R0) << "to "
        << arch::kRegisterNumToName.at(arch::R15) << ")";
@@ -121,8 +121,9 @@ EE EE::Builder::QuotientOverflow(arch::TwoWords dividend,
 
 EE EE::Builder::BitwiseRHSTooBig(arch::Word rhs, cmd::Code code) {
     std::ostringstream ss;
-    ss << "the right hand side of a bitwise operation (code " << code
-       << ") must be less than the bit size of a machine word ("
+    ss << "the right hand side of a bitwise shift operation (\""
+       << cmd::kCodeToName.at(code)
+       << "\") must be less than the bit size of a machine word ("
        << arch::kWordSize * utils::types::kByteSize << "), got: " << rhs;
     return EE{ss.str()};
 }

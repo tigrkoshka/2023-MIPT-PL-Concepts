@@ -1,9 +1,738 @@
 include char.krm
-
 include string.krm
-
 include uint32.krm
-
+include int32.krm
 include double.krm
-
 include uint64,krm
+include int64.krm
+
+.__placeholder_escape: char '%'
+
+.__long_placeholder_start: char 'l'
+
+.__placeholder.char:   char 'c'
+.__placeholder.string: char 'c'
+
+.__placeholder.int.decimal.first:  char 'i'
+.__placeholder.int.decimal.second: char 'd'
+.__placeholder.int.binary:         char 'd'
+.__placeholder.int.octal:          char 'd'
+.__placeholder.int.hexadecimal:    char 'd'
+
+.__placeholder.uint.decimal:     char 'u'
+.__placeholder.uint.binary:      char 'b'
+.__placeholder.uint.octal:       char 'o'
+.__placeholder.uint.hexadecimal: char 'x'
+
+.__placeholder.double.decimal:     char 'f'
+.__placeholder.double.binary:      char 'e'
+.__placeholder.double.octal:       char 'g'
+.__placeholder.double.hexadecimal: char 'a'
+
+# Accepts the address of the start of the format string as the first argument
+# and a variadic number of arguments to be substituted to the placeholders
+# in the string
+#
+# The additional arguments (if any) are ignored
+#
+# Each placeholder must be preceded with a '%' character.
+#
+# The supported placeholders:
+#   c: char
+#       an execution error occurs if the specified argument is greater than 255
+#
+#   s: string
+#       the respective argument must specify the address
+#       of the first character of the string
+#
+#   d, i:   int32 in decimal representation
+#   ld, li: int64 in decimal representation
+#
+#   m:  int32 in binary representation
+#   lm: int64 in binary representation
+#
+#   k:  int32 in octal representation
+#   lk: int64 in octal representation
+#
+#   h:  int32 in hexadecimal representation
+#   lh: int64 in hexadecimal representation
+#
+#   u:  uint32 in decimal representation
+#   lu: uint64 in decimal representation
+#
+#   b:  uint32 in binary representation
+#   lb: uint64 in binary representation
+#
+#   o:  uint32 in octal representation
+#   lo: uint64 in octal representation
+#
+#   x:  uint32 in hexadecimal representation
+#   lx: uint64 in hexadecimal representation
+#
+#   lf: double in decimal representation (with precision 5)
+#   le: double in binary representation (with precision 5)
+#   lg: double in octal representation (with precision 5)
+#   la: double in hexadecimal representation (with precision 5)
+#
+# An invalid placeholder after the % sign leads to an execution error.
+# To print the '%' character, one must specify "%%" in the format string
+printf:
+    # throughout the printf function, the r12 register always contains
+    # the address of the end of the printf function arguments segment
+    # of the stack, i.e. the address of the last word of the last argument
+    #
+    # since by the karma computer specification the stack pointer always
+    # indicates the memory cell to which the next value will be pushed,
+    # that address is the stack pointer value immediately before the arguments
+    # were pushed, which by the karma calling convention is the last value
+    # pushed to the stack before entering a function
+    #
+    # therefore, we need to obtain the value that could have been obtained via
+    # the pop command without actually popping it from the stack (since it is
+    # used later during the return from the function procedure)
+    #
+    # due to the semantics of the stack pointer mentioned above that value
+    # is contained by the address r14 + 1
+    loadr r12 r14 1
+
+    # throughout the printf function, the r11 register always contains
+    # the address of the beginning of the next unprocessed word in
+    # the printf arguments segment of the stack
+    #
+    # all the arguments are loaded into the register using the address
+    # stored in the r11 register
+    #
+    # if at some point that address exceeds the one stored in the r12 register,
+    # that means that the provided arguments are insufficient with regard
+    # to the provided format string
+    #
+    # before using the address stored in the r11 register to obtain a word,
+    # we always do the check:
+    #     cmp r11 r12 0
+    # and then throw an error if it is greater:
+    #     jg <error_labels>
+    #
+    # before we have read any arguments the r11 register must point to
+    # the beginning of the first argument, i.e. have the value r14 + 3
+    mov r11 r14 3
+
+    # check that there is the format string address argument
+    cmp r11 r12 0
+    jg __printf.no_format_string_error
+
+    # throughout the printf function, the r10 register always contains
+    # the address of the next unprocessed character in the format string
+    #
+    # it is initialized with the first argument of the function, which is
+    # the address of the first character of the format string
+    loadr r10 r11 0
+    addi r11 1 # advance to the next argument
+
+    # iterate over the format string
+    __printf.loop:
+        # throughout the printf function, the r9 register contains
+        # the character that is currently processed
+        loadr r9 r10 0
+        addi r10 1 # advance to the next character
+
+        # if the current character of the format string is '\0',
+        # finish the printing and return
+        cmpi r9 0
+        jeq __printf.out
+
+        # if the current character of the format string is not '%', print it
+        # and continue the iteration, else process the placeholder
+        load r1 .__placeholder_escape
+        cmp r9 r1 0
+        jeq __printf.loop.process_placeholder
+        syscall r9 105
+        jmp __printf.loop
+
+        __printf.loop.process_placeholder:
+            # load the first character of the placeholder into r9
+            loadr r9 r10 0
+            addi r10 1 # advance to the next character
+
+            # if the current character of the format string is '\0',
+            # it is an error since the previous character was '%',
+            # which must be followed by either another '%' or a placeholder
+            cmpi r9 0
+            jeq __printf.format_string_ends_with_percent_error
+
+            # if the first character of the placeholder is '%',
+            # print the '%' character and continue the iteration
+            #
+            # the r1 register contains the '%' character because we did not
+            # modify it since we loaded the '%' character into it
+            cmp r9 r1 0
+            jne __printf.loop.process_placeholder.not_percent
+            syscall r9 105
+            jmp __printf.loop
+
+            __printf.loop.process_placeholder.not_percent:
+
+            # if the placeholder starts with 'l', process the second character
+            # of the placeholder (by the printf function documentation above
+            # all the placeholders starting with an 'l' character
+            # consist of exactly two characters)
+            load r1 .__long_placeholder_start
+            cmp r9 r1 0
+            jeq __printf.loop.process_placeholder.long
+
+            ####################################################################
+            ###                             Short                            ###
+            ####################################################################
+
+            __printf.loop.process_placeholder.short:
+
+                ################################################################
+                ###            Load the one-word argument into r0            ###
+                ################################################################
+
+                # check that there is an argument to substitute
+                cmp r11 r12 0
+                jg __printf.no_argument_to_substitute_error.short
+
+                # load the argument to r0
+                load r0 r11 0
+                addi r11 1 # advance to the next argument
+
+                ################################################################
+                ###                Determine the type to print               ###
+                ################################################################
+
+                load r1 .__placeholder.char
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.char
+
+                load r1 .__placeholder.string
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.string
+
+                load r1 .__placeholder.int.decimal.first
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.int32.decimal
+
+                load r1 .__placeholder.int.decimal.second
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.int32.decimal
+
+                load r1 .__placeholder.int.binary
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.int32.binary
+
+                load r1 .__placeholder.int.octal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.int32.octal
+
+                load r1 .__placeholder.int.hexadecimal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.int32.hexadecimal
+
+                load r1 .__placeholder.uint.decimal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.uint32.decimal
+
+                load r1 .__placeholder.uint.binary
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.uint32.binary
+
+                load r1 .__placeholder.uint.octal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.uint32.octal
+
+                load r1 .__placeholder.uint.hexadecimal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.uint32.hexadecimal
+
+                # if no cases applied, throw an invalid placeholder error
+                jmp __printf.invalid_placeholder_error.short
+
+                ################################################################
+                ###                           char                           ###
+                ################################################################
+
+                __printf.loop.process_placeholder.char:
+                    # print the character argument
+                    syscall r0 105
+
+                    # proceed to the next character
+                    jmp __printf.loop
+
+
+                ################################################################
+                ###                          string                          ###
+                ################################################################
+
+                __printf.loop.process_placeholder.string:
+                    # save the utility values of the printf function
+                    # as local variables
+                    push r10 0
+                    push r11 0
+                    push r12 0
+
+                    # print the string
+                    # (unsafely, because we are sure that the base is valid)
+                    prc 0
+                    push r0 0 # address (the first and only argument)
+                    calli print_string
+
+                    # restore the utility values of the printf function
+                    # from the stack
+                    pop r12 0
+                    pop r11 0
+                    pop r10 0
+
+                    # proceed to the next character
+                    jmp __printf.loop
+
+                ################################################################
+                ###                           int32                          ###
+                ################################################################
+
+                __printf.loop.process_placeholder.int32.decimal:
+                    lc r1 10 # base 10
+                    jmp __printf.loop.process_placeholder.int32
+
+                __printf.loop.process_placeholder.int32.binary:
+                    lc r1 2 # base 2
+                    jmp __printf.loop.process_placeholder.int32
+
+                __printf.loop.process_placeholder.int32.octal:
+                    lc r1 8 # base 8
+                    jmp __printf.loop.process_placeholder.int32
+
+                __printf.loop.process_placeholder.int32.hexadecimal:
+                    lc r1 16 # base 16
+                    jmp __printf.loop.process_placeholder.int32
+
+                __printf.loop.process_placeholder.int32:
+                    # save the utility values of the printf function
+                    # as local variables
+                    push r10 0
+                    push r11 0
+                    push r12 0
+
+                    # print the int32
+                    # (unsafely, because we are sure that the base is valid)
+                    prc 0
+                    push r0 0 # value (the second argument)
+                    push r1 0 # base  (the first argument)
+                    calli __print_int32_unsafe
+
+                    # restore the utility values of the printf function
+                    # from the stack
+                    pop r12 0
+                    pop r11 0
+                    pop r10 0
+
+                    # proceed to the next character
+                    jmp __printf.loop
+
+                ################################################################
+                ###                          uint32                          ###
+                ################################################################
+
+                __printf.loop.process_placeholder.uint32.decimal:
+                    lc r1 10 # base 10
+                    jmp __printf.loop.process_placeholder.uint32
+
+                __printf.loop.process_placeholder.uint32.binary:
+                    lc r1 2 # base 2
+                    jmp __printf.loop.process_placeholder.uint32
+
+                __printf.loop.process_placeholder.uint32.octal:
+                    lc r1 8 # base 8
+                    jmp __printf.loop.process_placeholder.uint32
+
+                __printf.loop.process_placeholder.uint32.hexadecimal:
+                    lc r1 16 # base 16
+                    jmp __printf.loop.process_placeholder.uint32
+
+                __printf.loop.process_placeholder.uint32:
+                    # save the utility values of the printf function
+                    # as local variables
+                    push r10 0
+                    push r11 0
+                    push r12 0
+
+                    # print the uint32
+                    # (unsafely, because we are sure that the base is valid)
+                    prc 0
+                    push r0 0 # value (the second argument)
+                    push r1 0 # base  (the first argument)
+                    calli __print_uint32_unsafe
+
+                    # restore the utility values of the printf function
+                    # from the stack
+                    pop r12 0
+                    pop r11 0
+                    pop r10 0
+
+                    # proceed to the next character
+                    jmp __printf.loop
+
+            ####################################################################
+            ###                             Long                             ###
+            ####################################################################
+
+            __printf.loop.process_placeholder.long:
+
+                ################################################################
+                ###        Get the second character of the placeholder       ###
+                ################################################################
+
+                # load the second character of the placeholder into r9
+                loadr r9 r10 0
+                addi r10 1 # advance to the next character
+
+                # if the current character of the format string is '\0',
+                # it is an error since the previous two characters were "%l",
+                # which indicates a two-word argument placeholder,
+                # the 'l' itself is meanwhile is not a valid placeholder
+                cmpi r9 0
+                jeq __printf.invalid_placeholder_l_error
+
+                ################################################################
+                ###                Determine the type to print               ###
+                ################################################################
+
+                load r1 .__placeholder.int.decimal.first
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.int64.decimal
+
+                load r1 .__placeholder.int.decimal.second
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.int64.decimal
+
+                load r1 .__placeholder.int.binary
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.int64.binary
+
+                load r1 .__placeholder.int.octal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.int64.octal
+
+                load r1 .__placeholder.int.hexadecimal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.int64.hexadecimal
+
+                load r1 .__placeholder.uint.decimal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.uint64.decimal
+
+                load r1 .__placeholder.uint.binary
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.uint64.binary
+
+                load r1 .__placeholder.uint.octal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.uint64.octal
+
+                load r1 .__placeholder.uint.hexadecimal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.uint64.hexadecimal
+
+                load r1 .__placeholder.double.decimal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.double.decimal
+
+                load r1 .__placeholder.double.binary
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.double.binary
+
+                load r1 .__placeholder.double.octal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.double.octal
+
+                load r1 .__placeholder.double.hexadecimal
+                cmp r9 r1 0
+                jeq __printf.loop.process_placeholder.double.hexadecimal
+
+                # if no cases applied, throw an invalid placeholder error
+                jmp __printf.invalid_placeholder_error.long
+
+                ################################################################
+                ###          Load the two-word argument into (r1,r0)         ###
+                ################################################################
+
+                # check that there is the first word of the argument
+                cmp r11 r12 0
+                jg __printf.no_argument_to_substitute_error.long
+
+                # load the low bits of the argument to r0
+                load r0 r11 0
+                addi r11 1 # advance to the second word of the argument
+
+                # check that there is the second word of the argument
+                cmp r11 r12 0
+                jg __printf.no_argument_to_substitute_error.long.only_one_word
+
+                # load the high bits of the argument to r0
+                load r1 r11 0
+                addi r11 1 # advance to the next argument
+
+                ################################################################
+                ###                           int64                          ###
+                ################################################################
+
+                __printf.loop.process_placeholder.int64.decimal:
+                    lc r2 10 # base 10
+                    jmp __printf.loop.process_placeholder.long.int64
+
+                __printf.loop.process_placeholder.int64.binary:
+                    lc r2 2 # base 2
+                    jmp __printf.loop.process_placeholder.long.int64
+
+                __printf.loop.process_placeholder.int64.octal:
+                    lc r2 8 # base 8
+                    jmp __printf.loop.process_placeholder.long.int64
+
+                __printf.loop.process_placeholder.int64.hexadecimal:
+                    lc r2 16 # base 16
+                    jmp __printf.loop.process_placeholder.long.int64
+
+                __printf.loop.process_placeholder.int64:
+                    # save the utility values of the printf function
+                    # as local variables
+                    push r10 0
+                    push r11 0
+                    push r12 0
+
+                    # print the int64
+                    # (unsafely, because we are sure that the base is valid)
+                    prc 0
+                    push r1 0 # high bits of the value (the second argument)
+                    push r0 0 # low bits of the value  (the second argument)
+                    push r2 0 # base                   (the first argument)
+                    calli __print_int64_unsafe
+
+                    # restore the utility values of the printf function
+                    # from the stack
+                    pop r12 0
+                    pop r11 0
+                    pop r10 0
+
+                    # proceed to the next character
+                    jmp __printf.loop
+
+                ################################################################
+                ###                          uint64                          ###
+                ################################################################
+
+                __printf.loop.process_placeholder.uint64.decimal:
+                    lc r2 10 # base 10
+                    jmp __printf.loop.process_placeholder.long.uint64
+
+                __printf.loop.process_placeholder.uint64.binary:
+                    lc r2 2 # base 2
+                    jmp __printf.loop.process_placeholder.long.uint64
+
+                __printf.loop.process_placeholder.uint64.octal:
+                    lc r2 8 # base 8
+                    jmp __printf.loop.process_placeholder.long.uint64
+
+                __printf.loop.process_placeholder.uint64.hexadecimal:
+                    lc r2 16 # base 16
+                    jmp __printf.loop.process_placeholder.long.uint64
+
+                __printf.loop.process_placeholder.uint64:
+                    # save the utility values of the printf function
+                    # as local variables
+                    push r10 0
+                    push r11 0
+                    push r12 0
+
+                    # print the uint64
+                    # (unsafely, because we are sure that the base is valid)
+                    prc 0
+                    push r1 0 # high bits of the value (the second argument)
+                    push r0 0 # low bits of the value  (the second argument)
+                    push r2 0 # base                   (the first argument)
+                    calli __print_uint64_unsafe
+
+                    # restore the utility values of the printf function
+                    # from the stack
+                    pop r12 0
+                    pop r11 0
+                    pop r10 0
+
+                    # proceed to the next character
+                    jmp __printf.loop
+
+                ################################################################
+                ###                          double                          ###
+                ################################################################
+
+                __printf.loop.process_placeholder.double.decimal:
+                    lc r2 10 # base 10
+                    jmp __printf.loop.process_placeholder.double
+
+                __printf.loop.process_placeholder.double.binary:
+                    lc r2 2 # base 2
+                    jmp __printf.loop.process_placeholder.double
+
+                __printf.loop.process_placeholder.double.octal:
+                    lc r2 8 # base 8
+                    jmp __printf.loop.process_placeholder.double
+
+                __printf.loop.process_placeholder.double.hexadecimal:
+                    lc r2 16 # base 16
+                    jmp __printf.loop.process_placeholder.double
+
+                __printf.loop.process_placeholder.double:
+                    # save the utility values of the printf function
+                    # as local variables
+                    push r10 0
+                    push r11 0
+                    push r12 0
+
+                    # print the double
+                    # (unsafely, because we are sure that the base is valid)
+                    prc 0
+                    push r1 0 # high bits of the value (the second argument)
+                    push r0 0 # low bits of the value  (the second argument)
+                    push r2 0 # base                   (the first argument)
+                    calli __print_double_unsafe
+
+                    # restore the utility values of the printf function
+                    # from the stack
+                    pop r12 0
+                    pop r11 0
+                    pop r10 0
+
+                    # proceed to the next character
+                    jmp __printf.loop
+
+    ############################################################################
+    ###                       Errors without debug info                      ###
+    ############################################################################
+
+    .__printf.no_format_string_error_msg:
+        string "error: the format string is not specified"
+
+    .__printf.format_string_ends_with_percent_error_msg:
+        string "error: the format string ends with a \'%\' character, which must be followed by either another \'%\' character or a placeholder"
+
+    .__printf.invalid_placeholder_l_error_msg:
+        string "error: invalid placeholder: \"%l\""
+
+    __printf.no_format_string_error:
+        la r0 .__printf.no_format_string_error_msg
+        jmp __printf.print_simple_error_message_and_exit
+
+    __printf.format_string_ends_with_percent_error:
+        la r0 .__printf.no_format_string_error_msg
+        jmp __printf.print_simple_error_message_and_exit
+
+    __printf.invalid_placeholder_l_error:
+        la r0 .__printf.invalid_placeholder_l_error_msg
+        jmp __printf.print_simple_error_message_and_exit
+
+    __printf.print_simple_error_message_and_exit:
+        # print the error message
+        prc 0
+        push r0 0
+        calli print_string
+
+        jmp __printf.print_newline_and_exit
+
+    ############################################################################
+    ###                   No arguments to substitute error                   ###
+    ############################################################################
+
+    .__printf.no_argument_to_substitute_error_msg.part_1.short:
+        string "error: no argument to substitute for the %"
+
+    .__printf.no_argument_to_substitute_error_msg.part_1.long:
+        string "error: no argument to substitute for the %l"
+
+    .__printf.no_argument_to_substitute_error_msg.part_1.long.only_one_word:
+        string "error: no second word provided for the argument to substitute for the %l"
+
+    .__printf.no_argument_to_substitute_error_msg.part_2:
+        string " placeholder"
+
+    __printf.no_argument_to_substitute_error.short:
+        la r0 .__printf.no_argument_to_substitute_error_msg.part_1.short
+        jmp __printf.no_argument_to_substitute_error
+
+    __printf.no_argument_to_substitute_error.long:
+        la r0 .__printf.no_argument_to_substitute_error_msg.part_1.long
+        jmp __printf.no_argument_to_substitute_error
+
+    __printf.no_argument_to_substitute_error.long.only_one_word:
+        la r0 .__printf.no_argument_to_substitute_error_msg.part_1.long.only_one_word
+        jmp __printf.no_argument_to_substitute_error
+
+    __printf.no_argument_to_substitute_error:
+        # print the first part of the error message
+        prc 0
+        push r0 0
+        calli print_string
+
+        # print the last character of the placeholder from r9
+        syscall r9 105
+
+        # print the second part of the error message
+        la r0 .__printf.no_argument_to_substitute_error_msg.part_2
+        prc 0
+        push r0 0
+        calli print_string
+
+        jmp __printf.print_newline_and_exit
+
+    ############################################################################
+    ###                       Invalid placeholder error                      ###
+    ############################################################################
+
+    .__printf.invalid_placeholder_error_msg.part_1.short:
+        string "error: invalid placeholder \"%"
+
+    .__printf.invalid_placeholder_error_msg.part_1.long:
+        string "error: invalid placeholder \"%l"
+
+    .__printf.invalid_placeholder_error_msg.part_2:
+        string "\""
+
+    __printf.invalid_placeholder_error.short:
+        la r0 .__printf.invalid_placeholder_error_msg.part_1.short
+        jmp __printf.invalid_placeholder_error
+
+    __printf.invalid_placeholder_error.long:
+        la r0 .__printf.invalid_placeholder_error_msg.part_1.long
+        jmp __printf.invalid_placeholder_error
+
+    __printf.invalid_placeholder_error:
+        # print the first part of the error message
+        prc 0
+        push r0 0
+        calli print_string
+
+        # print the last character of the placeholder from r9
+        syscall r9 105
+
+        # print the second part of the error message
+        la r0 .__printf.no_argument_to_substitute_error_msg.part_2
+        prc 0
+        push r0 0
+        calli print_string
+
+        jmp __printf.print_newline_and_exit
+
+    ############################################################################
+    ###                        Exiting with error code                       ###
+    ############################################################################
+
+    __printf.print_newline_and_exit:
+        # print a newline character
+        prc 0
+        calli print_newline
+
+        # exit with code 1
+        lc r0 1
+        syscall r0 0
+
+    # return point
+    __printf.out:
+        ret 0

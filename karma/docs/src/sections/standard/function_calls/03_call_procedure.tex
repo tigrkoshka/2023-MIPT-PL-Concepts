@@ -19,7 +19,7 @@ preparatory actions must be performed:
     }
 
     \item Set the \St{r13} register to the current stack pointer value
-    (i.e.\ the value before the function arguments)\\
+    (i.e.\ the value before the function arguments were pushed)\\
     As if with a \hspace{-0.1cm}\St{
         \makebox[0.60cm][l]{mov}
         \makebox[0.60cm][l]{r13}
@@ -45,8 +45,8 @@ The prologue of a function call does the following
     }
 
     \item Pushes the current value of the \St{r13} register (i.e.\ the value
-    explicitly stored by the assembler code, which is the stack pointer value
-    before the subprogram arguments) to the stack \\
+    stored on the previous stage, which is the stack pointer value
+    before the subprogram arguments were pushed) to the stack \\
     As if with a \hspace{-0.1cm}\St{
         \makebox[0.85cm][l]{push}
         \makebox[0.60cm][l]{r13}

@@ -11,7 +11,7 @@ std::string Exec(const std::string& filepath) {
 }
 
 int main() {
-    std::string filepath = "../programs/print/playgrounds/uint32";
+    std::string filepath = "../programs/print/playgrounds/int32";
 
     karma::Compiler::Compile(Assembler(filepath));
 
