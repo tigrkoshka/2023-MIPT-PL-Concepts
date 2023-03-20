@@ -1,0 +1,104 @@
+include base.krm
+include uint32.krm
+
+.__sign_bit: uint32 0x80000000
+.__minus:    char '-'
+
+# accepts two arguments: a base and a uint32 value to be printed
+#
+# if the base is less than 2 or greater than 36, an error message is printed,
+# and the execution is exited with an error code 1
+print_int32:
+    # load the base into r0
+    loadr r0 r14 3
+
+    # check the base
+    prc 0
+    push r0 0
+    calli __check_base
+
+__print_int32_unsafe:
+    # load the base into r0 and the int32 value to r1
+    loadr2 r0 r14 3
+
+    # get the sign bit into r2
+    loadr r2 .__sign_bit
+
+    # check the sign bit of the int32 value
+    and r2 r1 0
+    cmpi r2 0
+
+    # if the bit is 0, simply print the positive value as uint32
+    jeq __print_int32_positive
+
+    # ... else print the negative value
+    # (this command is not needed since the negative value printing block comes
+    # immediately after this, but we put it here as an else clause sample)
+    #
+    # jmp __print_int32_negative
+
+    __print_int32_negative:
+        # print the minus sign
+        loadr r3 .__minus
+        syscall r3 105
+
+        # get the modulo
+        # see https://clck.ru/33p5Yo (Wiki) for details
+        subi r1 1
+        not r1 0
+
+        # this command is not needed since the positive value printing block
+        # comes immediately after this, but we put it here as a sample
+        # for the case the positive value printing block was somewhere else
+        #
+        # jmp __print_int32_positive
+
+    __print_int32_positive:
+        # prepare for the print_uint32 call
+        prc 0
+
+        # push the base and the value as arguments
+
+        # value (the second argument)
+        push r1 0
+
+        # base (the first argument)
+        push r0 0
+
+        # reuse the printing function
+        #
+        # use the unsafe function, because we have already checked the base
+        # above if the safe version of this function was initially called
+        calli __print_uint32_unsafe
+
+        # return
+        ret 0
+
+# like print_int32, but accepts only the value argument and prints
+# its decimal representation (i.e. defaults the base parameter to 10)
+print_int32_decimal:
+    # load the int32 value into r0
+    loadr r0 r14 3
+
+    # store the default base value (10) in r1
+    lc r1 10
+
+    # prepare for the print_int32 call
+    prc 0
+
+    # push the base and the value as the arguments
+
+    # value (the second argument)
+    push r0 0
+
+    # base (the first argument)
+    push r1 0
+
+    # reuse the printing function
+    #
+    # use the unsafe function, because there is no need to check the base
+    # since 10 is a valid base
+    calli __print_int32_unsafe
+
+    # return
+    ret 0

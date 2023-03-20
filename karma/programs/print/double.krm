@@ -1,4 +1,4 @@
-include utils.krm
+include digit.krm
 
 .__double_fractional_part_separator: char '.'
 

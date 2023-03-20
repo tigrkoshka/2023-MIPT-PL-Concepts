@@ -1,0 +1,111 @@
+include base.krm
+include double.krm
+
+# accepts a single two-word argument: the uint64 value to be converted
+#
+# returns the resulting double value in (r1,r0)
+__uint64_to_double:
+    # load the uint64 value into (r9,r8)
+    loadr2 r8 r14 3
+
+    # convert the low bits into (r0,r1)
+    itod r0 r8 0
+
+    # convert the high bits into (r3,r2)
+    itod r2 r9 0
+
+    # prepare the 2^31 double value in (r5,r4)
+    lc r4 0x80000000
+    itod r4 r4 0
+
+    # prepare the 2 double value in (r7,r6)
+    lc r6 2
+    itod r6 r6 0
+
+    # prepare the 2^32 value in (r5,r4)
+    muld r4 r6 0
+
+    # multiply the high bits of the initial value by 2^32
+    muld r2 r4 0
+
+    # add the resulting high bits to the low bits
+    addd r0 r2 0
+
+    # return (the result is in (r1,r0)
+    ret 0
+
+# accepts two arguments: a base and a two-word uint64 value to be printed
+#
+# if the base is less than 2 or greater than 36, an error message is printed,
+# and the execution is exited with an error code
+print_uint64:
+    # load the base into r0
+    loadr r0 r14 3
+
+    # check the base
+    prc 0
+    push r0 0
+    calli __check_base
+
+__print_uint64_unsafe:
+    # load the uint64 value into (r2,r1)
+    loadr2 r1 r14 4
+
+    # prepare for __uint64_to_double call
+    prc 0
+    push r2 0
+    push r1 0
+
+    # convert the uint64 value to double, the result will be in (r1,r0)
+    calli __uint64_to_double
+
+    # load the base into r2
+    loadr r2 r14 3
+
+    # prepare for __print_double_integral_part call
+    prc 0
+
+    # push the base and the value as the arguments
+
+    # value (the second argument)
+    push r1 0
+    push r0 0
+
+    # base (the first argument)
+    push r2 0
+
+    # call __print_double_integral_part
+    calli __print_double_integral_part
+
+    ret 0
+
+# like print_uint64, but accepts only the two-word value argument and prints
+# its decimal representation (i.e. defaults the base parameter to 10)
+print_uint64_decimal:
+    # load the uint64 value into (r1,r0)
+    loadr2 r0 r14 3
+
+    # store the default base value (10) in r2
+    lc r2 10
+
+    # prepare for the print_uint64 call
+    prc 0
+
+    # push the base and the value as the arguments
+
+    # value (the second argument)
+    push r1 0
+    push r0 0
+
+    # base (the first argument)
+    push r2 0
+
+    # reuse the printing function
+    #
+    #
+    # use the unsafe function, because there is no need to check the base
+    # since 10 is a valid base
+    calli __print_uint64_unsafe
+
+    # return
+    ret 0

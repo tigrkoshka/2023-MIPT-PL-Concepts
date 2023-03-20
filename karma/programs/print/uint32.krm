@@ -1,5 +1,5 @@
-include errors.krm
-include utils.krm
+include base.krm
+include digit.krm
 
 # accepts two arguments: a base and a uint32 value to be printed
 #
@@ -14,14 +14,11 @@ print_uint32:
     push r0 0
     calli __check_base
 
-    # load the base back into r0 and the uint32 value to r1
+__print_uint32_unsafe:
+    # load the base into r0 and the uint32 value to r1
     loadr2 r0 r14 3
 
-    # check the base
-    prc 0
-    push r0 0
-    calli __check_base
-
+    # compare the value to the base
     cmp r1 r0 0
 
     # if the value < base print it as a digit and return ...
@@ -55,7 +52,7 @@ print_uint32:
         push r0 0
 
         # recurse
-        calli print_uint32
+        calli __print_uint32_unsafe
 
         # pop the base into r0 and
         # the remainder (which indicates the current character to print) into r1
@@ -88,7 +85,7 @@ print_uint32:
 # its decimal representation (i.e. defaults the base parameter to 10)
 print_uint32_decimal:
     # load the uint32 value into r0
-    loadr2 r0 r14 3
+    loadr r0 r14 3
 
     # store the default base value (10) in r1
     lc r1 10
@@ -98,14 +95,17 @@ print_uint32_decimal:
 
     # push the base and the value as the arguments
 
-    # value (the second argument
+    # value (the second argument)
     push r0 0
 
     # base (the first argument)
     push r1 0
 
     # reuse the printing function
-    calli print_uint32
+    #
+    # use the unsafe function, because there is no need to check the base
+    # since 10 is a valid base
+    calli __print_uint32_unsafe
 
     # return
     ret 0

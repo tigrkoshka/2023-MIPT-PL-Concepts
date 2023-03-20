@@ -5,3 +5,5 @@ include string.krm
 include uint32.krm
 
 include double.krm
+
+include uint64,krm

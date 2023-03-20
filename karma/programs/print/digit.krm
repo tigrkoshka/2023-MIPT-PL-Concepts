@@ -1,9 +1,9 @@
-include errors.krm
+include base.krm
 include char.krm
 include string.krm
 
-.__zero_char:    char '0'
-.__a_char:       char 'a'
+.__zero_char: char '0'
+.__a_char:    char 'a'
 
 # accepts two arguments: a base and a one-digit value of that base
 #

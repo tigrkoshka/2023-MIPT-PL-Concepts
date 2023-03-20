@@ -3,10 +3,12 @@
 1. Multithreading in compilation
     * The `Labels` and the `Entrypoint` should be their own in
       the `FileCompiler`, with later merging, because the labels
-      definitions are dependant on the size of the previously compiled
+      definitions are dependent on the size of the previously compiled
       code and constants.
     * Do not forget to update the main `compiler` directory
       [README](include/compiler/README.md) to specify this
+
+2. Printing library: print `int64`
 
 ### General:
 
