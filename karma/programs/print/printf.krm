@@ -642,16 +642,16 @@ printf:
     ############################################################################
 
     .__printf.no_argument_to_substitute_error_msg.part_1.short:
-        string "error: no argument to substitute for the %"
+        string "error: no argument to substitute for the \"%"
 
     .__printf.no_argument_to_substitute_error_msg.part_1.long:
-        string "error: no argument to substitute for the %l"
+        string "error: no argument to substitute for the \"%l"
 
     .__printf.no_argument_to_substitute_error_msg.part_1.long.only_one_word:
         string "error: no second word provided for the argument to substitute for the %l"
 
     .__printf.no_argument_to_substitute_error_msg.part_2:
-        string " placeholder"
+        string "\" placeholder"
 
     __printf.no_argument_to_substitute_error.short:
         la r0 .__printf.no_argument_to_substitute_error_msg.part_1.short
