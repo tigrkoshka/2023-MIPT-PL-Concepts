@@ -11,13 +11,13 @@ include int64.krm
 .__long_placeholder_start: char 'l'
 
 .__placeholder.char:   char 'c'
-.__placeholder.string: char 'c'
+.__placeholder.string: char 's'
 
-.__placeholder.int.decimal.first:  char 'i'
-.__placeholder.int.decimal.second: char 'd'
-.__placeholder.int.binary:         char 'd'
-.__placeholder.int.octal:          char 'd'
-.__placeholder.int.hexadecimal:    char 'd'
+.__placeholder.int.decimal.first:  char 'd'
+.__placeholder.int.decimal.second: char 'i'
+.__placeholder.int.binary:         char 'm'
+.__placeholder.int.octal:          char 'k'
+.__placeholder.int.hexadecimal:    char 'h'
 
 .__placeholder.uint.decimal:     char 'u'
 .__placeholder.uint.binary:      char 'b'
