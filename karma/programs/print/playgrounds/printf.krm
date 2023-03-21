@@ -1,0 +1,606 @@
+include ../char.krm
+include ../printf.krm
+
+.characters:                    string "Characters:\n"
+.characters.percent:            string "    Percent: %%\n"
+.characters.simple:             string "    Simple: \'%c\', \'%c\', \'%c\', \'%c\'\n"
+.characters.simple.arg1: char 'a'
+.characters.simple.arg2: char '\\'
+.characters.simple.arg3: char '3'
+.characters.simple.arg4: char '%'
+.characters.spaces:              string "    Spaces:\n"
+.characters.spaces.newline:      string "        Newline:%c|\n"
+.characters.spaces.newline.arg:  char '\n'
+.characters.spaces.tab:          string "        Tab:%c|\n"
+.characters.spaces.tab.arg:  char '\t'
+.characters.spaces.whitespace:   string "        Whitespace:%c|\n"
+.characters.spaces.whitespace.arg:  char ' '
+
+.strings:           string "Strings:\n"
+.strings.simple:    string "    Simple: \"%s\"\n"
+.strings.simple.arg: string "Hello, world!"
+.strings.multiline: string "    Multiline: \"%s\"\n"
+.strings.multiline.arg: string "Karma\nis here:)"
+
+.int32:             string "Int32:\n"
+.int32.decimal:     string "    Decimal: %d, %i, %d, %i, %i\n"
+.int32.binary:      string "    Binary: %m, %m, %m, %m, %m\n"
+.int32.octal:       string "    Octal: %k, %k, %k, %k, %k\n"
+.int32.hexadecimal: string "    Hexadecimal: %h, %h, %h, %h, %h\n"
+.int32.arg1: uint32 10
+.int32.arg2: uint32 3
+.int32.arg3: uint32 8
+.int32.arg4: uint32 15
+# first, when storing the constant will be converted using two's complement
+# representation, which will produce the uint32 value 2^32 - 17,
+# after that, when printing as int32, will be interpreted as
+# the two's complement representation of a signed value, which will produce
+# the correct result -17
+.int32.arg5: uint32 -17
+
+.uint32:             string "Uint32:\n"
+.uint32.decimal:     string "    Decimal: %u, %u, %u, %u, %u\n"
+.uint32.binary:      string "    Binary: %b, %b, %b, %b, %b\n"
+.uint32.octal:       string "    Octal: %o, %o, %o, %o, %o\n"
+.uint32.hexadecimal: string "    Hexadecimal: %x, %x, %x, %x, %x\n"
+.uint32.arg1: uint32 128
+.uint32.arg2: uint32 19
+.uint32.arg3: uint32 12
+.uint32.arg4: uint32 1
+.uint32.arg5: uint32 -1 # i.e. 2^32 - 1
+
+.int64:             string "Int64:\n"
+.int64.decimal:     string "    Decimal: %ld, %li, %ld, %li, %li\n"
+.int64.binary:      string "    Binary: %ml, %ml, %ml, %ml, %ml\n"
+.int64.octal:       string "    Octal: %lk, %lk, %lk, %lk, %lk\n"
+.int64.hexadecimal: string "    Hexadecimal: %lh, %lh, %lh, %lh, %lh\n"
+.int64.arg1: uint64 96
+.int64.arg2: uint64 81
+.int64.arg3: uint64 -4294967296 # -2^32, the minimal int64 value
+.int64.arg4: uint64 4294967295  # 2^32 - 1, the maximal int64 value
+.int64.arg5: uint64 -6
+
+.uint64:             string "Uint64:\n"
+.uint64.decimal:     string "    Decimal: %lu, %lu, %lu, %lu, %lu\n"
+.uint64.binary:      string "    Binary: %lb, %lb, %lb, %lb, %lb\n"
+.uint64.octal:       string "    Octal: %lo, %lo, %lo, %lo, %lo\n"
+.uint64.hexadecimal: string "    Hexadecimal: %lx, %lx, %lx, %lx, %lx\n"
+.uint64.arg1: uint64 256
+.uint64.arg2: uint64 4294967296 # 2^32
+.uint64.arg3: uint64 0
+.uint64.arg4: uint64 147
+.uint64.arg5: uint64 -1 # i.e. 2^64 - 1
+
+.double:             string "Double:\n"
+.double.decimal:     string "    Decimal: %lf, %lf, %lf, %lf, %lf\n"
+.double.binary:      string "    Binary: %le, %le, %le, %le, %le\n"
+.double.octal:       string "    Octal: %lg, %lg, %lg, %lg, %lg\n"
+.double.hexadecimal: string "    Hexadecimal: %la, %la, %la, %la, %la\n"
+.double.arg1: double 1.5
+.double.arg2: double 0.1
+.double.arg3: double -12.55
+# does not fit into decimal with precision 5, but exactly -7.ff in hexadecimal
+.double.arg4: double -7.99609375
+.double.arg5: double 100.125
+
+main.characters:
+    la r0 .characters
+    prc 0
+    push r0 0
+    calli printf
+
+    la r0 .characters.percent
+    prc 0
+    push r0 0
+    calli printf
+
+    la r0 .characters.simple
+    load r1 .characters.simple.arg1
+    load r2 .characters.simple.arg2
+    load r3 .characters.simple.arg3
+    load r4 .characters.simple.arg4
+    prc 0
+    push r4 0
+    push r3 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli printf
+
+    la r0 .characters.spaces
+    prc 0
+    push r0 0
+    calli print_string
+
+    la r0 .characters.spaces.newline
+    load r1 .characters.spaces.newline.arg
+    prc 0
+    push r1 0
+    push r0 0
+    calli printf
+
+    la r0 .characters.spaces.tab
+    load r1 .characters.spaces.tab.arg
+    prc 0
+    push r1 0
+    push r0 0
+    calli printf
+
+    la r0 .characters.spaces.whitespace
+    load r1 .characters.spaces.whitespace.arg
+    prc 0
+    push r1 0
+    push r0 0
+    calli printf
+
+main.strings:
+    la r0 .characters
+    prc 0
+    push r0 0
+    calli printf
+
+    la r0 .strings.simple
+    la r1 .strings.simple.arg
+    prc 0
+    push r1 0
+    push r0 0
+    calli printf
+
+    la r0 .strings.multiline
+    la r1 .strings.multiline.arg
+    prc 0
+    push r1 0
+    push r0 0
+    calli printf
+
+main.int32:
+    la r0 .int32
+    prc 0
+    push r0 0
+    calli printf
+
+    la r0 .int32.decimal
+    load r1 .int32.arg1
+    load r2 .int32.arg2
+    load r3 .int32.arg3
+    load r4 .int32.arg4
+    load r5 .int32.arg5
+    prc 0
+    push r5 0
+    push r4 0
+    push r3 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli printf
+
+    la r0 .int32.binary
+    load r1 .int32.arg1
+    load r2 .int32.arg2
+    load r3 .int32.arg3
+    load r4 .int32.arg4
+    load r5 .int32.arg5
+    prc 0
+    push r5 0
+    push r4 0
+    push r3 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli printf
+
+    la r0 .int32.octal
+    load r1 .int32.arg1
+    load r2 .int32.arg2
+    load r3 .int32.arg3
+    load r4 .int32.arg4
+    load r5 .int32.arg5
+    prc 0
+    push r5 0
+    push r4 0
+    push r3 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli printf
+
+    la r0 .int32.hexadecimal
+    load r1 .int32.arg1
+    load r2 .int32.arg2
+    load r3 .int32.arg3
+    load r4 .int32.arg4
+    load r5 .int32.arg5
+    prc 0
+    push r5 0
+    push r4 0
+    push r3 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli printf
+
+main.uint32:
+    la r0 .uint32
+    prc 0
+    push r0 0
+    calli printf
+
+    la r0 .uint32.decimal
+    load r1 .uint32.arg1
+    load r2 .uint32.arg2
+    load r3 .uint32.arg3
+    load r4 .uint32.arg4
+    load r5 .uint32.arg5
+    prc 0
+    push r5 0
+    push r4 0
+    push r3 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli printf
+
+    la r0 .uint32.binary
+    load r1 .uint32.arg1
+    load r2 .uint32.arg2
+    load r3 .uint32.arg3
+    load r4 .uint32.arg4
+    load r5 .uint32.arg5
+    prc 0
+    push r5 0
+    push r4 0
+    push r3 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli printf
+
+    la r0 .uint32.octal
+    load r1 .uint32.arg1
+    load r2 .uint32.arg2
+    load r3 .uint32.arg3
+    load r4 .uint32.arg4
+    load r5 .uint32.arg5
+    prc 0
+    push r5 0
+    push r4 0
+    push r3 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli printf
+
+    la r0 .uint32.hexadecimal
+    load r1 .uint32.arg1
+    load r2 .uint32.arg2
+    load r3 .uint32.arg3
+    load r4 .uint32.arg4
+    load r5 .uint32.arg5
+    prc 0
+    push r5 0
+    push r4 0
+    push r3 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli printf
+
+main.int64:
+    la r0 .int64
+    prc 0
+    push r0 0
+    calli printf
+
+    la r0 .int64.decimal
+    load2 r1 .int64.arg1
+    load2 r3 .int64.arg2
+    load2 r5 .int64.arg3
+    load2 r7 .int64.arg4
+    load2 r9 .int64.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+    la r0 .int64.binary
+    load2 r1 .int64.arg1
+    load2 r3 .int64.arg2
+    load2 r5 .int64.arg3
+    load2 r7 .int64.arg4
+    load2 r9 .int64.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+    la r0 .int64.octal
+    load2 r1 .int64.arg1
+    load2 r3 .int64.arg2
+    load2 r5 .int64.arg3
+    load2 r7 .int64.arg4
+    load2 r9 .int64.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+    la r0 .int64.hexadecimal
+    load2 r1 .int64.arg1
+    load2 r3 .int64.arg2
+    load2 r5 .int64.arg3
+    load2 r7 .int64.arg4
+    load2 r9 .int64.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+main.uint64:
+    la r0 .uint64
+    prc 0
+    push r0 0
+    calli printf
+
+    la r0 .uint64.decimal
+    load2 r1 .uint64.arg1
+    load2 r3 .uint64.arg2
+    load2 r5 .uint64.arg3
+    load2 r7 .uint64.arg4
+    load2 r9 .uint64.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+    la r0 .uint64.binary
+    load2 r1 .uint64.arg1
+    load2 r3 .uint64.arg2
+    load2 r5 .uint64.arg3
+    load2 r7 .uint64.arg4
+    load2 r9 .uint64.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+    la r0 .uint64.octal
+    load2 r1 .uint64.arg1
+    load2 r3 .uint64.arg2
+    load2 r5 .uint64.arg3
+    load2 r7 .uint64.arg4
+    load2 r9 .uint64.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+    la r0 .uint64.hexadecimal
+    load2 r1 .uint64.arg1
+    load2 r3 .uint64.arg2
+    load2 r5 .uint64.arg3
+    load2 r7 .uint64.arg4
+    load2 r9 .uint64.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+main.double:
+    la r0 .double
+    prc 0
+    push r0 0
+    calli printf
+
+    la r0 .double.decimal
+    load2 r1 .double.arg1
+    load2 r3 .double.arg2
+    load2 r5 .double.arg3
+    load2 r7 .double.arg4
+    load2 r9 .double.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+    la r0 .double.binary
+    load2 r1 .double.arg1
+    load2 r3 .double.arg2
+    load2 r5 .double.arg3
+    load2 r7 .double.arg4
+    load2 r9 .double.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+    la r0 .double.octal
+    load2 r1 .double.arg1
+    load2 r3 .double.arg2
+    load2 r5 .double.arg3
+    load2 r7 .double.arg4
+    load2 r9 .double.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+    la r0 .double.hexadecimal
+    load2 r1 .double.arg1
+    load2 r3 .double.arg2
+    load2 r5 .double.arg3
+    load2 r7 .double.arg4
+    load2 r9 .double.arg5
+    prc 0
+    push r10 0 # arg5 (high bits)
+    push r9 0  # arg5 (low bits)
+    push r8 0  # arg4 (high bits)
+    push r7 0  # arg4 (low bits)
+    push r6 0  # arg3 (high bits)
+    push r5 0  # arg3 (low bits)
+    push r4 0  # arg2 (high bits)
+    push r3 0  # arg2 (low bits)
+    push r2 0  # arg1 (high bits)
+    push r1 0  # arg1 (low bits)
+    push r0 0  # format string
+    calli printf
+
+main:
+    prc 0
+    calli main.characters
+
+    prc 0
+    calli print_newline
+
+    prc 0
+    calli main.strings
+
+    prc 0
+    calli print_newline
+
+    prc 0
+    calli main.int32
+
+    prc 0
+    calli print_newline
+
+    prc 0
+    calli main.uint32
+
+    prc 0
+    calli print_newline
+
+    prc 0
+    calli main.int64
+
+    prc 0
+    calli print_newline
+
+    prc 0
+    calli main.uint64
+
+    prc 0
+    calli print_newline
+
+    prc 0
+    calli main.double
+
+end main
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

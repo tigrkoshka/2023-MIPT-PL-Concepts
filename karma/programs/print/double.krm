@@ -112,39 +112,87 @@ __print_double_fractional_part:
     mov r8 r4 0
     subd r7 r5 0
 
-    # load the precision to r12 as the loop remaining iterations counter
+    # move the fractional part to (r6,r5) to vacate (r8,r7)
+    mov r5 r7 0
+    mov r6 r8 0
+
+    # prepare the base^(-precision) value in (r11,r10) as the early stop value
+
+    # load the precision into r12 as the remaining iterations counter
+    loadr r12 r14 6
+
+    # store double(1) as the initial loop variable value into (r11,r10)
+    lc r10 1
+    itod r10 r10 0
+
+    # precision iterations
+    ____print_double_fractional_part.early_stop_loop:
+        # if n_iteration = precision, break the loop
+        cmpi r12 0
+        jeq ____print_double_fractional_part.early_stop_loop.out
+
+        # divide the loop variable by the base
+        divd r10 r1 0
+
+        # subtract the remaining iterations counter
+        # and proceed to the next iteration
+        subi r12 1
+        jmp ____print_double_fractional_part.early_stop_loop
+
+    ____print_double_fractional_part.early_stop_loop.out:
+
+    # load the precision into r12 as the maximum iterations counter
     loadr r12 r14 6
 
     ____print_double_fractional_part.loop:
-        # n_iterations = precision
+        # if n_iteration = precision, return from the function
         cmpi r12 0
         jeq ____print_double_fractional_part.out
 
-        # (r8,r7) *= base
+        # if the remaining fractional part is less than
+        # base^(-(precision - n_iteration)), that means that
+        # the remaining digits are 0, do not print them
+        # and return from the function
+        cmpd r5 r10 0
+        jl ____print_double_fractional_part.out
+
+        # (r6,r5) *= base
         # [multiply the fractional part by base to get its next digit]
-        muld r7 r1 0
+        muld r5 r1 0
 
         # the next digit is the integral part of the resulting value
-        dtoi r9 r7 0
+        dtoi r7 r5 0
 
-        # (r11,r10) contains the double representation of the next digit
-        itod r10 r9 0
+        # after this, (r9,r8) contains the double representation
+        # of the next digit
+        itod r8 r7 0
 
-        # subtract the next digit value from (r8,r7),
-        # i.e. (r8,r7) after this contains the fractional part of the initial
+        # subtract the next digit value from (r6,r5),
+        # i.e. (r6,r5) after this contains the fractional part of the initial
         # value with the current digit (and all digits before that) skipped
-        subd r7 r10 0
+        subd r5 r8 0
 
-        # store the resulting value as a local variable
-        push r8 0
-        push r7 0
+        # store
+        #   - the base (in both uint32 and double representations)
+        #   - the remaining fractional part
+        #   - the early stop value
+        #   - the iterations counter
+        # as a local variable
+        push r0 0 # base (uint32)
+        push r2 0 # base (double, high bits)
+        push r1 0 # base (double, low bits)
+        push r6 0 # remaining fractional part (double, high bits)
+        push r5 0 # remaining fractional part (double, low bits)
+        push r11 0 # early stop value (double, high bits)
+        push r10 0 # early stop value (double, low bits)
+        push r12 0 # iterations counter (uint32)
 
         # prepare for digits printing
         prc 0
 
         # push the base and the uint32 representation
         # of the next digit as arguments
-        push r9 0
+        push r7 0
         push r0 0
 
         # print the current character
@@ -158,18 +206,28 @@ __print_double_fractional_part:
         # values greater than base by design
         calli __print_digit_unsafe
 
-        # restore (r8,r7) from the local stack frame
-        pop r7 0
-        pop r8 0
+        # store
+        #   - the iterations counter
+        #   - the early stop value
+        #   - the remaining fractional part
+        #   - the base (in both uint32 and double representations)
+        # as a local variable
+        pop r12 0 # iterations counter (uint32)
+        pop r10 0 # early stop value (double, low bits)
+        pop r11 0 # early stop value (double, high bits)
+        pop r5 0 # remaining fractional part (double, low bits)
+        pop r6 0 # remaining fractional part (double, high bits)
+        pop r1 0 # base (double, low bits)
+        pop r2 0 # base (double, high bits)
+        pop r0 0 # base (uint32)
 
-        # restore the base from the arguments
-        loadr r0 r14 3
-
-        # save the base as double to (r2,r1)
-        itod r1 r0 0
-
-        # decrease left iterations counter
+        # decrease remaining iterations counter
         subi r12 1
+
+        # multiply the early stop value by the base
+        # (because we have multiplied the fractional part by the base
+        # to get the next digit at the beginning of the loop)
+        muld r10 r1 0
 
         # continue the loop
         jmp ____print_double_fractional_part.loop

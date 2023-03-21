@@ -587,9 +587,13 @@ printf:
                     push r11 0
                     push r12 0
 
+                    # store the precision (5) into r3
+                    lc r3 5
+
                     # print the double
                     # (unsafely, because we are sure that the base is valid)
                     prc 0
+                    push r3 0 # precision              (the third argument)
                     push r1 0 # high bits of the value (the second argument)
                     push r0 0 # low bits of the value  (the second argument)
                     push r2 0 # base                   (the first argument)

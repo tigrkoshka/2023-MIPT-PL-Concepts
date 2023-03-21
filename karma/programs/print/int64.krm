@@ -20,7 +20,7 @@ __print_int64_unsafe:
     loadr r0 r14 3
 
     # load the int64 value into (r2,r1)
-    loadr r1 r14 4
+    loadr2 r1 r14 4
 
     # load the sign bit into r3
     load r3 .__sign_bit
