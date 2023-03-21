@@ -117,7 +117,7 @@ Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec_path,
     } catch (const errors::Error& e) {
         log << "[executor]: error: " << e.what() << std::endl;
         throw errors::executor::Error(
-            "error during execution process: "
+            "error during execution process "
             "(not directly related to the execution itself): "s +
             e.what());
     } catch (const std::exception& e) {

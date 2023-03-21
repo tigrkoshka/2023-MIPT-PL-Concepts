@@ -21,7 +21,7 @@ __print_uint32_unsafe:
     # compare the value to the base
     cmp r1 r0 0
 
-    # if the value < base print it as a digit and return ...
+    # if the value is less than base print it as a digit and return ...
     jl __print_uint32.out
 
     # ... else recurse
@@ -40,9 +40,8 @@ __print_uint32_unsafe:
         # and value % base to r2
         div r1 r0 0
 
-        # push the base and the remainder as local variables
+        # save the remainder as a local variable
         push r2 0
-        push r0 0
 
         # prepare for call
         prc 0
@@ -54,18 +53,23 @@ __print_uint32_unsafe:
         # recurse
         calli __print_uint32_unsafe
 
-        # pop the base into r0 and
-        # the remainder (which indicates the current character to print) into r1
-        pop r0 0
+        # pop the remainder into r1 and then (when the local variables stack
+        # segment becomes empty) load the base from the arguments into r0
+        #
+        # note that this is consistent with the case when we did not recurse:
+        # in that case the value representing the digit to print was also in
+        # the r1 register (the full initial value) and the base was in the r0
+        # register
         pop r1 0
+        loadr r0 r14 3
 
     __print_uint32.out:
         # prepare for call
         prc 0
 
         # push the base and the value as arguments
-        push r1 0
-        push r0 0
+        push r1 0 # one-digit value (the second argument)
+        push r0 0 # base            (the first argument)
 
         # print the current character
         #

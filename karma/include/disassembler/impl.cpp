@@ -373,7 +373,7 @@ void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
     } catch (const errors::Error& e) {
         log << "[disassembler]: error: " << e.what() << std::endl;
         throw errors::disassembler::Error(
-            "error during disassembling process: "
+            "error during disassembling process "
             "(not directly related to the disassembling itself): "s +
             e.what());
     } catch (const std::exception& e) {

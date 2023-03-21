@@ -133,6 +133,8 @@ main.characters:
     push r0 0
     calli printf
 
+    ret 0
+
 main.strings:
     la r0 .characters
     prc 0
@@ -152,6 +154,8 @@ main.strings:
     push r1 0
     push r0 0
     calli printf
+
+    ret 0
 
 main.int32:
     la r0 .int32
@@ -219,6 +223,8 @@ main.int32:
     push r0 0
     calli printf
 
+    ret 0
+
 main.uint32:
     la r0 .uint32
     prc 0
@@ -284,6 +290,8 @@ main.uint32:
     push r1 0
     push r0 0
     calli printf
+
+    ret 0
 
 main.int64:
     la r0 .int64
@@ -371,6 +379,8 @@ main.int64:
     push r0 0  # format string
     calli printf
 
+    ret 0
+
 main.uint64:
     la r0 .uint64
     prc 0
@@ -456,6 +466,8 @@ main.uint64:
     push r1 0  # arg1 (low bits)
     push r0 0  # format string
     calli printf
+
+    ret 0
 
 main.double:
     la r0 .double
@@ -543,6 +555,8 @@ main.double:
     push r0 0  # format string
     calli printf
 
+    ret 0
+
 main:
     prc 0
     calli main.characters
@@ -583,24 +597,7 @@ main:
     prc 0
     calli main.double
 
+    lc r0 0
+    syscall r0 0
+
 end main
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

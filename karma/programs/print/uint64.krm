@@ -1,39 +1,102 @@
 include base.krm
-include double.krm
+include digit.krm
 
-# accepts a single two-word argument: the uint64 value to be converted
+.__max_uint32: uint32 -1
+
+# accepts two arguments: a uint64 dividend and a uint32 divisor
 #
-# returns the resulting double value in (r1,r0)
-__uint64_to_double:
-    # load the uint64 value into (r9,r8)
-    loadr2 r8 r14 3
+# returns the uint64 quotient in (r0,r1) and the uint32 remainder in r2
+__div_mod_uint64:
+    # the calculations are made based on the following reasoning:
+    #
+    #     let the divisor be D = 2^32 * H + L,
+    #         where H and L are its high and low bits uint32 values respectively
+    #     let the dividend be B ('base')
+    #
+    #     now let H = q_H * B + r_H,
+    #         where q_H and r_H are the uint32 quotient and the uint32 remainder
+    #         from dividing H by B respectively (consequently, r_H < B)
+    #
+    #     similarly, let L = q_L * B + r_L,
+    #         where q_L and r_L are the uint32 quotient and the uint32 remainder
+    #         from dividing L by B respectively (consequently, r_L < B)
+    #
+    #     then we can denote:
+    #         D = 2^32 * H + L = 2^32 * (q_H * B + r_H) + (q_L * B + r_L) =
+    #           = (2^32 * q_H + q_L) * B + (r_H + r_L),
+    #         where r_H + r_L < 2 * B since both terms of LHS are less than B
+    #
+    #     if r_H + r_L < B then:
+    #         2^32 * q_H + q_L is the quotient
+    #         r_H + r_L        is the remainder
+    #
+    #     else:
+    #         2^32 * q_H + q_L + 1 is the quotient
+    #         r_H + r_L - B        is the remainder
 
-    # convert the low bits into (r0,r1)
-    itod r0 r8 0
+    # load L into r3 and make it a uint64 operand for div
+    # by setting its high bits (i.e. r4) to zero
+    loadr r3 r14 3
+    lc r4 0
 
-    # convert the high bits into (r3,r2)
-    itod r2 r9 0
+    # load H into r5 and make it a uint64 operand for div
+    # by setting its high bits (i.e. r6) to zero
+    loadr r5 r14 4
+    lc r6 0
 
-    # prepare the 2^31 double value in (r5,r4)
-    lc r4 1
-    shli r4 31
-    itod r4 r4 0
+    # load B into r7
+    loadr r7 r14 5
 
-    # prepare the 2 double value in (r7,r6)
-    lc r6 2
-    itod r6 r6 0
+    # after this r3 contains q_L and r4 contains r_L
+    div r3 r7 0
 
-    # prepare the 2^32 value in (r5,r4)
-    muld r4 r6 0
+    # after this r5 contains q_H and r6 contains r_H
+    div r5 r7 0
 
-    # multiply the high bits of the initial value by 2^32
-    muld r2 r4 0
+    # put q_L into r0 and q_H into r1 making
+    # the (r1,r0) uint64 value equal to 2^32 * q_H + q_L
+    mov r0 r3 0
+    mov r1 r5 0
 
-    # add the resulting high bits to the low bits
-    addd r0 r2 0
+    # put the sum of r_L and r_H into r2
+    mov r2 r4 0
+    add r2 r6 0
 
-    # return (the result is in (r1,r0)
-    ret 0
+    # if the sum of r_L and r_H is less than B, we have obtained
+    # the correct uint64 quotient in (r1,r0) and the correct remainder in r2,
+    # so we can return from the function
+    cmp r2 r7 0
+    jl ____div_mod_uint64.out
+
+    # else we need to subtract B from (r_L + r_H) and add 1
+    # to the uint64 value stored in (r1,r0)
+    sub r2 r7 0
+
+    # the addition of 1 to uint64 algorithm:
+    #
+    #     - compare the low bits to the maximum uint32 value
+    #
+    #     - add 1 to the low bits
+    #
+    #     - if before the addition the low bits were less than the maximum
+    #       uint32 value, the addition is done, and we can return from
+    #       the function
+    #
+    #     - else an overflow of the low bits occurred and we need to add 1
+    #       to the high bits (note that if the high bits overflowed too,
+    #       that means that the original uint64 value was the maximum uint64
+    #       value and after the addition both the low and the high bits
+    #       overflowed, and we got 0 as the resulting uint64 value,
+    #       which is the correct behaviour on uint64 overflow)
+    load r3 .__max_uint32
+    cmp r0 r3 0
+    addi r0 1
+    jl ____div_mod_uint64.out
+    addi r1 1
+
+    ____div_mod_uint64.out:
+        ret 0
+
 
 # accepts two arguments: a base and a two-word uint64 value to be printed
 #
@@ -49,36 +112,79 @@ print_uint64:
     calli __check_base
 
 __print_uint64_unsafe:
-    # load the uint64 value into (r2,r1)
+    # load the base into r0
+    loadr r0 r14 3
+
+    # load the uint64 value to (r2,r1)
     loadr2 r1 r14 4
 
-    # prepare for __uint64_to_double call
-    prc 0
-    push r2 0
-    push r1 0
+    # compare the value to the base:
+    #
+    #     - if the high bits of the uint64 value are not zero,
+    #       the value is greater than the uint32 base
+    #
+    #     - else compare the low bits
+    #
+    # if the value is less than base print it as a digit and return,
+    # else recurse and print all its digits
+    cmpi r2 0
+    jg  __print_uint64.recurse
+    cmp r1 r0 0
+    jl __print_uint64.out
 
-    # convert the uint64 value to double, the result will be in (r1,r0)
-    calli __uint64_to_double
+    __print_uint64.recurse:
+        # (r1,r0) = (r2,r1) / r0, i.e. the quotient
+        # r2      = (r2,r1) % r0, i.e. the remainder
+        prc 0
+        push r0 0 # base, the divisor   (the second argument)
+        push r2 0 # value, the dividend (high bits of the first argument)
+        push r1 0 # value, the dividend (low bits of the first argument)
+        calli __div_mod_uint64
 
-    # load the base into r2
-    loadr r2 r14 3
+        # load the base from the arguments into r3
+        loadr r3 r14 3
 
-    # prepare for __print_double_integral_part call
-    prc 0
+        # save the remainder as a local variable
+        push r2 0
 
-    # push the base and the value as the arguments
+        # recurse
+        prc 0
+        push r1 0 # quotient (high bits of the second argument)
+        push r0 0 # quotient (low bits of the second argument)
+        push r3 0 # base (the first argument)
+        calli __print_uint64_unsafe
 
-    # value (the second argument)
-    push r1 0
-    push r0 0
+        # pop the remainder into r1 and then (when the local variables stack
+        # segment becomes empty) load the base from the arguments into r0
+        #
+        # note that this is consistent with the case when we did not recurse:
+        # in that case the value representing the digit to print was also in
+        # the r1 register (the low bits of the initial value) and the base
+        # was in the r0 register
+        pop r1 0
+        loadr r0 r14 3
 
-    # base (the first argument)
-    push r2 0
+    __print_uint64.out:
+        # prepare for call
+        prc 0
 
-    # call __print_double_integral_part
-    calli __print_double_integral_part
+        # push the base and the value as arguments
+        push r1 0 # one-digit value (the second argument)
+        push r0 0 # base            (the first argument)
 
-    ret 0
+        # print the current character
+        #
+        # use the unsafe method in "production mode" for efficiency
+        # switch this to call the safe __print_digit in debug
+        #
+        # the safe function can only detect bugs and not user input related
+        # errors, because the base was check in the beginning of
+        # the print_uint32 function, and the function must not try to print
+        # values greater than base by design
+        calli __print_digit_unsafe
+
+        # return
+        ret 0
 
 # like print_uint64, but accepts only the two-word value argument and prints
 # its decimal representation (i.e. defaults the base parameter to 10)

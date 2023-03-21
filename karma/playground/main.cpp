@@ -4,8 +4,8 @@
 
 class NoOpStreamBuff : public std::streambuf {
    public:
-    int overflow(int c) {
-        return c;
+    int overflow(int num) override {
+        return num;
     }
 };
 
