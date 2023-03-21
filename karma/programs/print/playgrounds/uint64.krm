@@ -1,0 +1,21 @@
+include ../char.krm
+include ../uint64.krm
+
+.base:  uint32 10
+.value: uint64 18446744073709551615
+
+main:
+    load r0 .base
+    load2 r1 .value
+    prc 0
+    push r2 0
+    push r1 0
+    push r0 0
+    calli __print_uint64_unsafe
+
+    prc 0
+    calli print_newline
+
+    lc r0 0
+    syscall r0 0
+end main

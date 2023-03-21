@@ -9,11 +9,13 @@ include digit.krm
 __div_mod_uint64:
     # the calculations are made based on the following reasoning:
     #
-    #     let the divisor be D = 2^32 * H + L,
-    #         where H and L are its high and low bits uint32 values respectively
+    #  0. let the divisor be D = 2^32 * H + L,
+    #         where H and L are the uint32 values representing
+    #         the high and low bits of D respectively
+    #
     #     let the dividend be B ('base')
     #
-    #     now let H = q_H * B + r_H,
+    #  1. now let H = q_H * B + r_H,
     #         where q_H and r_H are the uint32 quotient and the uint32 remainder
     #         from dividing H by B respectively (consequently, r_H < B)
     #
@@ -23,16 +25,50 @@ __div_mod_uint64:
     #
     #     then we can denote:
     #         D = 2^32 * H + L = 2^32 * (q_H * B + r_H) + (q_L * B + r_L) =
-    #           = (2^32 * q_H + q_L) * B + (r_H + r_L),
-    #         where r_H + r_L < 2 * B since both terms of LHS are less than B
+    #           = (2^32 * q_H + q_L) * B + (2^32 * r_H + r_L)
     #
-    #     if r_H + r_L < B then:
+    #  2. if r_H == 0 then:
     #         2^32 * q_H + q_L is the quotient
-    #         r_H + r_L        is the remainder
+    #         r_L              is the remainder
     #
-    #     else:
-    #         2^32 * q_H + q_L + 1 is the quotient
-    #         r_H + r_L - B        is the remainder
+    #  3. otherwise, let 2^32 = q_U * B + r_U,
+    #         where q_U and r_U are the uint32 quotient and the uint32 remainder
+    #         from dividing 2^32 by B respectively (consequently, r_U < B)
+    #
+    #     then we can continue the equalities above:
+    #         D = (2^32 * q_H + q_L) * B + ((q_U * B + r_U) * r_H + r_L) =
+    #           = (2^32 * q_H + q_L + q_U * r_H) * B + (r_L + r_U * r_H)
+    #
+    #     note that since q_U * B is not greater than 2^32 and r_H is strictly
+    #     less than B, the q_U * r_H value is strictly less than 2^32 and can
+    #     be fully represented by the uint32 type
+    #
+    #  4. let r_I = r_U * r_H + r_L
+    #         from r_U < B, r_H < B and r_L < B,
+    #         it follows that r_I < B(B + 1)
+    #
+    #         since B is the original base and cannot be greater than 36,
+    #         the value of r_I is less than 2^32 - 1, i.e. can be fully
+    #         represented by the uint32 type
+    #     if r_I < B then:
+    #         (2^32 * q_H + q_L) + (q_U * r_H) is the quotient
+    #         r_I [= r_L + (r_U * r_H)]        is the remainder
+    #
+    #  5. otherwise let r_I = q_G * B + r_G,
+    #         where q_G and r_G are the uint32 quotient and the uint32 remainder
+    #         from dividing r_I by B respectively (consequently, r_G < B)
+    #
+    #     then we can continue the equalities above:
+    #         D = (2^32 * q_H + q_L + q_U * r_H) * B + (q_G * B + r_G) =
+    #           = (2^32 * q_H + q_L + q_U * r_H + q_G) * B + r_G
+    #
+    #     thus, since r_G < B
+    #         (2^32 * q_H + q_L) + (q_U * r_H) + q_G is the quotient
+    #         r_G                                    is the remainder
+
+    ############################################################################
+    ###                                Step 0                                ###
+    ############################################################################
 
     # load L into r3 and make it a uint64 operand for div
     # by setting its high bits (i.e. r4) to zero
@@ -47,55 +83,164 @@ __div_mod_uint64:
     # load B into r7
     loadr r7 r14 5
 
+    ############################################################################
+    ###                                Step 1                                ###
+    ############################################################################
+
     # after this r3 contains q_L and r4 contains r_L
     div r3 r7 0
 
     # after this r5 contains q_H and r6 contains r_H
     div r5 r7 0
 
+    ############################################################################
+    ###                                Step 2                                ###
+    ############################################################################
+
     # put q_L into r0 and q_H into r1 making
     # the (r1,r0) uint64 value equal to 2^32 * q_H + q_L
     mov r0 r3 0
     mov r1 r5 0
 
-    # put the sum of r_L and r_H into r2
+    # put r_L to r2 as the remainder
+    #
+    # if r_H == 0 it is the correct remainder and we can return,
+    # else continue the algorithm above
+    cmpi r6 0
     mov r2 r4 0
-    add r2 r6 0
+    jne ____div_mod_uint64.non_zero_high_remainder
+    ret 0
 
-    # if the sum of r_L and r_H is less than B, we have obtained
-    # the correct uint64 quotient in (r1,r0) and the correct remainder in r2,
-    # so we can return from the function
-    cmp r2 r7 0
-    jl ____div_mod_uint64.out
+    ############################################################################
+    ###                                Step 3                                ###
+    ############################################################################
 
-    # else we need to subtract B from (r_L + r_H) and add 1
-    # to the uint64 value stored in (r1,r0)
-    sub r2 r7 0
+    ____div_mod_uint64.non_zero_high_remainder:
 
-    # the addition of 1 to uint64 algorithm:
+    # prepare q_U in r8 and r_U in r9
+
+    # store 2^32 = 1 * 2^32 + 0 in (r8,r9), i.e. r8 = 0, r9 = 1
+    lc r8 0
+    lc r9 1
+
+    # divide the 2^32 uint64 value by the base,
+    # put the quotient (q_U) into r8 and the remainder (r_U) into r9
     #
-    #     - compare the low bits to the maximum uint32 value
+    # note that quotient overflow cannot occur since B is the initial base,
+    # so it cannot be less than 2, and 2^32 / 2 fits into uint32
+    div r8 r7 0
+
+    # prepare q_U * r_H uint64 value in r11
     #
-    #     - add 1 to the low bits
+    # note that as explained in step 3, the q_U * r_H value can be fully
+    # represented by the uint32 type, therefore, the high bits of
+    # value resulting after multiplication (i.e. r11) will be 0
+    mov r10 r8 0
+    mul r10 r6 0
+
+    # add q_U * r_H to 2^32 * q_H + q_L stored in (r1,r0)
     #
-    #     - if before the addition the low bits were less than the maximum
-    #       uint32 value, the addition is done, and we can return from
-    #       the function
+    # we add the uint32 value to the uint64 value using the following algorithm:
     #
-    #     - else an overflow of the low bits occurred and we need to add 1
-    #       to the high bits (note that if the high bits overflowed too,
-    #       that means that the original uint64 value was the maximum uint64
-    #       value and after the addition both the low and the high bits
-    #       overflowed, and we got 0 as the resulting uint64 value,
-    #       which is the correct behaviour on uint64 overflow)
-    load r3 .__max_uint32
-    cmp r0 r3 0
-    addi r0 1
-    jl ____div_mod_uint64.out
+    #     - save (2^32 - 1) - q_L value in r12
+    #
+    #     - if the saved value is not less than the q_U * r_H value then
+    #       the low bits overflow cannot occur and we simply add r10 to r0
+    #
+    #     - otherwise we remember that the low bits overflow occurred and
+    #       add an additional 1 to the high bits stored in the r1 register
+    #       after adding r10 to r0
+    #
+    # note that the r1 register overflow cannot occur since that would mean
+    # that the quotient does not fit into the uint64 type, which is impossible
+    # since the dividend fits into the uint64 type and the divisor is
+    # a positive integer
+    lc r12 -1 # i.e. 2^32 - 1
+    sub r12 r0 0
+    cmp r12 r10 0
+
+    add r0 r10 0
+
+    jge ____div_mod_uint64.step_3_addition_no_low_bits_overflow
     addi r1 1
+    ____div_mod_uint64.step_3_addition_no_low_bits_overflow:
 
-    ____div_mod_uint64.out:
-        ret 0
+    ############################################################################
+    ###                                Step 4                                ###
+    ############################################################################
+
+    # note that we do not need the q_U * r_H value stored in r10 anymore
+    # since we have already added it to the resulting quotient,
+    #
+    # therefore we can reuse the r10 register
+
+    # multiply the r_U value stored in r9 by r_H (stored in r6)
+    #
+    # note that since both r_U and r_H are less than B,
+    # r_U * r_H is less than B^2, and since B is the original base,
+    # it cannot be greater than 36, so r_U * r_H can be fully
+    # represented by the uint32 type
+    #
+    # that means that after the multiplication, the high bits of
+    # the resulting value (i.e. r10) will be 0
+    mul r9 r6 0
+
+    # add r_U * r_H to r_L stored in r2,
+    # i.e. after this, the r2 register contains the r_I value
+    #
+    # note that as explained in step 4, the r_I value can be fully
+    # represented by the uint32 type, so no overflow can occur in this case
+    add r2 r9 0
+
+    # return if the resulting remainder is less than base
+    cmp r2 r7 0
+    jge ____div_mod_uint64.remainder_not_less_than_base
+    ret 0
+
+    ############################################################################
+    ###                                Step 5                                ###
+    ############################################################################
+
+    ____div_mod_uint64.remainder_not_less_than_base:
+
+    # note that we do not need
+    #     - the q_U value stored in r8
+    #     - the r_U value stored in r9
+    # anymore since at this point we have all we need in (r1,r0) and r2,
+    # and we just need to normalize the quotient and the remainder,
+    # i.e. make the remainder less than the divisor and increase the
+    # quotient accordingly
+    #
+    # therefore, we can reuse the r8- and r9 registers
+
+    # copy the r_I value into r8 and prepare it for the division
+    # by setting the high bits of the dividend (i.e. r9) to 0
+    mov r8 r2 0
+    lc r9 0
+
+    # after this the q_G value is stored in r8
+    # and the r_G value is stored in r9
+    div r8 r7 0
+
+    # add the q_G value to the quotient stored in (r1,r0),
+    # thus obtaining the resulting quotient
+    #
+    # we use the same algorithm as on step 3
+    lc r12 -1 # i.e. 2^32 - 1
+    sub r12 r0 0
+    cmp r12 r8 0
+
+    add r0 r8 0
+
+    jge ____div_mod_uint64.step_5_addition_no_low_bits_overflow
+    addi r1 1
+    ____div_mod_uint64.step_5_addition_no_low_bits_overflow:
+
+    # store r_G as the resulting remainder into r2
+    mov r2 r9 0
+
+    # return
+    ret 0
 
 
 # accepts two arguments: a base and a two-word uint64 value to be printed

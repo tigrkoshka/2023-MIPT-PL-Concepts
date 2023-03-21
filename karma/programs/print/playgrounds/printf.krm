@@ -55,9 +55,9 @@ include ../printf.krm
 .int64.octal:       string "    Octal: %lk, %lk, %lk, %lk, %lk\n"
 .int64.hexadecimal: string "    Hexadecimal: %lh, %lh, %lh, %lh, %lh\n"
 .int64.arg1: uint64 96
-.int64.arg2: uint64 81
-.int64.arg3: uint64 -4294967296 # -2^32, the minimal int64 value
-.int64.arg4: uint64 4294967295  # 2^32 - 1, the maximal int64 value
+.int64.arg2: uint64 0
+.int64.arg3: uint64 -9223372036854775808 # -2^63, the minimal int64 value
+.int64.arg4: uint64 9223372036854775807  # 2^63 - 1, the maximal int64 value
 .int64.arg5: uint64 -6
 
 .uint64:             string "Uint64:\n"
@@ -136,7 +136,7 @@ main.characters:
     ret 0
 
 main.strings:
-    la r0 .characters
+    la r0 .strings
     prc 0
     push r0 0
     calli printf
