@@ -4,7 +4,7 @@ include uint64.krm
 .__int64.sign_bit:   uint32 0x80000000
 .__int64.minus_sign: char '-'
 
-# Qccepts two arguments: a base and an int64 value to be printed
+# Accepts two arguments: a base and an int64 value to be printed
 #
 # If the base is less than 2 or greater than 36, an error message is printed,
 # and the execution is exited with an error code 1
@@ -77,22 +77,14 @@ __print_int64_unsafe:
         # jmp __print_int64.positive
 
     __print_int64.positive:
-        # prepare for the print_uint64 call
-        prc 0
-
-        # push the base and the value as arguments
-
-        # value (the second argument)
-        push r2 0
-        push r1 0
-
-        # base (the first argument)
-        push r0 0
-
-        # reuse the printing function
+        # reuse the uint64 printing function
         #
         # use the unsafe function, because we have already checked the base
         # above if the safe version of this function was initially called
+        prc 0
+        push r2 0 # value (high bits of the the second argument)
+        push r1 0 # value (low bits of the the second argument)
+        push r0 0 # base (the first argument)
         calli __print_uint64_unsafe
 
         # return
@@ -107,22 +99,14 @@ print_int64_decimal:
     # store the default base value (10) in r2
     lc r2 10
 
-    # prepare for the print_int64 call
-    prc 0
-
-    # push the base and the value as the arguments
-
-    # value (the second argument)
-    push r1 0
-    push r0 0
-
-    # base (the first argument)
-    push r2 0
-
     # reuse the printing function
     #
     # use the unsafe function, because there is no need to check the base
     # since 10 is a valid base
+    prc 0
+    push r1 0 # value (high bits of the second argument)
+    push r0 0 # value (low bits of the second argument)
+    push r2 0 # base (the first argument)
     calli __print_int64_unsafe
 
     # return

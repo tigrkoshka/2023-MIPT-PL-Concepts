@@ -51,7 +51,7 @@ include ../printf.krm
 
 .int64:             string "Int64:\n"
 .int64.decimal:     string "    Decimal: %ld, %li, %ld, %li, %li\n"
-.int64.binary:      string "    Binary: %ml, %ml, %ml, %ml, %ml\n"
+.int64.binary:      string "    Binary: %lm, %lm, %lm, %lm, %lm\n"
 .int64.octal:       string "    Octal: %lk, %lk, %lk, %lk, %lk\n"
 .int64.hexadecimal: string "    Hexadecimal: %lh, %lh, %lh, %lh, %lh\n"
 .int64.arg1: uint64 96
