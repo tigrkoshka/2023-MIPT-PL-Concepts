@@ -41,6 +41,9 @@ class Executor {
     using ReturnCode      = uint32_t;
     using MaybeReturnCode = std::optional<ReturnCode>;
 
+   private:
+    static std::ostream& NoOpLogger;
+
    public:
     Executor();
     explicit Executor(Config);
@@ -64,16 +67,16 @@ class Executor {
     // in another file, which includes this one
 
     ReturnCode MustExecute(const std::string& exec_path,
-                           std::ostream& log = std::clog);
+                           std::ostream& log = NoOpLogger);
     ReturnCode Execute(const std::string& exec_path,
-                       std::ostream& log = std::clog);
+                       std::ostream& log = NoOpLogger);
 
     ReturnCode MustExecute(const std::string& exec_path,
                            const Config&,
-                           std::ostream& log = std::clog);
+                           std::ostream& log = NoOpLogger);
     ReturnCode Execute(const std::string& exec_path,
                        const Config&,
-                       std::ostream& log = std::clog);
+                       std::ostream& log = NoOpLogger);
 
    private:
     std::unique_ptr<Impl> impl_;

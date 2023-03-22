@@ -25,6 +25,9 @@ class Disassembler {
     class Labels;
     class Impl;
 
+   private:
+    static std::ostream& NoOpLogger;
+
    public:
     // utils::traits::Static
 
@@ -43,19 +46,19 @@ class Disassembler {
    public:
     static void MustDisassemble(const std::string& exec_path,
                                 std::ostream& out,
-                                std::ostream& log = std::clog);
+                                std::ostream& log = NoOpLogger);
 
     static void Disassemble(const std::string& exec_path,
                             std::ostream& out,
-                            std::ostream& log = std::clog);
+                            std::ostream& log = NoOpLogger);
 
     static void MustDisassemble(const std::string& exec_path,
                                 const std::string& dst = "",
-                                std::ostream& log      = std::clog);
+                                std::ostream& log      = NoOpLogger);
 
     static void Disassemble(const std::string& exec_path,
                             const std::string& dst = "",
-                            std::ostream& log      = std::clog);
+                            std::ostream& log      = NoOpLogger);
 };
 
 namespace errors::disassembler {

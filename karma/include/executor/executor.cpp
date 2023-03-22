@@ -8,8 +8,11 @@
 
 #include "executor/config.hpp"
 #include "executor/impl.hpp"
+#include "utils/logger.hpp"
 
 namespace karma {
+
+std::ostream& Executor::NoOpLogger = detail::utils::logger::no_op;
 
 Executor::Executor()
     : impl_(std::make_unique<Impl>(Config())) {}

@@ -32,6 +32,8 @@ karma::
                         concepts::                   // concepts.hpp
                         |        IntOrFloat
                         |        Hashable
+                        logger::                     // logger.hpp
+                        |        no_op
                         map::                        // map.hpp
                         |        Revert
                         strings::                    // strings.hpp

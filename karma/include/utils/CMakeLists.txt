@@ -5,6 +5,7 @@ add_library(
         vector.cpp
         strings.cpp
         types.cpp
+        logger.cpp
         generator.cpp
         concepts.cpp
         traits.cpp

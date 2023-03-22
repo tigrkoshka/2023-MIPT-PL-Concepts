@@ -4,8 +4,11 @@
 #include <string>   // for string
 
 #include "compiler/impl.hpp"
+#include "utils/logger.hpp"
 
 namespace karma {
+
+std::ostream& Compiler::NoOpLogger = detail::utils::logger::no_op;
 
 void Compiler::MustCompile(const std::string& src,
                            const std::string& dst,
