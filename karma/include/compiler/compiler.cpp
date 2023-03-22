@@ -8,7 +8,7 @@
 
 namespace karma {
 
-std::ostream& Compiler::NoOpLogger = detail::utils::logger::no_op;
+std::ostream& Compiler::no_op_logger = detail::utils::logger::no_op;
 
 void Compiler::MustCompile(const std::string& src,
                            const std::string& dst,

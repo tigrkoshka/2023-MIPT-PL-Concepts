@@ -320,7 +320,7 @@ void Disassembler::Impl::DisassembleCode(const Segment& code,
             << std::endl;
     }
 
-    out << "end " << labels.MainLabel() << std::endl;
+    out << "end " << Labels::MainLabel() << std::endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

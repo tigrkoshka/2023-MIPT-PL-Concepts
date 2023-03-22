@@ -8,7 +8,7 @@
 
 namespace karma {
 
-std::ostream& Disassembler::NoOpLogger = detail::utils::logger::no_op;
+std::ostream& Disassembler::no_op_logger = detail::utils::logger::no_op;
 
 void Disassembler::MustDisassemble(const std::string& exec_path,
                                    std::ostream& out,

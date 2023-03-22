@@ -44,14 +44,14 @@ std::string Escape(const std::string& str) {
     std::string res;
     res.reserve(str.size());
 
-    for (size_t curr_pos = 0; curr_pos < str.size(); ++curr_pos) {
-        if (!kUnescapeSequences.contains(str[curr_pos])) {
-            res += str[curr_pos];
+    for (char curr : str) {
+        if (!kUnescapeSequences.contains(curr)) {
+            res += curr;
             continue;
         }
 
         res += '\\';
-        res += kUnescapeSequences.at(str[curr_pos]);
+        res += kUnescapeSequences.at(curr);
     }
 
     return res;
@@ -70,7 +70,7 @@ void Unescape(std::string& str) {
         ++curr_pos;
 
         if (curr_pos == str.size()) {
-            str[write_pos] = '\\';
+            str[write_pos++] = '\\';
             break;
         }
 

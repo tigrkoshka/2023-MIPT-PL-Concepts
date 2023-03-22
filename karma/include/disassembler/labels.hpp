@@ -24,7 +24,8 @@ class Disassembler::Labels : detail::utils::traits::NonCopyableMovable {
     void PrepareCommandLabels(const Exec::Data&);
 
     static std::string MainLabel();
-    std::optional<std::string> TryGetLabel(detail::specs::arch::Address) const;
+    [[nodiscard]] std::optional<std::string> TryGetLabel(
+        detail::specs::arch::Address) const;
 
    private:
     static const std::string kConstantLabelPrefix;

@@ -15,7 +15,6 @@
 #include "compiler/includes.hpp"
 #include "exec/exec.hpp"
 #include "specs/architecture.hpp"
-#include "specs/commands.hpp"
 #include "specs/exec.hpp"
 #include "utils/error.hpp"
 #include "utils/vector.hpp"
@@ -24,7 +23,6 @@ namespace karma {
 
 namespace utils = detail::utils;
 namespace arch  = detail::specs::arch;
-namespace args  = detail::specs::cmd::args;
 namespace exec  = detail::specs::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +39,7 @@ void Compiler::Impl::FillLabels(const FilesDataMap& files_data,
                 {label, labels->GetUsageSample(label)});
         }
 
-        auto definition = static_cast<args::Address>(*definition_opt);
+        auto definition = static_cast<arch::Address>(*definition_opt);
         for (auto [file, file_usages] : usages) {
             for (auto n_cmd : file_usages) {
                 // the address always occupies the last
@@ -65,7 +63,7 @@ void Compiler::Impl::FillLabels(const FilesDataMap& files_data,
             throw CompileError::UndefinedLabel({*entry, *entry_pos});
         }
 
-        entrypoint->SetAddress(static_cast<args::Address>(*definition));
+        entrypoint->SetAddress(static_cast<arch::Address>(*definition));
     }
 }
 

@@ -14,7 +14,6 @@ namespace karma {
 
 namespace arch = detail::specs::arch;
 namespace cmd  = detail::specs::cmd;
-namespace args = cmd::args;
 
 std::string Disassembler::Labels::RecordConstantLabel(arch::Address address) {
     std::string label =

@@ -31,7 +31,7 @@ class Compiler {
     class Impl;
 
    private:
-    static std::ostream& NoOpLogger;
+    static std::ostream& no_op_logger;
 
    public:
     // utils::traits::Static
@@ -51,10 +51,10 @@ class Compiler {
    public:
     static void MustCompile(const std::string& src,
                             const std::string& dst = "",
-                            std::ostream& log      = NoOpLogger);
+                            std::ostream& log      = no_op_logger);
     static void Compile(const std::string& src,
                         const std::string& dst = "",
-                        std::ostream& log      = NoOpLogger);
+                        std::ostream& log      = no_op_logger);
 };
 
 namespace errors::compiler {

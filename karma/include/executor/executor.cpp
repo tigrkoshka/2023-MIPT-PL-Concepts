@@ -12,7 +12,7 @@
 
 namespace karma {
 
-std::ostream& Executor::NoOpLogger = detail::utils::logger::no_op;
+std::ostream& Executor::no_op_logger = detail::utils::logger::no_op;
 
 Executor::Executor()
     : impl_(std::make_unique<Impl>(Config())) {}
