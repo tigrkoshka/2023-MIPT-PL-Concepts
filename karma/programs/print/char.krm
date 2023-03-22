@@ -1,9 +1,9 @@
-.__newline_char: char '\n'
+.__char.newline: char '\n'
 
 # Does not accept arguments, prints a newline character
 print_newline:
     # r0 = '\n'
-    load r0 .__newline_char
+    load r0 .__char.newline
 
     # print the newline character
     syscall r0 105

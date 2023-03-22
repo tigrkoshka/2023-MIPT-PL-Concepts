@@ -2,8 +2,8 @@ include base.krm
 include char.krm
 include string.krm
 
-.__zero_char: char '0'
-.__a_char:    char 'a'
+.__digit.zero_char: char '0'
+.__digit.a_char:    char 'a'
 
 # Accepts two arguments: a base and a one-digit value of that base
 #
@@ -81,7 +81,7 @@ __print_digit_unsafe:
     # the value of the '0' char to our value, print it and return
     ____print_digit.as_decimal_digit:
         # r0 = '0'
-        load r0 .__zero_char
+        load r0 .__digit.zero_char
 
         # r1 = r0 + r1 [= '0' + r1]
         add r1 r0 0
@@ -102,7 +102,7 @@ __print_digit_unsafe:
     # (this is the reason for the bound on the allowed base)
     ____print_digit.as_latin_letter:
         # r0 = 'a'
-        load r0 .__a_char
+        load r0 .__digit.a_char
 
         # r1 = r0 + (r1 - 10) [= 'a' + (r1 - 10)]
         subi r1 10

@@ -1,10 +1,12 @@
 include base.krm
-include int32.krm
 include uint64.krm
 
-# accepts two arguments: a base and an int64 value to be printed
+.__int64.sign_bit:   uint32 0x80000000
+.__int64.minus_sign: char '-'
+
+# Qccepts two arguments: a base and an int64 value to be printed
 #
-# if the base is less than 2 or greater than 36, an error message is printed,
+# If the base is less than 2 or greater than 36, an error message is printed,
 # and the execution is exited with an error code 1
 print_int64:
     # load the base into r0
@@ -23,7 +25,7 @@ __print_int64_unsafe:
     loadr2 r1 r14 4
 
     # load the sign bit into r3
-    load r3 .__sign_bit
+    load r3 .__int64.sign_bit
 
     # check the sign bit of the int64 value
     and r3 r2 0
@@ -40,7 +42,7 @@ __print_int64_unsafe:
 
     __print_int64.negative:
         # print the minus sign
-        load r3 .__minus
+        load r3 .__int64.minus_sign
         syscall r3 105
 
         # get the modulo
@@ -96,7 +98,7 @@ __print_int64_unsafe:
         # return
         ret 0
 
-# like print_int64, but accepts only the value argument and prints
+# Like print_int64, but accepts only the value argument and prints
 # its decimal representation (i.e. defaults the base parameter to 10)
 print_int64_decimal:
     # load the int64 value into (r1,r0)

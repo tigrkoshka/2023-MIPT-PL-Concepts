@@ -1,6 +1,183 @@
 include digit.krm
 
-.__double_fractional_part_separator: char '.'
+.__double.fractional_part_separator: char '.'
+.__double.minus_sign:                char '-'
+
+.__double.minus_one: double -1
+
+.__double.full:                         uint32 0xffffffff
+.__double.only_highest_bit:             uint32 0x80000000
+.__double.11_bits_starting_from_second: uint32 0x7ff00000
+
+# Accepts a single argument: the two-word double value
+#
+# Returns the integral part of the double value's modulus in (r1,r0),
+# and the fractional part of the modulus in (r3,r2)
+#
+# Note that if the provided value is negative and does not represent
+# an integral value, in (r1,r0) the function returns a value that is 1 more
+# (in absolute values) than the integral part (in the mathematical sense) of
+# the initial value.
+#
+# E.g. the integral part of -1.5 in the mathematical sense is -2,
+# but the function will return the integral part of the value's modulus (1.5),
+# which is 1.
+__double_modulus_integral_fractional_part:
+    # The calculations are made based on the following reasoning:
+    #
+    #  0. The double value memory representation, as specified by the Karma
+    #     assembler standard, consists of (high bits to low):
+    #       - 1 sign bit
+    #       - 11 biased exponent bits (with a bias equal to 1023)
+    #       - 52 mantissa bits
+    #
+    #     As an example, let us consider the double value which in decimal
+    #     representation is denoted as -147.125.
+    #
+    #     We can denote:
+    #
+    #       -147.125 = (-1) * (128 + 16 + 2 + 1 + 1/8) =
+    #                = (-1) * (2^7 + 2^4 + 2^1 + 2^0 + 2^(-3)) =
+    #                = (-1) * (1 + 2^(-3) + 2^(-6) + 2^(-7) + 2^(-10)) * 2^7
+    #
+    #     Therefore, in the base-two scientific notation the exponent is 7,
+    #     and the mantissa is 1 + 2^(-3) + 2^(-6) + 2^(-7) + 2^(-10).
+    #
+    #     The sign bit of the double value memory representation is 1 since
+    #     the value is negative.
+    #
+    #     The biased exponent part, represents the 11 bit unsigned
+    #     integer equal to 7 + 1023 = 1030
+    #
+    #     The mantissa part will have the 3-rd, the 6-th, the 7-th and the 10-th
+    #     (1-indexed, high-to-low) bits set, and all the other will be 0.
+    #
+    #  1. In the general form for this function we can consider only
+    #     the positive double values since we need to return the integral
+    #     part of the modulus of the provided value. That is achieved by simply
+    #     ignoring the sign but since two opposite real values' representations
+    #     differ only in the sign bit.
+    #
+    #     Therefore, let us consider a positive double value, whose biased
+    #     exponent part represents the unsigned integral value k:
+    #
+    #     1.1. If k < 1023, then in the base-two scientific notation of
+    #          the represented value the exponent is less than 0, and thus
+    #          the value is less than 1, i.e. its integral part is 0
+    #
+    #     1.2. If k >= 1075 = 1023 + 52, then in the base-two scientific
+    #          notation of the represented value the exponent is not less
+    #          than 52. Since the double value holds only 52 bits of
+    #          the mantissa, the whole represented value is integral
+    #
+    #     1.3. If 1023 <= k < 1075, then the fractional part of the represented
+    #          value is given by the last 1075 - k bits of the mantissa part
+    #          (with the same bits in the exponent part). The integral part
+    #          in this case is represented by the first 52 - (1075 - k) =
+    #          = k - 1023 bits of the mantissa (with the same bits in
+    #          the exponent part)
+
+    # load the double value into (r5,r4)
+    loadr2 r4 r14 3
+
+    # ignore the sign bit (set it to zero)
+    load r7 .__double.only_highest_bit
+    not r7 0
+    and r5 r7 0
+
+    # get the biased exponent part of the double value in r6
+    # from its the high bits stored in r5
+    mov r6 r5 0
+    load r7 .__double.11_bits_starting_from_second
+    and r6 r7 0
+    shri r6 20 # the right shift to get the biased exponent part as uint32
+
+    # if the biased exponent is less than 1023,
+    # return 0 as the integral part and the whole value as the fractional part
+    cmpi r6 1023
+    jl ____double_modulus_integral_fractional_part.return_all_fractional
+
+    # if the biased exponent is at least 1075 = 1023 + 52,
+    # return 0 as the fractional part and the whole value as the integral part
+    cmpi r6 1075
+    jge ____double_modulus_integral_fractional_part.return_all_integral
+
+    # get the number of high bits of the mantissa part representing
+    # the integral part in r6
+    # (i.e. the exponent in the base-two scientific notation)
+    # with r6 -= 1023
+    subi r6 1023
+
+    # get the number of low bits of the mantissa part representing
+    # the fractional part in r7
+    # with r7 = 52 - r6
+    lc r7 52
+    sub r7 r6 0
+
+    # copy the initial value into (r1,r0) and (r3,r2)
+    # as preparation for the return values
+    mov r0 r4 0
+    mov r1 r5 0
+    mov r2 r4 0
+    mov r3 r5 0
+
+    ____double_modulus_integral_fractional_part.integral:
+        # unset the low bits in the integral part
+        # (the number of bits to unset is stored in r7)
+
+        # if r7 is less than 32, unset the low r7 bits of
+        # the low bits of the double value with r0 &= full << r7
+        # and finish with the integral part ...
+
+        cmpi r7 32
+        jge ____double_modulus_integral_fractional_part.integral.many_bits
+
+        load r8 .__double.full  # r8 = full
+        shl r8 r7 0             # r8 = full << r7
+        and r0 r8 0             # r0 &= full << r7
+
+        jmp ____double_modulus_integral_fractional_part.fractional
+
+        # ... else unset all the bits in the low bits segment of the integral
+        # part and the low r7 - 32 bits in its high bits segment
+        ____double_modulus_integral_fractional_part.integral.many_bits:
+        # unset all the bits in the low bits segment
+        lc r0 0
+
+        # unset the low r7 - 32 bits in the high bits segment
+        # with r1 &= full << (r7 - 32)
+        load r8 .__double.full  # r8 = full
+        shl r8 r7 -32           # r8 = full << (r7 - 32)
+        and r1 r8 0             # r1 &= full << (r7 - 32)
+
+    ____double_modulus_integral_fractional_part.fractional:
+        # get the fractional part as the difference between
+        # the initial value and its already prepared integral part
+        subd r2 r0 0
+
+    ret 0
+
+    ____double_modulus_integral_fractional_part.return_all_fractional:
+        # 0 as integral part
+        lc r0 0
+        lc r1 0
+
+        # the initial value as fractional part
+        mov r2 r4 0
+        mov r3 r5 0
+
+        ret 0
+
+    ____double_modulus_integral_fractional_part.return_all_integral:
+        # the initial value as integral part
+        mov r0 r4 0
+        mov r1 r5 0
+
+        # 0 as fractional part
+        lc r2 0
+        lc r3 0
+
+        ret 0
 
 # Accepts two arguments: the base and the two-word double value
 __print_double_integral_part:
@@ -17,64 +194,63 @@ __print_double_integral_part:
     cmpd r1 r3 0
 
     # if the base is greater than the value, print a single digit ...
-    jg __print_double_integral_part.out
+    jg ____print_double_integral_part.out
 
     # ... else recurse
-    __print_double_integral_part.loop:
-        # copy the value to (r6,r5)
-        mov r5 r3 0
-        mov r6 r4 0
+    ____print_double_integral_part.recurse:
+        # (r4,r3) /= base [(r4,r3) is the "quotient"]
+        divd r3 r1 0
 
-        # (r6,r5) /= base [(r6,r5) is the "quotient"]
-        divd r5 r1 0
+        # push the base as double to the stack as a local variable
+        push r2 0
+        push r1 0
 
-        # get the floor of the quotient as a double
-        dtoi r5 r5 0
-        itod r5 r5 0
+        # get the integral part of the quotient into (r1,r0)
+        # and its fractional part (which we will ignore) into (r3,r2)
+        prc 0
+        push r4 0 # high bits of the argument
+        push r3 0 # low bits of the argument
+        calli __double_modulus_integral_fractional_part
 
-        # (r8,r7) = (r6,r5) * base [floor("quotient") * base]
-        mov r7 r5 0
-        mov r8 r6 0
-        muld r7 r1 0
+        # restore the base as double to (r3,r2)
+        # (overwrite the unused fractional part result of the function above)
+        pop r2 0
+        pop r3 0
 
-        #  (r10,r9) = (r4,r3) - (r8,r7)
-        # [(r10,r9) =  value  - floor("quotient") * base, i.e. "remainder"]
-        mov r9 r3 0
-        mov r10 r4 0
-        subd r9 r7 0
+        # (r3,r2) = [base * floor("quotient")]
+        muld r2 r0 0
+
+        # (r5,r4) = [initial value - base * floor("quotient") = "remainder"]
+        loadr2 r4 r14 4
+        subd r4 r2 0
+
+        # load the base as uint32 to r2 from the arguments
+        loadr r2 r14 3
 
         # save the remainder as a local variable
-        push r10 0
-        push r9 0
-
-        # prepare for recursive call
-        prc 0
-
-        # push the base and the quotient as the arguments for the recursive call
-        push r6 0
         push r5 0
-        push r0 0
+        push r4 0
 
-        # the recursive call
+        # recursive call
+        prc 0
+        push r1 0 # quotient (high bits of the second argument)
+        push r0 0 # quotient (low bits of the second argument)
+        push r2 0 # base     (the first argument)
         calli __print_double_integral_part
 
         # restore the remainder from the local stack frame to (r4,r3)
         pop r3 0
         pop r4 0
 
-    __print_double_integral_part.out:
+    ____print_double_integral_part.out:
         # store the integral part of the remainder (from (r4,r3)) in r0
+        #
+        # an overflow cannot occur since the remainder is less than base,
+        # which in term is not greater than 36
         dtoi r0 r3 0
 
-        # restore the base from the arguments
+        # load the base as uint32 into r1 from the arguments
         loadr r1 r14 3
-
-        # prepare for remainder printing as a digit
-        prc 0
-
-        # push the base and the remainder as arguments for digit printing
-        push r0 0
-        push r1 0
 
         # print the current character
         #
@@ -85,6 +261,9 @@ __print_double_integral_part:
         # errors, because the base was check in the beginning of
         # the print_double function, and the function must not try to print
         # values greater than base by design
+        prc 0
+        push r0 0 # digit (the second argument)
+        push r1 0 # base  (the first argument)
         calli __print_digit_unsafe
 
         # return
@@ -101,20 +280,6 @@ __print_double_fractional_part:
 
     # load the double value into (r4,r3)
     loadr2 r3 r14 4
-
-    # (r6,r5) = the integral part of the value as a double
-    dtoi r5 r3 0
-    itod r5 r5 0
-
-    #  (r8,r7) = (r4,r3) - (r6,r5)
-    # [(r8,r7) =  value  - floor(value), i.e. fractional part]
-    mov r7 r3 0
-    mov r8 r4 0
-    subd r7 r5 0
-
-    # move the fractional part to (r6,r5) to vacate (r8,r7)
-    mov r5 r7 0
-    mov r6 r8 0
 
     # prepare the base^(-precision) value in (r11,r10) as the early stop value
 
@@ -141,6 +306,16 @@ __print_double_fractional_part:
 
     ____print_double_fractional_part.early_stop_loop.out:
 
+    # if the value is less than the early stop value, the next loop will do
+    # zero iteration, so we do not need to print the dot character and can
+    # simply return
+    cmpd r3 r10 0
+    jl ____print_double_fractional_part.out
+
+    # print the dot character
+    load r5 .__double.fractional_part_separator
+    syscall r5 105
+
     # load the precision into r12 as the maximum iterations counter
     loadr r12 r14 6
 
@@ -149,51 +324,37 @@ __print_double_fractional_part:
         cmpi r12 0
         jeq ____print_double_fractional_part.out
 
-        # if the remaining fractional part is less than
-        # base^(-(precision - n_iteration)), that means that
-        # the remaining digits are 0, do not print them
-        # and return from the function
-        cmpd r5 r10 0
-        jl ____print_double_fractional_part.out
-
-        # (r6,r5) *= base
+        # (r4,r3) *= base
         # [multiply the fractional part by base to get its next digit]
-        muld r5 r1 0
+        muld r3 r1 0
 
         # the next digit is the integral part of the resulting value
-        dtoi r7 r5 0
+        #
+        # note that an overflow cannot occur since the fractional part was
+        # initially less than 1, therefore, after multiplying by the base
+        # it is less than the base, which in term is not greater than 36
+        dtoi r5 r3 0
+        itod r6 r5 0
 
-        # after this, (r9,r8) contains the double representation
-        # of the next digit
-        itod r8 r7 0
+        # subtract the next digit value from (r4,r3),
+        # i.e. (r4,r3) after this contains the initial fractional part
+        # with the current digit (and all digits before that) skipped
+        subd r3 r6 0
 
-        # subtract the next digit value from (r6,r5),
-        # i.e. (r6,r5) after this contains the fractional part of the initial
-        # value with the current digit (and all digits before that) skipped
-        subd r5 r8 0
-
-        # store
+        # save
         #   - the base (in both uint32 and double representations)
         #   - the remaining fractional part
         #   - the early stop value
         #   - the iterations counter
         # as a local variable
-        push r0 0 # base (uint32)
-        push r2 0 # base (double, high bits)
-        push r1 0 # base (double, low bits)
-        push r6 0 # remaining fractional part (double, high bits)
-        push r5 0 # remaining fractional part (double, low bits)
+        push r0 0  # base (uint32)
+        push r2 0  # base (double, high bits)
+        push r1 0  # base (double, low bits)
+        push r4 0  # remaining fractional part (double, high bits)
+        push r3 0  # remaining fractional part (double, low bits)
         push r11 0 # early stop value (double, high bits)
         push r10 0 # early stop value (double, low bits)
         push r12 0 # iterations counter (uint32)
-
-        # prepare for digits printing
-        prc 0
-
-        # push the base and the uint32 representation
-        # of the next digit as arguments
-        push r7 0
-        push r0 0
 
         # print the current character
         #
@@ -204,9 +365,12 @@ __print_double_fractional_part:
         # errors, because the base was check in the beginning of
         # the print_double function, and the function must not try to print
         # values greater than base by design
+        prc 0
+        push r5 0 # uint32 digit (the second argument)
+        push r0 0 # uint32 base  (the first argument
         calli __print_digit_unsafe
 
-        # store
+        # restore
         #   - the iterations counter
         #   - the early stop value
         #   - the remaining fractional part
@@ -215,11 +379,11 @@ __print_double_fractional_part:
         pop r12 0 # iterations counter (uint32)
         pop r10 0 # early stop value (double, low bits)
         pop r11 0 # early stop value (double, high bits)
-        pop r5 0 # remaining fractional part (double, low bits)
-        pop r6 0 # remaining fractional part (double, high bits)
-        pop r1 0 # base (double, low bits)
-        pop r2 0 # base (double, high bits)
-        pop r0 0 # base (uint32)
+        pop r3 0  # remaining fractional part (double, low bits)
+        pop r4 0  # remaining fractional part (double, high bits)
+        pop r1 0  # base (double, low bits)
+        pop r2 0  # base (double, high bits)
+        pop r0 0  # base (uint32)
 
         # decrease remaining iterations counter
         subi r12 1
@@ -228,6 +392,13 @@ __print_double_fractional_part:
         # (because we have multiplied the fractional part by the base
         # to get the next digit at the beginning of the loop)
         muld r10 r1 0
+
+        # if the remaining fractional part is less than
+        # base^(-(precision - n_iteration)), that means that
+        # the remaining digits are 0, do not print them
+        # and return from the function
+        cmpd r3 r10 0
+        jl ____print_double_fractional_part.out
 
         # continue the loop
         jmp ____print_double_fractional_part.loop
@@ -250,38 +421,60 @@ print_double:
     calli __check_base
 
 __print_double_unsafe:
-    # load the base back into r0
-    loadr r0 r14 3
+    # load the double value in (r1,r0)
+    loadr2 r0 r14 4
 
-    # load the double value in (r2,r1)
-    loadr2 r1 r14 4
+    # check if the value is negative
+    lc r2 0
+    itod r2 r2 0
+    cmpd r0 r2 0
+
+    # if it is not, proceed with the positive value ...
+    jge __print_double.not_negative
+
+    # else print the minus sign
+    load r2 .__double.minus_sign
+    syscall r2 105
+
+    __print_double.not_negative:
+
+    # get the integral part of the modulus into (r1,r0)
+    # and its fractional part into (r3,r2)
+    prc 0
+    push r1 0
+    push r0 0
+    calli __double_modulus_integral_fractional_part
+
+    # load the base into r4
+    loadr r4 r14 3
+
+    # save the fractional part as a local variable
+    push r3 0
+    push r2 0
 
     # print the integral part
     prc 0
-    push r2 0
-    push r1 0
-    push r0 0
+    push r1 0 # value (high bits of the second argument)
+    push r0 0 # value (low bits of the second argument)
+    push r4 0 # base  (the first argument)
     calli __print_double_integral_part
 
-    # print the dot
-    load r0 .__double_fractional_part_separator
-    syscall r0 105
+    # restore the fractional part from the stack into (r1,r0)
+    pop r0 0
+    pop r1 0
 
-    # load the base to r0
-    loadr r0 r14 3
-
-    # load the double value in (r2,r1)
-    loadr2 r1 r14 4
+    # load the base to r2
+    loadr r2 r14 3
 
     # load the precision in r3
     loadr2 r3 r14 6
 
     # print the fractional part
     prc 0
-    push r3 0
-    push r2 0
-    push r1 0
-    push r0 0
+    push r3 0 # precision (the third argument)
+    push r1 0 # value     (high bits of the second argument)
+    push r0 0 # value     (high bits of the first argument)
+    push r2 0 # base      (the first argument)
     calli __print_double_fractional_part
 
     # return
@@ -300,25 +493,15 @@ print_double_decimal:
     # store the default base value (10) in r3
     lc r3 10
 
-    # prepare for print_double call
-    prc 0
-
-    # push the base, the value and the precision as the arguments
-
-    # precision (third argument)
-    push r2 0
-
-    # value (second argument)
-    push r1 0
-    push r0 0
-
-    # base (first argument)
-    push r3 0
-
     # reuse the printing function
     #
     # use the unsafe function, because there is no need to check the base
     # since 10 is a valid base
+    prc 0
+    push r2 0 # precision (the third argument)
+    push r1 0 # value (high bits fo the second argument)
+    push r0 0 # value (low bits fo the second argument)
+    push r3 0 # base (the first argument)
     calli __print_double_unsafe
 
     # return
@@ -326,7 +509,7 @@ print_double_decimal:
 
 # Like print_double, but accepts only the base and the value arguments,
 # and prints the specified value in the specified base
-# with a precision equal to 5 (i.e. defaults the precision parameter to 5)
+# with a precision equal to 6 (i.e. defaults the precision parameter to 6)
 print_double_default_precision:
     # load the base into (r0)
     loadr r0 r14 3
@@ -334,33 +517,23 @@ print_double_default_precision:
     # load the value into (r2,r1)
     loadr2 r1 r14 4
 
-    # store the default precision value (5) in r3
-    lc r3 5
-
-    # prepare for print_double call
-    prc 0
-
-    # push the base, the value and the precision as the arguments
-
-    # precision (third argument)
-    push r3 0
-
-    # value (second argument)
-    push r2 0
-    push r1 0
-
-    # base (first argument)
-    push r0 0
+    # store the default precision value (6) in r3
+    lc r3 6
 
     # reuse the printing function
+    prc 0
+    push r3 0 # precision (the third argument)
+    push r2 0 # value (high bits of the second argument)
+    push r1 0 # value (low bits of the second argument)
+    push r0 0 # base (the first argument)
     calli print_double
 
     # return
     ret 0
 
 # Like print_double, but accepts only the value argument,
-# and prints its decimal representation with the precision equal to 5
-# (i.e. defaults the base parameter to 10 and the precision parameter to 5)
+# and prints its decimal representation with the precision equal to 6
+# (i.e. defaults the base parameter to 10 and the precision parameter to 6)
 print_double_decimal_default_precision:
     # load the value into (r1,r0)
     loadr2 r0 r14 3
@@ -368,28 +541,18 @@ print_double_decimal_default_precision:
     # store the default base value (10) in r2
     lc r2 10
 
-    # store the default precision value (5) in r3
-    lc r3 5
-
-    # prepare for print_double call
-    prc 0
-
-    # push the base, the value and the precision as the arguments
-
-    # precision (third argument)
-    push r3 0
-
-    # value (second argument)
-    push r1 0
-    push r0 0
-
-    # base (first argument)
-    push r2 0
+    # store the default precision value (6) in r3
+    lc r3 6
 
     # reuse the printing function
     #
     # use the unsafe function, because there is no need to check the base
     # since 10 is a valid base
+    prc 0
+    push r3 0 # precision (the third argument)
+    push r1 0 # value (high bits of the second argument)
+    push r0 0 # value (low bits of the second argument)
+    push r2 0 # base (first argument)
     calli __print_double_unsafe
 
     # return

@@ -1,4 +1,4 @@
-# accepts a single argument: the pointer to the start of a string
+# Accepts a single argument: the pointer to the start of a string
 print_string:
     # load the pointer to the first character of the string to r0
     loadr r0 r14 3

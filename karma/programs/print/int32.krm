@@ -1,8 +1,8 @@
 include base.krm
 include uint32.krm
 
-.__sign_bit: uint32 0x80000000
-.__minus:    char '-'
+.__int32.sign_bit:   uint32 0x80000000
+.__int32.minus_sign: char '-'
 
 # Accepts two arguments: a base and an int32 value to be printed
 #
@@ -22,7 +22,7 @@ __print_int32_unsafe:
     loadr2 r0 r14 3
 
     # load the sign bit into r2
-    load r2 .__sign_bit
+    load r2 .__int32.sign_bit
 
     # check the sign bit of the int32 value
     and r2 r1 0
@@ -39,7 +39,7 @@ __print_int32_unsafe:
 
     __print_int32.negative:
         # print the minus sign
-        load r2 .__minus
+        load r2 .__int32.minus_sign
         syscall r2 105
 
         # get the modulo

@@ -77,9 +77,9 @@ include ../printf.krm
 .double.octal:       string "    Octal: %lg, %lg, %lg, %lg, %lg\n"
 .double.hexadecimal: string "    Hexadecimal: %la, %la, %la, %la, %la\n"
 .double.arg1: double 1.5
-.double.arg2: double 0.1
+.double.arg2: double 256 # should not produce a dot
 .double.arg3: double -12.55
-# does not fit into decimal with precision 5, but exactly -7.ff in hexadecimal
+# does not fit into decimal with precision 6, but exactly -7.ff in hexadecimal
 .double.arg4: double -7.99609375
 .double.arg5: double 100.125
 

@@ -15,16 +15,16 @@ main:
     ############################################################################
 
     # store the address of the invite string to r0
-#    la r0 .enter_value_invite
+    la r0 .enter_value_invite
 
     # prepare for the call
-#    prc 0
+    prc 0
 
     # push the address of the invite string as an argument
-#    push r0 0
+    push r0 0
 
     # print the invite string
-#    calli print_string
+    calli print_string
 
     ############################################################################
     ####                       Get the value from stdin                     ####
@@ -42,16 +42,16 @@ main:
     ############################################################################
 
     # store the address of the invite string to r0
-#    la r0 .enter_base_invite
+    la r0 .enter_base_invite
 
     # prepare for the call
-#    prc 0
+    prc 0
 
     # push the address of the invite string as an argument
-#    push r0 0
+    push r0 0
 
     # print the invite string
-#    calli print_string
+    calli print_string
 
     ############################################################################
     ####                       Get the base from stdin                      ####
@@ -67,16 +67,16 @@ main:
     ############################################################################
 
     # store the address of the invite string to r0
-#    la r0 .enter_precision_invite
+    la r0 .enter_precision_invite
 
     # prepare for the call
-#    prc 0
+    prc 0
 
     # push the address of the invite string as an argument
-#    push r0 0
+    push r0 0
 
     # print the invite string
-#    calli print_string
+    calli print_string
 
     ############################################################################
     ####                    Get the precision from stdin                    ####

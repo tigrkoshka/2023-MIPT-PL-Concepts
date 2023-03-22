@@ -1,13 +1,11 @@
 include base.krm
 include digit.krm
 
-.__max_uint32: uint32 -1
-
-# accepts two arguments: a uint64 dividend and a uint32 divisor
+# Accepts two arguments: a uint64 dividend and a uint32 divisor
 #
-# returns the uint64 quotient in (r0,r1) and the uint32 remainder in r2
+# Returns the uint64 quotient in (r0,r1) and the uint32 remainder in r2
 __div_mod_uint64:
-    # the calculations are made based on the following reasoning:
+    # The calculations are made based on the following reasoning:
     #
     #  0. let the divisor be D = 2^32 * H + L,
     #         where H and L are the uint32 values representing
@@ -243,9 +241,9 @@ __div_mod_uint64:
     ret 0
 
 
-# accepts two arguments: a base and a two-word uint64 value to be printed
+# Accepts two arguments: a base and a two-word uint64 value to be printed
 #
-# if the base is less than 2 or greater than 36, an error message is printed,
+# If the base is less than 2 or greater than 36, an error message is printed,
 # and the execution is exited with an error code
 print_uint64:
     # load the base into r0
@@ -331,7 +329,7 @@ __print_uint64_unsafe:
         # return
         ret 0
 
-# like print_uint64, but accepts only the two-word value argument and prints
+# Like print_uint64, but accepts only the two-word value argument and prints
 # its decimal representation (i.e. defaults the base parameter to 10)
 print_uint64_decimal:
     # load the uint64 value into (r1,r0)

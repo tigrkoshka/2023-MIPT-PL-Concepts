@@ -69,10 +69,10 @@ include int64.krm
 #   x:  uint32 in hexadecimal representation
 #   lx: uint64 in hexadecimal representation
 #
-#   lf: double in decimal representation (with precision 5)
-#   le: double in binary representation (with precision 5)
-#   lg: double in octal representation (with precision 5)
-#   la: double in hexadecimal representation (with precision 5)
+#   lf: double in decimal representation (with precision 6)
+#   le: double in binary representation (with precision 6)
+#   lg: double in octal representation (with precision 6)
+#   la: double in hexadecimal representation (with precision 6)
 #
 # An invalid placeholder after the % sign leads to an execution error.
 # To print the '%' character, one must specify "%%" in the format string
@@ -587,8 +587,8 @@ printf:
                     push r11 0
                     push r12 0
 
-                    # store the precision (5) into r3
-                    lc r3 5
+                    # store the precision (6) into r3
+                    lc r3 6
 
                     # print the double
                     # (unsafely, because we are sure that the base is valid)
