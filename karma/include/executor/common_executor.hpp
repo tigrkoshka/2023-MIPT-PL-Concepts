@@ -53,7 +53,9 @@ class Executor::CommonExecutor : public ExecutorBase {
 
     void Push(detail::specs::arch::Word);
 
-    void Pop(detail::specs::cmd::args::Receiver, detail::specs::arch::Word);
+    void Pop(detail::specs::cmd::args::Receiver,
+             detail::specs::arch::Word,
+             bool internal_usage = false);
 
     void PrepareCall();
     detail::specs::cmd::args::Address Call(detail::specs::cmd::args::Address);

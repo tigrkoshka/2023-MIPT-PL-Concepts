@@ -16,7 +16,8 @@ int main() {
     karma::Compiler::Compile(Assembler(filepath));
 
     karma::Executor executor;
-    uint32_t ret_code = executor.Execute(Exec(filepath));
+    uint32_t ret_code =
+        executor.Execute(Exec(filepath), karma::Executor::Config::Strict());
 
     std::cout << "executable returned code " << ret_code << std::endl;
 

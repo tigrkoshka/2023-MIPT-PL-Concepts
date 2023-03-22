@@ -62,8 +62,11 @@ void Executor::CommonExecutor::Push(arch::Word value) {
     WMem(WReg(arch::kStackRegister, kInternalUse)--) = value;
 }
 
-void Executor::CommonExecutor::Pop(args::Receiver recv, arch::Word mod) {
-    WReg(recv) = RMem(++WReg(arch::kStackRegister, kInternalUse)) + mod;
+void Executor::CommonExecutor::Pop(args::Receiver recv,
+                                   arch::Word mod,
+                                   bool internal_usage) {
+    WReg(recv, internal_usage) =
+        RMem(++WReg(arch::kStackRegister, kInternalUse)) + mod;
 }
 
 void Executor::CommonExecutor::PrepareCall() {
@@ -98,17 +101,18 @@ void Executor::CommonExecutor::Return() {
         RReg(arch::kCallFrameRegister, kInternalUse);
 
     // pop the value of the stack pointer before the function arguments
-    Pop(arch::kCallFrameRegister, 0);
+    Pop(arch::kCallFrameRegister, 0, kInternalUse);
 
     // pop the return address from the stack
-    Pop(arch::kInstructionRegister, 0);
+    Pop(arch::kInstructionRegister, 0, kInternalUse);
 
     // move the stack to before the function arguments
-    WReg(arch::kStackRegister, kInternalUse) = RReg(arch::kCallFrameRegister);
+    WReg(arch::kStackRegister, kInternalUse) =
+        RReg(arch::kCallFrameRegister, kInternalUse);
 
     // restore the call frame register to the stack pointer value before
     // the caller's local variables
-    Pop(arch::kCallFrameRegister, 0);
+    Pop(arch::kCallFrameRegister, 0, kInternalUse);
 }
 
 }  // namespace karma
