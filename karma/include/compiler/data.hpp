@@ -13,7 +13,7 @@
 
 namespace karma {
 
-class Compiler::FileData : detail::utils::traits::NonCopyableMovable {
+class Compiler::Data : detail::utils::traits::NonCopyableMovable {
    private:
     friend class FileCompiler;
 
@@ -22,20 +22,20 @@ class Compiler::FileData : detail::utils::traits::NonCopyableMovable {
     using CompileError  = errors::compiler::CompileError::Builder;
 
    private:
-    void Merge(FileData&& other);
+    void Merge(Data&& other);
     void CheckEntrypoint();
     void SubstituteLabels();
 
    public:
-    static FileData MergeAll(std::vector<FileData>&);
+    static Data MergeAll(std::vector<Data>&);
 
     Exec::Data ToExecData(std::ostream& log) &&;
 
    private:
-    Labels labels;
-    Entrypoint entrypoint;
-    std::vector<detail::specs::arch::Word> code;
-    std::vector<detail::specs::arch::Word> constants;
+    Labels labels_;
+    Entrypoint entrypoint_;
+    std::vector<detail::specs::arch::Word> code_;
+    std::vector<detail::specs::arch::Word> constants_;
 };
 
 }  // namespace karma

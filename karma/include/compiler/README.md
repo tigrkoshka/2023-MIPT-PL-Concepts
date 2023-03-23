@@ -36,7 +36,7 @@ karma::
         Compiler::
         |       Entrypoint              // entrypoint.hpp
         |       Labels                  // labels.hpp
-        |       FileData                // file_data.hpp
+        |       Data                    // data.hpp
         |       File                    // file.hpp
         |       IncludesManager         // includes.hpp
         |       FileCompiler            // file_compiler.hpp
@@ -65,15 +65,18 @@ The `Labels` class additionally provides a static `CheckLabel` method that
 checks the validity of a label name and throws a `CompileError` exception
 in case it is invalid.
 
-The instances of these classes are created once per Karma assembler program
-compilation, and then distributed via `std::shared_ptr`s to all `FileCompiler`
-class instances that use them in their business logic
-(see [below](#file-compiler) for details).
+The instances of these classes are created once per Karma assembler file
+compilation.
 
-### FileData
+Both these classes provide an additional `Merge` method, which allows to merge
+the instances of these classes created for each Karma assembler file into
+a single instance representing the while program
+(see [below](#data) for details).
 
-The `FileData` class represents the data (i.e. code and constants) from
-a single Karma assembler file.
+### Data
+
+The `Data` class represents the data from a single Karma assembler file (i.e.
+the code, the constants, the entrypoint and the labels defined in the file).
 
 It is a class without any business logics used only to 'centralize' access
 to the code and the constants of a single file.
@@ -167,7 +170,7 @@ The compilation stages are:
 * Labels substitution, i.e. filling the blanks in the commands' binaries
   left by the `PrepareData` method of the `FileCompiler` class
 
-* Combining the `ExecData` class instances produced by the `FileCompiler`s
+* Combining the `Data` class instances produced by the `FileCompiler`s
   as well as the `Entrypoint` class data prepared on the previous stage
   into a single `Exec::Data` struct instance (see the exec directory
   [README](../exec/README.md) for details).

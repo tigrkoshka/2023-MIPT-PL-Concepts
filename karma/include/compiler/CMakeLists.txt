@@ -5,7 +5,7 @@ add_library(
         file_compiler.cpp
         labels.cpp
         entrypoint.cpp
-        file_data.cpp
+        data.cpp
         includes.cpp
         file.cpp
         errors.cpp

@@ -6,8 +6,8 @@
 #include <vector>   // for vector
 
 #include "compiler/compiler.hpp"
+#include "compiler/data.hpp"
 #include "compiler/errors.hpp"
-#include "compiler/file_data.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
 #include "utils/traits.hpp"
@@ -60,7 +60,7 @@ class Compiler::FileCompiler : detail::utils::traits::NonCopyableMovable {
     explicit FileCompiler(const std::unique_ptr<File>& file)
         : file_(file) {}
 
-    FileData PrepareData() &&;
+    Data PrepareData() &&;
 
    private:
     const std::unique_ptr<File>& file_;
@@ -70,7 +70,7 @@ class Compiler::FileCompiler : detail::utils::traits::NonCopyableMovable {
     std::string latest_label_pos_;
     bool latest_word_was_label_{false};
 
-    FileData data_;
+    Data data_;
 };
 
 }  // namespace karma

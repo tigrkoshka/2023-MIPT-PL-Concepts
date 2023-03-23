@@ -1,4 +1,4 @@
-#include "file_data.hpp"
+#include "data.hpp"
 
 #include <cstddef>   // for size_t
 #include <optional>  // for optional
@@ -15,46 +15,46 @@ namespace karma {
 namespace arch  = detail::specs::arch;
 namespace utils = detail::utils;
 
-void Compiler::FileData::Merge(FileData&& other) {
-    entrypoint.Merge(std::move(other.entrypoint));
-    labels.Merge(std::move(other.labels), code.size(), constants.size());
+void Compiler::Data::Merge(Data&& other) {
+    entrypoint_.Merge(std::move(other.entrypoint_));
+    labels_.Merge(std::move(other.labels_), code_.size(), constants_.size());
 
-    utils::vector::Append(code, other.code);
-    utils::vector::Append(constants, other.constants);
+    utils::vector::Append(code_, other.code_);
+    utils::vector::Append(constants_, other.constants_);
 }
 
-void Compiler::FileData::CheckEntrypoint() {
+void Compiler::Data::CheckEntrypoint() {
     // even if the entrypoint was defines via a label,
     // the address should be recorded as 0 rather than std::nullopt
-    if (!entrypoint.TryGetAddress()) {
+    if (!entrypoint_.TryGetAddress()) {
         throw CompileError::NoEntrypoint();
     }
 }
 
-void Compiler::FileData::SubstituteLabels() {
-    for (const auto& [label, usages] : labels.GetUsages()) {
-        std::optional<size_t> definition_opt = labels.TryGetDefinition(label);
+void Compiler::Data::SubstituteLabels() {
+    for (const auto& [label, usages] : labels_.GetUsages()) {
+        std::optional<size_t> definition_opt = labels_.TryGetDefinition(label);
         if (!definition_opt) {
             throw CompileError::UndefinedLabel(
-                {label, labels.GetUsageSample(label)});
+                {label, labels_.GetUsageSample(label)});
         }
 
         auto definition = static_cast<arch::Address>(*definition_opt);
         for (size_t cmd_idx : usages) {
             // the address always occupies the last
             // bits of the command binary
-            code[cmd_idx] |= definition;
+            code_[cmd_idx] |= definition;
         }
     }
 
-    std::optional<std::string> entry = labels.TryGetEntrypointLabel();
+    std::optional<std::string> entry = labels_.TryGetEntrypointLabel();
     if (!entry) {
         return;
     }
 
-    std::optional<size_t> definition = labels.TryGetDefinition(*entry);
+    std::optional<size_t> definition = labels_.TryGetDefinition(*entry);
     if (!definition) {
-        std::optional<std::string> entry_pos = entrypoint.TryGetPos();
+        std::optional<std::string> entry_pos = entrypoint_.TryGetPos();
         if (!entry_pos) {
             // this is an internal error, because we have checked
             // the presence of address in the Entrypoint on an earlier
@@ -65,11 +65,11 @@ void Compiler::FileData::SubstituteLabels() {
         throw CompileError::UndefinedLabel({*entry, *entry_pos});
     }
 
-    entrypoint.SetAddress(static_cast<arch::Address>(*definition));
+    entrypoint_.SetAddress(static_cast<arch::Address>(*definition));
 }
 
-Compiler::FileData Compiler::FileData::MergeAll(std::vector<FileData>& all) {
-    FileData res;
+Compiler::Data Compiler::Data::MergeAll(std::vector<Data>& all) {
+    Data res;
     for (auto& data : all) {
         res.Merge(std::move(data));
     }
@@ -77,9 +77,9 @@ Compiler::FileData Compiler::FileData::MergeAll(std::vector<FileData>& all) {
     return res;
 }
 
-Exec::Data Compiler::FileData::ToExecData(std::ostream& log) && {
+Exec::Data Compiler::Data::ToExecData(std::ostream& log) && {
     CheckEntrypoint();
-    labels.SetCodeSize(code.size());
+    labels_.SetCodeSize(code_.size());
 
     log << "[compiler]: substituting labels" << std::endl;
     SubstituteLabels();
@@ -89,10 +89,10 @@ Exec::Data Compiler::FileData::ToExecData(std::ostream& log) && {
         // we have checked the presence of the entrypoint in the beginning
         // of this function, and the labels substitution never unsets it
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        .entrypoint    = *entrypoint.TryGetAddress(),
+        .entrypoint    = *entrypoint_.TryGetAddress(),
         .initial_stack = static_cast<arch::Word>(arch::kMemorySize - 1),
-        .code          = std::move(code),
-        .constants     = std::move(constants),
+        .code          = std::move(code_),
+        .constants     = std::move(constants_),
     };
 }
 

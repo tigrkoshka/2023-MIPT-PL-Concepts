@@ -8,9 +8,9 @@
 #include <vector>      // for vector
 
 #include "compiler/compiler.hpp"
+#include "compiler/data.hpp"
 #include "compiler/file.hpp"
 #include "compiler/file_compiler.hpp"
-#include "compiler/file_data.hpp"
 #include "compiler/includes.hpp"
 #include "exec/exec.hpp"
 #include "specs/exec.hpp"
@@ -27,7 +27,7 @@ namespace exec = detail::specs::exec;
 Exec::Data Compiler::Impl::PrepareExecData(
     const std::vector<std::unique_ptr<File>>& files, std::ostream& log) {
     // TODO: multithreading
-    std::vector<FileData> files_data;
+    std::vector<Data> files_data;
     for (const auto& file : files) {
         log << "[compiler]: compiling " << file->Path() << std::endl;
 
@@ -37,7 +37,7 @@ Exec::Data Compiler::Impl::PrepareExecData(
             << std::endl;
     }
 
-    return FileData::MergeAll(files_data).ToExecData(log);
+    return Data::MergeAll(files_data).ToExecData(log);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
