@@ -150,8 +150,8 @@ The public methods of this class do the following:
 > address operand) a label is tried to be used instead of a numeric value for
 > the address.
 >
-> The label is searched the `Labels` class `TryGetLabel` method (see
-> [above](#labels) for details.
+> The label is searched using the `Labels` class `TryGetLabel` method (see
+> [above](#labels) for details).
 >
 > Due to the logic of the constants labels recording and
 > the `PrepareCommandLabels` method of the `Labels` class (see [above](#labels)
