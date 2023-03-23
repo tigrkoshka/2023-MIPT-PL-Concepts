@@ -24,7 +24,7 @@ class Compiler {
    private:
     class Entrypoint;
     class Labels;
-    class ExecData;
+    class FileData;
     class File;
     class IncludesManager;
     class FileCompiler;
@@ -70,10 +70,10 @@ struct Error : errors::Error {
 
 struct InternalError : Error {
    private:
+    friend class Compiler::Entrypoint;
+    friend class Compiler::FileData;
     friend class Compiler::File;
     friend class Compiler::FileCompiler;
-    friend class Compiler::IncludesManager;
-    friend class Compiler::Impl;
 
    private:
     struct Builder;
@@ -88,11 +88,12 @@ struct InternalError : Error {
 
 struct CompileError : Error {
    private:
+    friend class Compiler::Entrypoint;
     friend class Compiler::Labels;
+    friend class Compiler::FileData;
     friend class Compiler::File;
     friend class Compiler::IncludesManager;
     friend class Compiler::FileCompiler;
-    friend class Compiler::Impl;
 
    private:
     struct Builder;

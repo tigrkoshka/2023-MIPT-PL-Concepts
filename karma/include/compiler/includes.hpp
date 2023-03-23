@@ -15,8 +15,7 @@ namespace karma {
 
 class Compiler::IncludesManager : detail::utils::traits::NonCopyableMovable {
    private:
-    using InternalError = errors::compiler::InternalError::Builder;
-    using CompileError  = errors::compiler::CompileError::Builder;
+    using CompileError = errors::compiler::CompileError::Builder;
 
    private:
     static std::vector<std::filesystem::path> GetIncludes(

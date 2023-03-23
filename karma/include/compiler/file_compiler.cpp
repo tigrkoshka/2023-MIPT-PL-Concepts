@@ -3,15 +3,14 @@
 #include <bit>          // for bit_cast
 #include <cstddef>      // for size_t
 #include <cstdint>      // for int32_t
-#include <optional>     // for optional
 #include <stdexcept>    // for invalid_argument, out_of_range
 #include <string>       // for string, stoull, stod
 #include <type_traits>  // for make_unsigned_t
 #include <utility>      // for exchange
 
 #include "compiler/entrypoint.hpp"
-#include "compiler/exec_data.hpp"
 #include "compiler/file.hpp"
+#include "compiler/file_data.hpp"
 #include "compiler/labels.hpp"
 #include "specs/architecture.hpp"
 #include "specs/commands.hpp"
@@ -35,34 +34,6 @@ namespace arch   = detail::specs::arch;
 
 std::string Compiler::FileCompiler::Where() const {
     return file_->Where();
-}
-
-Compiler::FileCompiler::Segment& Compiler::FileCompiler::Code() {
-    return data_.Code();
-}
-
-const Compiler::FileCompiler::Segment& Compiler::FileCompiler::Code() const {
-    return data_.Code();
-}
-
-Compiler::FileCompiler::Segment& Compiler::FileCompiler::Constants() {
-    return data_.Constants();
-}
-
-const Compiler::FileCompiler::Segment& Compiler::FileCompiler::Constants()
-    const {
-    return data_.Constants();
-}
-
-size_t Compiler::FileCompiler::CurrCmdAddress() const {
-    return Code().size();
-}
-
-size_t Compiler::FileCompiler::CurrConstAddress() const {
-    // add 1 to the start of the current constant record, because
-    // the memory representation of any constant starts with one-word
-    // prefix specifying the constant's type for disassembling
-    return Constants().size() + 1;
 }
 
 void Compiler::FileCompiler::SkipIncludes() {
@@ -100,10 +71,6 @@ bool Compiler::FileCompiler::TryProcessLabel() {
 
     Labels::CheckLabel(curr_token_, Where());
 
-    if (std::optional<std::string> prev = labels_->TryGetPos(curr_token_)) {
-        throw CompileError::LabelRedefinition({curr_token_, Where()}, *prev);
-    }
-
     latest_label_          = curr_token_;
     latest_label_pos_      = Where();
     latest_word_was_label_ = true;
@@ -126,15 +93,11 @@ bool Compiler::FileCompiler::TryProcessEntrypoint() {
             {latest_label_, latest_label_pos_});
     }
 
-    if (std::optional<std::string> prev = entrypoint_->TryGetPos()) {
-        throw CompileError::SecondEntrypoint(Where(), *prev);
-    }
-
     if (!file_->GetToken(curr_token_)) {
         throw CompileError::EntrypointWithoutAddress(Where());
     }
 
-    entrypoint_->Record(GetAddress(true), Where());
+    data_.entrypoint.Record(GetAddress(true), Where());
 
     if (file_->GetToken(curr_token_)) {
         throw CompileError::ExtraAfterEntrypoint({curr_token_, Where()});
@@ -164,7 +127,7 @@ void Compiler::FileCompiler::ProcessUint32Constant() {
                                                   {curr_token_, Where()});
         }
 
-        Constants().push_back(value);
+        data_.constants.push_back(value);
     } catch (...) {
         throw CompileError::InvalidConstValue(consts::UINT32,
                                               {curr_token_, Where()});
@@ -184,8 +147,8 @@ void Compiler::FileCompiler::ProcessUint64Constant() {
         }
 
         auto [low, high] = utils::types::Split(value);
-        Constants().push_back(low);
-        Constants().push_back(high);
+        data_.constants.push_back(low);
+        data_.constants.push_back(high);
     } catch (...) {
         throw CompileError::InvalidConstValue(consts::UINT64,
                                               {curr_token_, Where()});
@@ -206,8 +169,8 @@ void Compiler::FileCompiler::ProcessDoubleConstant() {
         auto value_as_uint64 = std::bit_cast<consts::UInt64>(value);
 
         auto [low, high] = utils::types::Split(value_as_uint64);
-        Constants().push_back(low);
-        Constants().push_back(high);
+        data_.constants.push_back(low);
+        data_.constants.push_back(high);
     } catch (...) {
         throw CompileError::InvalidConstValue(consts::DOUBLE,
                                               {curr_token_, Where()});
@@ -236,7 +199,7 @@ void Compiler::FileCompiler::ProcessCharConstant() {
                                               {curr_token_, Where()});
     }
 
-    Constants().push_back(static_cast<arch::Word>(curr_token_[0]));
+    data_.constants.push_back(static_cast<arch::Word>(curr_token_[0]));
 }
 
 void Compiler::FileCompiler::ProcessStringConstant() {
@@ -257,9 +220,9 @@ void Compiler::FileCompiler::ProcessStringConstant() {
     utils::strings::Unescape(curr_token_);
 
     for (consts::Char symbol : curr_token_) {
-        Constants().push_back(static_cast<arch::Word>(symbol));
+        data_.constants.push_back(static_cast<arch::Word>(symbol));
     }
-    Constants().push_back(static_cast<arch::Word>(consts::kStringEnd));
+    data_.constants.push_back(static_cast<arch::Word>(consts::kStringEnd));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -276,9 +239,12 @@ bool Compiler::FileCompiler::TryProcessConstant() {
     }
 
     if (std::exchange(latest_word_was_label_, false)) {
-        labels_->RecordConstantLabel(latest_label_,
-                                     prev_constants_size_ + CurrConstAddress(),
-                                     latest_label_pos_);
+        // add 1 to the start of the current constant record, because
+        // the memory representation of any constant starts with one-word
+        // prefix specifying the constant's type for disassembling
+        data_.labels.RecordConstantLabel(latest_label_,
+                                         data_.constants.size() + 1,
+                                         latest_label_pos_);
     }
 
     consts::Type type = consts::kNameToType.at(curr_token_);
@@ -287,7 +253,7 @@ bool Compiler::FileCompiler::TryProcessConstant() {
         throw CompileError::EmptyConstValue(type, Where());
     }
 
-    Constants().push_back(type);
+    data_.constants.push_back(type);
 
     switch (type) {
         case consts::UINT32: {
@@ -444,9 +410,9 @@ args::Address Compiler::FileCompiler::GetAddress(bool is_entrypoint) {
         Labels::CheckLabel(curr_token_, Where());
 
         if (is_entrypoint) {
-            labels_->RecordEntrypointLabel(curr_token_);
+            data_.labels.RecordEntrypointLabel(curr_token_);
         } else {
-            labels_->RecordUsage(curr_token_, file_.get(), CurrCmdAddress());
+            data_.labels.RecordUsage(curr_token_, data_.code.size(), Where());
         }
 
         return 0;
@@ -525,9 +491,9 @@ cmd::Bin Compiler::FileCompiler::MustParseCommand() {
     auto [code, format] = GetCodeFormat();
 
     if (std::exchange(latest_word_was_label_, false)) {
-        labels_->RecordCommandLabel(latest_label_,
-                                    prev_code_size_ + CurrCmdAddress(),
-                                    latest_label_pos_);
+        data_.labels.RecordCommandLabel(latest_label_,
+                                        data_.code.size(),
+                                        latest_label_pos_);
     }
 
     switch (format) {
@@ -584,14 +550,14 @@ void Compiler::FileCompiler::ProcessCurrLine(bool is_first_line) {
         return;
     }
 
-    Code().push_back(MustParseCommand());
+    data_.code.push_back(MustParseCommand());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                              File compiling                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-Compiler::ExecData Compiler::FileCompiler::PrepareData() && {
+Compiler::FileData Compiler::FileCompiler::PrepareData() && {
     file_->Open();
 
     SkipIncludes();

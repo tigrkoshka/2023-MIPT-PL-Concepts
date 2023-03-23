@@ -59,6 +59,14 @@ IE IE::Builder::EmptyWord(Where where) {
     return {"the current word is empty", where};
 }
 
+IE IE::Builder::EntrypointHasAddressButNotPos() {
+    return IE{"entrypoint has a recorded an address, but not a code position"};
+}
+
+IE IE::Builder::EntrypointSetAddressNoPos() {
+    return IE{"trying to set address to an entrypoint which has no position"};
+}
+
 IE IE::Builder::NoEntrypointPosInLabelSubstitution() {
     return IE{
         "no entrypoint position is defined during the labels substitution "

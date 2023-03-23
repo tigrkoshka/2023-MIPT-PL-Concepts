@@ -29,6 +29,8 @@ struct InternalError::Builder : detail::utils::traits::Static {
 
     static InternalError EmptyWord(Where);
 
+    static InternalError EntrypointHasAddressButNotPos();
+    static InternalError EntrypointSetAddressNoPos();
     static InternalError NoEntrypointPosInLabelSubstitution();
 };
 

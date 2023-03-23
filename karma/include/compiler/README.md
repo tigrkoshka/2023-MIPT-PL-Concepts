@@ -36,7 +36,7 @@ karma::
         Compiler::
         |       Entrypoint              // entrypoint.hpp
         |       Labels                  // labels.hpp
-        |       ExecData                // exec_data.hpp
+        |       FileData                // file_data.hpp
         |       File                    // file.hpp
         |       IncludesManager         // includes.hpp
         |       FileCompiler            // file_compiler.hpp
@@ -70,9 +70,9 @@ compilation, and then distributed via `std::shared_ptr`s to all `FileCompiler`
 class instances that use them in their business logic
 (see [below](#file-compiler) for details).
 
-### ExecData
+### FileData
 
-The `ExecData` class represents the data (i.e. code and constants) from
+The `FileData` class represents the data (i.e. code and constants) from
 a single Karma assembler file.
 
 It is a class without any business logics used only to 'centralize' access

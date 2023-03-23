@@ -1,136 +1,43 @@
 #include "impl.hpp"
 
-#include <cstddef>     // for size_t
 #include <exception>   // for exception
 #include <filesystem>  // for path
 #include <iostream>    // for ostream, cerr
-#include <optional>    // for optional
+#include <memory>      // for std::unique_ptr
 #include <string>      // for string
-#include <utility>     // for move
 #include <vector>      // for vector
 
 #include "compiler/compiler.hpp"
-#include "compiler/exec_data.hpp"
+#include "compiler/file.hpp"
 #include "compiler/file_compiler.hpp"
+#include "compiler/file_data.hpp"
 #include "compiler/includes.hpp"
 #include "exec/exec.hpp"
-#include "specs/architecture.hpp"
 #include "specs/exec.hpp"
 #include "utils/error.hpp"
-#include "utils/vector.hpp"
 
 namespace karma {
 
-namespace utils = detail::utils;
-namespace arch  = detail::specs::arch;
-namespace exec  = detail::specs::exec;
-
-////////////////////////////////////////////////////////////////////////////////
-///                            Labels substitution                           ///
-////////////////////////////////////////////////////////////////////////////////
-
-void Compiler::Impl::FillLabels(const FilesDataMap& files_data,
-                                std::shared_ptr<Labels>& labels,
-                                std::shared_ptr<Entrypoint>& entrypoint) {
-    for (const auto& [label, usages] : labels->GetUsages()) {
-        std::optional<size_t> definition_opt = labels->TryGetDefinition(label);
-        if (!definition_opt) {
-            throw CompileError::UndefinedLabel(
-                {label, labels->GetUsageSample(label)});
-        }
-
-        auto definition = static_cast<arch::Address>(*definition_opt);
-        for (auto [file, file_usages] : usages) {
-            for (auto n_cmd : file_usages) {
-                // the address always occupies the last
-                // bits of the command binary
-                files_data.at(file)->Code()[n_cmd] |= definition;
-            }
-        }
-    }
-
-    if (std::optional<std::string> entry = labels->TryGetEntrypointLabel()) {
-        std::optional<size_t> definition = labels->TryGetDefinition(*entry);
-        if (!definition) {
-            std::optional<std::string> entry_pos = entrypoint->TryGetPos();
-            if (!entry_pos) {
-                // this is an internal error, because we have checked
-                // the presence of address in the Entrypoint on an earlier
-                // stage in the PrepareExecData method
-                throw InternalError::NoEntrypointPosInLabelSubstitution();
-            }
-
-            throw CompileError::UndefinedLabel({*entry, *entry_pos});
-        }
-
-        entrypoint->SetAddress(static_cast<arch::Address>(*definition));
-    }
-}
+namespace exec = detail::specs::exec;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                Prepare data                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-Exec::Data Compiler::Impl::PrepareExecData(const Files& files,
-                                           std::ostream& log) {
+Exec::Data Compiler::Impl::PrepareExecData(
+    const std::vector<std::unique_ptr<File>>& files, std::ostream& log) {
     // TODO: multithreading
-    std::shared_ptr<Labels> labels         = std::make_shared<Labels>();
-    std::shared_ptr<Entrypoint> entrypoint = std::make_shared<Entrypoint>();
+    std::vector<FileData> files_data;
+    for (const auto& file : files) {
+        log << "[compiler]: compiling " << file->Path() << std::endl;
 
-    std::vector<ExecData> files_data(files.size());
-    FilesDataMap files_data_map;
-    size_t code_size      = 0;
-    size_t constants_size = 0;
-    for (size_t i = 0; i < files.size(); ++i) {
-        log << "[compiler]: compiling " << files[i]->Path() << std::endl;
+        files_data.push_back(FileCompiler(file).PrepareData());
 
-        FileCompiler file_compiler{files[i],
-                                   labels,
-                                   entrypoint,
-                                   code_size,
-                                   constants_size};
-
-        log << "[compiler]: successfully compiled " << files[i]->Path()
+        log << "[compiler]: successfully compiled " << file->Path()
             << std::endl;
-
-        files_data[i]                  = std::move(file_compiler).PrepareData();
-        files_data_map[files[i].get()] = &files_data[i];
-
-        code_size += files_data[i].Code().size();
-        constants_size += files_data[i].Constants().size();
     }
 
-    // even if the entrypoint was defines via a label,
-    // the address should be recorded as 0 rather than std::nullopt
-    if (!entrypoint->TryGetAddress()) {
-        throw CompileError::NoEntrypoint();
-    }
-
-    labels->SetCodeSize(code_size);
-
-    log << "[compiler]: substituting labels" << std::endl;
-
-    FillLabels(files_data_map, labels, entrypoint);
-
-    log << "[compiler]: successfully substituted labels" << std::endl;
-
-    log << "[compiler]: preparing exec data" << std::endl;
-
-    Exec::Data exec_data{
-        .entrypoint    = *entrypoint->TryGetAddress(),
-        .initial_stack = static_cast<arch::Word>(arch::kMemorySize - 1),
-        .code          = std::vector<arch::Word>(),
-        .constants     = std::vector<arch::Word>(),
-    };
-
-    for (const auto& data : files_data) {
-        utils::vector::Append(exec_data.code, data.Code());
-        utils::vector::Append(exec_data.constants, data.Constants());
-    }
-
-    log << "[compiler]: successfully prepared exec data" << std::endl;
-
-    return exec_data;
+    return FileData::MergeAll(files_data).ToExecData(log);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
