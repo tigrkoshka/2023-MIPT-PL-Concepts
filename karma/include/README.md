@@ -71,7 +71,8 @@ one instance of `karma::Executor` (much like on a computer).
 Both the `karma::Executor` constructor and the methods for execution
 accept an optional `karma::Executor::Config` argument, which sets
 the configuration for the emulated Karma computer and a specific execution
-respectively. See [docs](../docs) for details on the configuration semantics.
+respectively. See the *Execution configuration* section of the
+[docs](../docs/Karma.pdf) for details on the configuration semantics.
 
 The `karma::Executor::Config` class has various methods for the configuration
 setup and lookup as well as presets of commonly used configurations.
@@ -80,11 +81,14 @@ See the executor block [README](executor/README.md) for details.
 ## Methods
 
 All exported methods of the karma library classes have two variants,
-one of which has a `Must` prefix, and the other does not.
+one of which has a `Must` prefix, and the other does not. The former throw
+exceptions (see [below](#exceptions)), while the latter wrap them in
+a `try-catch` block and print the exception info to `stderr`.
 
-The former throw exceptions (see [below](#exceptions)),
-while the latter wrap them in a `try-catch` block and print the exception
-info to `stderr`.
+All the methods accept an optional logger as the last parameter, which allows
+to specify the output stream for logging the compilation, execution and
+disassembling. The default value of this parameter is a no-op logger,
+i.e. a logger that drops the messages and does not print them anywhere.
 
 The methods of the `karma::Compiler` and the `karma::Disassembler` classes
 do not return anything but rather output the results of

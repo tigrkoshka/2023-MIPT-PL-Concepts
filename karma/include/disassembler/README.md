@@ -129,7 +129,7 @@ The public methods of this class do the following:
 
 * Obtain the constants declarations by parsing the constants segment of
   the executable file. The types of the constants are determined based on
-  the one-word prefix before their values (see the *Constants* segment of
+  the one-word prefix before their values (see the *Constants* section of
   the [docs](../../docs/Karma.pdf) for details). Each constant is assigned
   a label, which is recorded in the `Labels` class `RecordConstantLabel` method
   (see [above](#labels) for details)
