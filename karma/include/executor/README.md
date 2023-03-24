@@ -245,7 +245,7 @@ to the code and constants segments of the code.
 > access the constants defined in the program (because of the read block on
 > the constants segment), and no functions using the Karma calling convention
 > can obtain the values of their arguments (because of the read block on
-> the stack pointer register). Therefore, this preset should to be used
+> the stack pointer register). Therefore, this preset should be used
 > with caution.
 
 #### Strict
