@@ -1,9 +1,9 @@
-include print/string.krm
+include ../print/string.krm
 
 .hello_world: string "Hello, world!\n"
 
 main:
-    # store the address of the string to r0
+    # load the address of the string into r0
     la r0 .hello_world
 
     # prepare for call

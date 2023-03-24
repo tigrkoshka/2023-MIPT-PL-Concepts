@@ -110,7 +110,7 @@ main:
     push r1 0
 
     # call the printing function
-    calli __print_double_fractional_part
+    calli print_double
 
     ############################################################################
     ####                      Print an additional '\n'                      ####

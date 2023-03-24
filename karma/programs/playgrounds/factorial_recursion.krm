@@ -1,0 +1,84 @@
+include ../print/char.krm
+include ../print/string.krm
+include ../print/uint32.krm
+
+.aim: string "This program calculates the factorial of a positive number using a recursion\n"
+.invite: string "Please enter a positive number: "
+
+# Accepts a single argument: the uint32 value to get the factorial of
+#
+# Returns the uint32 value of the factorial in r0
+fact:
+    # load the uint32 value to r0
+    loadr r0 r14 3
+
+    # if the value is less or equal to 1, store 1 as result and return,
+    # else recurse
+    cmpi r0 1
+    jle __fact.return_1
+    jmp __fact_recurse # else clause
+
+    __fact.return_1:
+        lc r0 1
+        ret 0
+
+    __fact_recurse:
+        # push the value as a local argument
+        push r0 0
+
+        # prepare to recurse with a value decreased by 1
+        subi r0 1
+
+        # recurse with a value decreased by 1
+        prc 0
+        push r0 0
+        calli fact
+
+        # restore the initial value from the stack into r1
+        pop r1 0
+
+        # multiply the value returned from the recursive call by the initial value
+        #
+        # note that multiplications puts its results in (r1,r0) thus overwriting
+        # the initial value we stored in r1 on the previous instruction, but we
+        # are not planning on using it again, so we are okay with that
+        mul r0 r1 0
+
+    # return
+    __fact.out:
+        ret 0
+
+main:
+    # print the aim of the program
+    la r0 .aim
+    prc 0
+    push r0 0
+    calli print_string
+
+    # print the invite
+    la r0 .invite
+    prc 0
+    push r0 0
+    calli print_string
+
+    # get the integer from stdin into r0
+    syscall r0 100
+
+    # call the factorial counting function, the result will be in r0
+    prc 0
+    push r0 0
+    calli fact
+
+    # print the resulting value
+    prc 0
+    push r0 0
+    calli print_uint32_decimal
+
+    # print an additional newline
+    prc 0
+    calli print_newline
+
+    # exit the program with code 0
+    lc r0 0
+    syscall r0 0
+end main

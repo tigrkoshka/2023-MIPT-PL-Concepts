@@ -3,7 +3,7 @@
 # This script builds the karma playground
 
 # This script should be run after the build script in the include directory,
-# because building the playground is dependant on building the karma library
+# because building the playground is dependent on building the karma library
 
 # After the execution the karma playground executable "karma_play" can be found
 # in the current directory

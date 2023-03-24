@@ -2,14 +2,15 @@
 
 \asmsample{
 
-    hello\_world:              & \# define the string to print                                                \\
-    \qquad string ``Hello, world!\textbackslash n''                                                           \\
+    hello\_world:              & \# define the string to print                                                 \\
+    \qquad string ``Hello, world!\textbackslash n''                                                          \\
 
-    &                                                                                                         \\
+    &                                                                                                        \\
 
-    main:                       &                                                                             \\
-    \qquad la r0 hello\_world   & \# load the address of the string to \St{r0}                                \\
+    main:                       &                                                                            \\
+    \qquad la r0 hello\_world    & \# load the address of the string to \St{r0}                                \\
     \qquad loop:                & \# a while loop                                                             \\
+    \qquad\qquad loadr r1 r0 0  & \# load the current character into \St{r1}                                  \\
     \qquad\qquad cmpi r1 0      & \# check if the current character is `\textbackslash 0'                     \\
     \qquad\qquad jeq out        & \# if we have encountered the `\textbackslash 0' character, break the cycle \\
     \qquad\qquad syscall r1 105 & \# print the current character from \St{r0} to stdout                       \\

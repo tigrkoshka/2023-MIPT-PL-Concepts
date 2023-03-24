@@ -9,7 +9,7 @@
     \qquad lc r0 1        & \# else store \St{1} (the result for this case, $1! = 1$) to \St{r0}  \\
     \qquad ret 0          & \# return from function and remove the argument from the stack        \\
 
-    &                                                                                             \\
+    &                                                                                            \\
 
     skip0:                & \# a supplemental function providing recursion                        \\
     \qquad push r0 0      & \# push the current value to the stack ($\star$)                          \\

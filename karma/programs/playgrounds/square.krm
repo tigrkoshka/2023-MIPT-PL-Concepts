@@ -1,5 +1,6 @@
-include print/char
-include print/string
+include ../print/char.krm
+include ../print/string.krm
+include ../print/uint64.krm
 
 .aim: string "This program calculates the square of a positive number\n"
 .invite: string "Please enter a positive number: "
@@ -17,7 +18,7 @@ main:
     push r0 0
     calli print_string
 
-    # get the integer from stdin
+    # get the integer from stdin into r0
     syscall r0 100
 
     # copy from r0 to r2
@@ -26,10 +27,11 @@ main:
     # a pair of registers (r1,r0) contains the square
     mul r0 r2 0
 
-    # print from r0 to stdout (i.e. the lower bits)
+    # print the uint64 value from (r1,r0) to stdout
     prc 0
-    push r0 0
-    calli print_uint32_decimal
+    push r1 0 # the high bits of the argument
+    push r0 0 # the low bits of the argument
+    calli print_uint64_decimal
 
     # print an additional newline
     prc 0

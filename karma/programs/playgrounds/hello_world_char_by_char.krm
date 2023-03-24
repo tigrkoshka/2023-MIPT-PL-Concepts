@@ -1,0 +1,58 @@
+main:
+    # H
+    lc r0 72
+    syscall r0 105
+
+    # e
+    lc r0 101
+    syscall r0 105
+
+    # ll
+    lc r0 108
+    syscall r0 105
+    syscall r0 105
+
+    # o
+    lc r0 111
+    syscall r0 105
+
+    # ,
+    lc r0 44
+    syscall r0 105
+
+    # whitespace
+    lc r0 32
+    syscall r0 105
+
+    # w
+    lc r0 119
+    syscall r0 105
+
+    # o
+    lc r0 111
+    syscall r0 105
+
+    # r
+    lc r0 114
+    syscall r0 105
+
+    # l
+    lc r0 108
+    syscall r0 105
+
+    # d
+    lc r0 100
+    syscall r0 105
+
+    # !
+    lc r0 33
+    syscall r0 105
+
+    # \n
+    lc r0 10
+    syscall r0 105
+
+    # exit the program with code 0
+    lc r0 0
+    syscall r0 0
+end main

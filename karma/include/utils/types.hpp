@@ -47,7 +47,7 @@ uint64_t Join(uint32_t low, uint32_t high);
  * <tt> bit_size != sizeof(Uint) * kByteSize </tt>
  * \n\n
  * (because the two's complement representation of an integral value is
- * dependant on the size of the integral type representing it)
+ * dependent on the size of the integral type representing it)
  * \n\n
  * This behavior is consistent with the aim of this function,
  * which is to capture the signed integral value, and not its representation

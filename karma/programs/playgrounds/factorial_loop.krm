@@ -1,0 +1,73 @@
+include ../print/char.krm
+include ../print/string.krm
+include ../print/uint32.krm
+
+.aim: string "This program calculates the factorial of a positive number using a loop\n"
+.invite: string "Please enter a positive number: "
+
+# Accepts a single argument: the uint32 value to get the factorial of
+#
+# Returns the uint32 value of the factorial in r0
+fact:
+    # load the uint32 value to r0
+    loadr r0 r14 3
+
+    # copy the value to r2
+    mov r2 r0 0
+
+    # initialize the return value with 1
+    lc r0 1
+
+    __fact.loop:
+        # if the current value is 0 or 1,
+        # since 0! = 1! = 1, we can break the loop
+        cmpi r2 1
+        jle __fact.out
+
+        # multiply the result by the current factor
+        mul r0 r2 0
+
+        # decrease the current factor by 1
+        subi r2 1
+
+        # continue the loop
+        jmp __fact.loop
+
+    # return
+    __fact.out:
+        ret 0
+
+main:
+    # print the aim of the program
+    la r0 .aim
+    prc 0
+    push r0 0
+    calli print_string
+
+    # print the invite
+    la r0 .invite
+    prc 0
+    push r0 0
+    calli print_string
+
+    # get the integer from stdin into r0
+    syscall r0 100
+
+    # call the factorial counting function, the result will be in r0
+    prc 0
+    push r0 0
+    calli fact
+
+    # print the resulting value
+    prc 0
+    push r0 0
+    calli print_uint32_decimal
+
+    # print an additional newline
+    prc 0
+    calli print_newline
+
+    # exit the program with code 0
+    lc r0 0
+    syscall r0 0
+end main
