@@ -2,7 +2,7 @@
 
 \cmdtable{Bitwise operators}{
     10 & \St{not} & \Ss{RI} & \RIcmd{not}{r1}{0} &
-    \St{$\text{r1} = \sim \text{r1}$} \\
+    \St{$\text{r1} = \text{\textasciitilde r1}$} \\
 
     \hline
 
@@ -64,5 +64,6 @@ The immediate value is ignored, but per our agreement must be present for simpli
 All other bitwise operators take two \St{uint32} values obtained from
 the specified operands in the \hyperlink{types:twos_complement}{common manner}
 and produce a \St{uint32} value as a result.
-The right hand side operand must be less than the size of a machine word
-(i.e.\ no more than 31), otherwise an execution error occurs.
+The right hand side operand of the bitwise shift operators must be less than
+the size of a machine word (i.e.\ no more than 31), otherwise an execution
+error occurs.

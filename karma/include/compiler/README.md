@@ -14,7 +14,7 @@ and the [exec directory](../exec).
 
 ## Symbols
 
-### Public
+### Exported
 
 ```c++
 karma::                                 // compiler.hpp
@@ -311,6 +311,63 @@ The compilation stages are:
 
 ### Compiler
 
-The `Compiler` class is an exported static class simply wrapping the methods
-of the `Impl` class. It is also used as the namespace for all the classes
+The `Compiler` class is an exported static class wrapping the methods of
+the `Impl` class. It is also used as the namespace for all the classes
 described above.
+
+The exported methods of the `Compiler` class accept a single compulsory
+parameter specifying the path to the main Karma assembler file to be compiled
+as well as the following optional parameters:
+
+* **Destination**: the path of the resulting Karma executable file, defaults
+  to a file in the same directory as the provided main Karma assembler file with
+  the same name, with the last extension replaced with `.a`
+
+* **Number of workers**: the number of concurrent workers (threads) used to
+  compile the Karma assembler program, defaults to the implementation-defined
+  value returned from `std::thread::hardware_concurrency()` or 1, if that value
+  is 0. The number of used workers is always not greater than the number of
+  Karma assembler files in the program (i.e. file compilation is an atomic
+  routine), if it is specified to be greater than the number of files, it is
+  reduced to it, and each thread compiles a single file
+
+* **Logger**: the output stream to print the compilation process info, defaults
+  to a no-op stream (i.e. the one that drops the messages instead of printing
+  them)
+
+> **Note**
+>
+> The overloads of the public methods of the `Compiler` class are designed so
+> that the unused optional parameters may be omitted as long as the used ones
+> come in the same relative order as listed above, i.e. all the following calls
+> are valid:
+>
+> ```c++
+> karma::Compiler::Compile(/* src = */ "main.krm",
+>                          /* dst = */ "main.out",
+>                          /* n_workers = */ 4,
+>                          /* log = */ std::clog);
+> 
+> karma::Compiler::Compile(/* src = */ "main.krm",
+>                          /* dst = */ "main.out",
+>                          /* n_workers = */ 4);
+> 
+> karma::Compiler::Compile(/* src = */ "main.krm",
+>                          /* dst = */ "main.out",
+>                          /* log = */ std::clog);
+> 
+> karma::Compiler::Compile(/* src = */ "main.krm",
+>                          /* dst = */ "main.out");
+> 
+> karma::Compiler::Compile(/* src = */ "main.krm",
+>                          /* n_workers = */ 4,
+>                          /* log = */ std::clog);
+> 
+> karma::Compiler::Compile(/* src = */ "main.krm",
+>                          /* n_workers = */ 4);
+> 
+> karma::Compiler::Compile(/* src = */ "main.krm",
+>                          /* log = */ std::clog);
+> 
+> karma::Compiler::Compile(/* src = */ "main.krm");
+> ```

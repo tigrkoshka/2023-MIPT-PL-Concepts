@@ -42,11 +42,11 @@ class Executor::Storage : detail::utils::traits::NonCopyableMovable {
     Word& Flags();
 
    private:
+    Config base_config_;
+    Config curr_config_{base_config_};
+
     // allocate the memory on the heap, and all the registers on the stack
     // to provide emulation that register operations are faster
-
-    Config base_config_ = Config();
-    Config curr_config_{base_config_};
 
     std::vector<Word> memory_ =
         std::vector<Word>(detail::specs::arch::kMemorySize);

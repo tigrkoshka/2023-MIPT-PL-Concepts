@@ -16,7 +16,7 @@ by the [exec directory](../exec).
 
 ## Symbols
 
-### Public
+### Exported
 
 ```c++
 karma::
@@ -97,10 +97,10 @@ parent instances of [CommonExecutor](#commonexecutor) class instances.
 The `CommonExecutor` class is derived from `ExecutorBase` and provides reused
 helper methods as well as methods managing the `flags` register, the stack,
 and the function calls. These methods are then used in the
-[\[RM | RR | RI | J\]Executor](#rm--rr--ri--jexecutor) classes business logics.
+[`[RM | RR | RI | J]Executor`](#rm--rr--ri--jexecutor) classes business logics.
 
 No `CommonExecutor` class instances are crated directly, they are only created
-as parent instances of [\[RM | RR | RI | J\]Executor](#rm--rr--ri--jexecutor)
+as parent instances of [`[RM | RR | RI | J]Executor`](#rm--rr--ri--jexecutor)
 classes instances.
 
 ### \[RM | RR | RI | J\]Executor
@@ -164,7 +164,8 @@ instance, and the `GetMap` method of each of them is only used once.
 The `Impl` class implements the main part of the Karma computer business logic.
 
 Its constructor is the place where the instance of the `Storage` class is
-created. It also creates the instances of the `\[RM | RR | RI | J\]Executor`
+created. It also creates the instances of
+the [`[RM | RR | RI | J]Executor`](#rm--rr--ri--jexecutor)
 classes and stores the mappings returned by their `GetMap` methods
 (see [above](#rm--rr--ri--jexecutor) for details).
 
@@ -179,7 +180,8 @@ finished.
 
 These methods parse each command for its code and arguments and executing
 them with the methods specified by the stored mappings returned from
-the `GetMap` methods of the `\[RM | RR | RI | J\]Executor` classes. They also
+the `GetMap` methods of
+the [`[RM | RR | RI | J]Executor`](#rm--rr--ri--jexecutor) classes. They also
 manage the instruction pointer register to proceed to the next executed
 instruction (see the *r15 register* paragraph of the *Karma calling convention*
 section of the [docs](../../docs/Karma.pdf) for details).
@@ -196,17 +198,6 @@ All the public methods of this class accept an additional optional parameter of
 the `Config` class type, which specifies the configuration of the specific
 execution (see [below](#config) for details).
 
-### Executor
-
-The `Executor` class emulates the Karma computer. It is an exported class simply
-wrapping the methods of the `Impl` class. It is also used as the namespace
-for all the classes described above.
-
-The `Executor` class uses the
-[pImpl](https://en.cppreference.com/w/cpp/language/pimpl) technique by storing
-an `std::unique_ptr` to the instance of the `Impl` class created in
-the constructor.
-
 ### Config
 
 The `Config` class represents the configuration of a Karma computer or a single
@@ -221,11 +212,13 @@ It also provides overloaded `operator&=` and `operator&`, which combine two
 (for the definition of the strictest combination of two configs refer to
 the *Execution configuration* section of the [docs](../../docs/Karma.pdf)).
 
-Each constructor/method that accepts an instance of the `Config` class, accepts
-it as an optional parameter. The default value for that parameter is always
-the configuration not setting any blocks on either registers of address space
-and not bounding the stack size, which is in accordance with the
+Each exported constructor/method that accepts an instance of the `Config` class,
+accepts it as an optional parameter. The default value for that parameter is
+always the configuration not setting any blocks on either registers of address
+space and not bounding the stack size, which is in accordance with the
 [docs](../../docs/Karma.pdf).
+
+#### Presets
 
 The `Config` class additionally provides convenient presets not specified
 in the [docs](../../docs/Karma.pdf). The presets are static functions returning
@@ -233,7 +226,7 @@ an instance of the `Config` class with specific predefined values of its fields.
 
 Currently, there are two presets: `ExtraStrict` and `Strict`.
 
-#### ExtraStrict
+*ExtraStrict*
 
 The `ExtraStrict` preset blocks the read and write access to the stack pointer,
 stack frame pointer and instruction pointer registers (i.e. r13-r15) as well as
@@ -248,7 +241,7 @@ to the code and constants segments of the code.
 > the stack pointer register). Therefore, this preset should be used
 > with caution.
 
-#### Strict
+*Strict*
 
 The `Strict` preset is like the `ExtraStrict`, but lifts the read block to
 the stack pointer register and the constants segment, which allows to avoid
@@ -270,3 +263,47 @@ and/or Karma computer address space segments.
 
 The decomposition is needed, because the configuration allows to set blocks
 either only for writing or for both writing and reading.
+
+### Executor
+
+The `Executor` class emulates the Karma computer. It is an exported class
+wrapping the methods of the `Impl` class. It is also used as the namespace
+for all the classes described above.
+
+The `Executor` class uses the
+[pImpl](https://en.cppreference.com/w/cpp/language/pimpl) technique by storing
+an `std::unique_ptr` to the instance of the `Impl` class created in
+the constructor.
+
+The exported methods of the `Executor` class accept a single compulsory
+parameter specifying the path to the Karma executable file to be executed
+as well as the following optional parameters:
+
+* **Config**: an instance of the `Config` class specifying the configuration
+  of the current execution, which is combined with the common configuration
+  provided to the constructor of the `Executor` class (see [above](#config)
+  for details)
+
+* **Logger**: the output stream to print the execution process info, defaults
+  to a no-op stream (i.e. the one that drops the messages instead of printing
+  them)
+
+> **Note**
+>
+> The overloads of the public methods of the `Executor` class are designed so
+> that the **Config** optional parameter may be omitted if the default
+> configuration is meant to be used, i.e. all the following calls are valid:
+>
+> ```c++
+> karma::Executor::Execute(/* exec_path = */ "main.a",
+>                          /* config = */ karma::Executor::Config::Strict(),
+>                          /* log = */ std::clog);
+> 
+> karma::Executor::Execute(/* exec_path = */ "main.a",
+>                          /* config = */ karma::Executor::Config::Strict());
+> 
+> karma::Executor::Execute(/* exec_path = */ "main.a",
+>                          /* log = */ std::clog);
+> 
+> karma::Executor::Execute(/* exec_path = */ "main.a");
+> ```

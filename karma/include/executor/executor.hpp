@@ -41,18 +41,15 @@ class Executor {
     using ReturnCode      = uint32_t;
     using MaybeReturnCode = std::optional<ReturnCode>;
 
-   private:
-    static std::ostream& no_op_logger;
-
    public:
+    // do not include utils/traits, because we don't want to expose
+    // internal features of the karma library to the user
+
     Executor();
     explicit Executor(Config);
     ~Executor();
 
     // utils::traits::NonCopyableMovable
-
-    // do not include utils/traits, because we don't want to expose
-    // internal features of the karma library to the user
 
     // Non-copyable
     Executor(const Executor&)            = delete;
@@ -67,18 +64,19 @@ class Executor {
     // in another file, which includes this one
 
     ReturnCode MustExecute(const std::string& exec_path,
-                           std::ostream& log = no_op_logger);
-    ReturnCode Execute(const std::string& exec_path,
-                       std::ostream& log = no_op_logger);
-
-    ReturnCode MustExecute(const std::string& exec_path,
                            const Config&,
                            std::ostream& log = no_op_logger);
     ReturnCode Execute(const std::string& exec_path,
                        const Config&,
                        std::ostream& log = no_op_logger);
 
+    ReturnCode MustExecute(const std::string& exec_path,
+                           std::ostream& log = no_op_logger);
+    ReturnCode Execute(const std::string& exec_path,
+                       std::ostream& log = no_op_logger);
+
    private:
+    static std::ostream& no_op_logger;
     std::unique_ptr<Impl> impl_;
 };
 

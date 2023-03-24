@@ -15,7 +15,7 @@ are not dependent on any other parts of the [karma library](..).
 
 ## Symbols
 
-### Public
+### Exported
 
 ```c++
 karma::

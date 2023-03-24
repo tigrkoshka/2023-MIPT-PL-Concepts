@@ -16,7 +16,7 @@ by the [exec directory](../exec).
 
 ## Symbols
 
-### Public
+### Exported
 
 ```c++
 karma::                                     // disassembler.hpp
@@ -166,6 +166,46 @@ The public methods of this class do the following:
 
 ### Disassembler
 
-The `Disassembler` class is an exported static class simply wrapping the methods
+The `Disassembler` class is an exported static class wrapping the methods
 of the `Impl` class. It is also used as the namespace for all the classes
 described above.
+
+The exported methods of the `Disassembler` class accept a single compulsory
+parameter specifying the path to the Karma executable file to be decompiled
+as well as the following optional parameters:
+
+* **Destination**: specifies the destination to output the resulting Karma
+  assembler code and may be provided as:
+    * the path of the resulting file
+    * an `std::ostream`
+
+  Defaults to a file in the same directory as the provided Karma executable
+  file with the same name, with the last extension dropped and replaced
+  with `_disassembled.krm`
+
+* **Logger**: the output stream to print the disassembling process info,
+  defaults to a no-op stream (i.e. the one that drops the messages instead of
+  printing them)
+
+> **Note**
+>
+> The overloads of the public methods of the `Disassembler` class are designed
+> so that the **Destination** optional parameter may be omitted if
+> the default destination is meant to be used, i.e. all the following calls
+> are valid:
+>
+> ```c++
+> karma::Disassembler::Disassemble(/* src = */ "main.a",
+>                                  /* dst = */ std::cout, 
+>                                  /* log = */ std::clog);
+> 
+> karma::Disassembler::Disassemble(/* src = */ "main.a",
+>                                  /* dst = */ std::cout);
+> 
+> // need to explicitly wrap the logger in a karma::Logger,
+> // otherwise the overload above will be preferred
+> karma::Disassembler::Disassemble(/* src = */ "main.a",
+>                                  /* log = */ karma::Logger(std::clog));
+> 
+> karma::Disassembler::Disassemble(/* src = */ "main.a");
+> ```

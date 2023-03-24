@@ -80,15 +80,31 @@ See the executor block [README](executor/README.md) for details.
 
 ## Methods
 
+### Variants
+
 All exported methods of the karma library classes have two variants,
 one of which has a `Must` prefix, and the other does not. The former throw
 exceptions (see [below](#exceptions)), while the latter wrap them in
 a `try-catch` block and print the exception info to `stderr`.
 
-All the methods accept an optional logger as the last parameter, which allows
+### Overloads
+
+All these methods accept a single compulsory parameter and several optional
+parameters. The overloads of these methods are designed so that any optional
+parameters may be skipped and any other may be specified at the same time.
+That is achieved by making all the optional parameters have different types.
+
+The last optional parameter of all the methods is the logger, which allows
 to specify the output stream for logging the compilation, execution and
 disassembling. The default value of this parameter is a no-op logger,
 i.e. a logger that drops the messages and does not print them anywhere.
+
+For the list of all supported optional parameters and their default values
+please refer to the `README`s of the respective directories:
+[compiler](compiler/README.md), [executor](executor/README.md) and
+[disassembler](disassembler/README.md).
+
+### Return values
 
 The methods of the `karma::Compiler` and the `karma::Disassembler` classes
 do not return anything but rather output the results of

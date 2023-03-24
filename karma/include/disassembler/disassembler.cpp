@@ -8,7 +8,17 @@
 
 namespace karma {
 
-std::ostream& Disassembler::no_op_logger = detail::utils::logger::no_op;
+void Disassembler::MustDisassemble(const std::string& exec_path,
+                                   const std::string& dst,
+                                   std::ostream& log) {
+    Impl::MustDisassemble(exec_path, dst, log);
+}
+
+void Disassembler::Disassemble(const std::string& exec_path,
+                               const std::string& dst,
+                               std::ostream& log) {
+    Impl::Disassemble(exec_path, dst, log);
+}
 
 void Disassembler::MustDisassemble(const std::string& exec_path,
                                    std::ostream& out,
@@ -23,15 +33,15 @@ void Disassembler::Disassemble(const std::string& exec_path,
 }
 
 void Disassembler::MustDisassemble(const std::string& exec_path,
-                                   const std::string& dst,
                                    std::ostream& log) {
-    Impl::MustDisassemble(exec_path, dst, log);
+    MustDisassemble(exec_path, "", log);
 }
 
 void Disassembler::Disassemble(const std::string& exec_path,
-                               const std::string& dst,
                                std::ostream& log) {
-    Impl::Disassemble(exec_path, dst, log);
+    MustDisassemble(exec_path, "", log);
 }
+
+std::ostream& Disassembler::no_op_logger = detail::utils::logger::no_op;
 
 }  // namespace karma

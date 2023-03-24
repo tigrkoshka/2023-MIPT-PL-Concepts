@@ -1,15 +1,13 @@
 \hypertarget{functions:call}{
-    \subsubsection{Function call procedure}
+    \paragraph{Function call procedure}\
 }
-
-\vspace{-0.2cm}
 
 \hypertarget{functions:prep}{}
 Before pushing the function arguments to the stack, the following
 preparatory actions must be performed:
 
 \begin{itemize}
-    \item Push the current value of the \St{r13} register
+    \item Pushing the current value of the \St{r13} register
     (i.e.\ the stack pointer before the caller's local variables)
     to the stack \\
     As if with a \hspace{-0.1cm}\St{
@@ -18,7 +16,7 @@ preparatory actions must be performed:
         \makebox[0.45cm][l]{0}
     }
 
-    \item Set the \St{r13} register to the current stack pointer value
+    \item Setting the \St{r13} register to the current stack pointer value
     (i.e.\ the value before the function arguments were pushed)\\
     As if with a \hspace{-0.1cm}\St{
         \makebox[0.60cm][l]{mov}
@@ -28,11 +26,11 @@ preparatory actions must be performed:
     }
 \end{itemize}
 
-After that, the code must push the arguments for the function to be called
+After that, the code must push the arguments for the function about to be called
 to the stack last-to-first as described \hyperlink{karma:call:basic}{above}.
 
 \hypertarget{functions:prologue}{}
-The prologue of a function call does the following
+The prologue of a function call does the following:
 
 \begin{itemize}
     \item Pushes the return address (i.e.\ the address of the next
@@ -54,7 +52,7 @@ The prologue of a function call does the following
     }
 
     \item Sets the \St{r13} register to the current stack pointer value
-    (i.e.\ the value before the function local variables) \\
+    (i.e.\ the value before the callee's local variables) \\
     As if with a \hspace{-0.1cm}\St{
         \makebox[0.60cm][l]{mov}
         \makebox[0.60cm][l]{r13}

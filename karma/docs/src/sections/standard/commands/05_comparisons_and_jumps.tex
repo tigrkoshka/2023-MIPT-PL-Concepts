@@ -87,7 +87,7 @@ They compare the two values provided by the operands and store the result to
 the \St{flags} register according to the \hyperlink{flags:bits}{\St{flags}
 register bits semantics} described above.
 
-The \St{cmp} and \St{cmpi} command compare the \St{uint32} value from
+The \St{cmp} and \St{cmpi} commands compare the \St{uint32} value from
 the receiver register to the \St{uint32} value obtained from the operands in
 the {\hyperlink{types:twos_complement}{common manner}.
 
@@ -116,7 +116,7 @@ computer has a \href{https://en.wikipedia.org/wiki/Von_Neumann_architecture}
 {Von Neumann architecture}, the instructions' binaries are stored in
 the common address space).
 That is achieved by storing the provided memory address in the \St{r15} register
-(see the \hyperlink{functions:convention}{\St{Karma} calling convention}
+(see the \hyperlink{r15}{\St{r15} register}
 section for details).
 
 These are the only commands that read the value stored in the \St{flags}

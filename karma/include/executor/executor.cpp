@@ -12,8 +12,6 @@
 
 namespace karma {
 
-std::ostream& Executor::no_op_logger = detail::utils::logger::no_op;
-
 Executor::Executor()
     : impl_(std::make_unique<Impl>(Config())) {}
 
@@ -21,16 +19,6 @@ Executor::Executor(Config config)
     : impl_(std::make_unique<Impl>(std::move(config))) {}
 
 Executor::~Executor() = default;
-
-Executor::ReturnCode Executor::MustExecute(const std::string& exec_path,
-                                           std::ostream& log) {
-    return MustExecute(exec_path, Config(), log);
-}
-
-Executor::ReturnCode Executor::Execute(const std::string& exec_path,
-                                       std::ostream& log) {
-    return Execute(exec_path, Config(), log);
-}
 
 Executor::ReturnCode Executor::MustExecute(const std::string& exec_path,
                                            const Config& config,
@@ -43,5 +31,17 @@ Executor::ReturnCode Executor::Execute(const std::string& exec_path,
                                        std::ostream& log) {
     return impl_->Execute(exec_path, config, log);
 }
+
+Executor::ReturnCode Executor::MustExecute(const std::string& exec_path,
+                                           std::ostream& log) {
+    return MustExecute(exec_path, Config(), log);
+}
+
+Executor::ReturnCode Executor::Execute(const std::string& exec_path,
+                                       std::ostream& log) {
+    return Execute(exec_path, Config(), log);
+}
+
+std::ostream& Executor::no_op_logger = detail::utils::logger::no_op;
 
 }  // namespace karma

@@ -24,30 +24,31 @@ The function call procedure inevitably leads to a number of questions that
 need to be resolved, such as:
 
 \begin{itemize}
-    \item Where the arguments are placed? \\
+    \item Where are the arguments placed? \\
     Options include in the registers, on the stack, a mix of both,
     or in another memory structures
 
     \item In what order are the arguments passed? \\
     Options include first-to-last, last-to-first, or something more complex
 
-    \item Whether and how metadata describing the arguments is passed? \\
+    \item Whether and how is metadata describing the arguments passed? \\
     The metadata may include the number of arguments, the description
     of their position, or some other technical information
 
-    \item How the functions that take a variable number of arguments
-    (\textit{variadic functions}) are handled? \\
+    \item How are the functions that take a variable number of arguments
+    (\textit{variadic functions}) handled? \\
     Options include passing the number of arguments as an argument
     itself placed in an obvious position, placing the variable arguments
     in an array in the memory and passing the pointer to it, or keeping
     track of the number of arguments in a separate register
 
-    \item How return parameters are delivered from the callee to the caller? \\
+    \item How are the return parameters delivered from the callee to
+    the caller? \\
     Options include in the registers, on the stack, a mix of both,
     or in another memory structures
 
-    \item How the task of setting up for and cleaning up after
-    a function call is divided between the caller and the callee? \\
+    \item How is the task of setting up for and cleaning up after
+    a function call divided between the caller and the callee? \\
     This question refers to the arguments passed to the caller,
     the caller's \textit{local variables}, i.e.\ the values it places
     in the registers, on the stack and in the memory, and the additional

@@ -30,7 +30,7 @@ class Executor::Impl : detail::utils::traits::NonCopyableMovable {
                            std::ostream& log);
 
    public:
-    explicit Impl(Config config = Config())
+    explicit Impl(Config config)
         : storage_(std::make_shared<Storage>(std::move(config))) {}
 
     ReturnCode MustExecute(const std::string& exec_path,

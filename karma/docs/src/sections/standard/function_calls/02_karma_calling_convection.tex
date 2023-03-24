@@ -19,7 +19,9 @@ The setup for and the cleanup after a function call is mainly performed
 in its prologue and epilogue, i.e.\ a programmer does not need to explicitly
 write their code.
 However, some actions still must be performed explicitly
-by the assembler code, that is an inevitable part of any calling convention.
+by the assembler code, that is an inevitable part of any calling convention
+(see the \hyperlink{functions:call}{Function call procedure} section
+for details).
 
 The preserved registers are \St{r13}, \St{r14} and \St{r15}.
 The semantics of the \St{r14} register is described in
@@ -37,8 +39,8 @@ before the local variables of the currently executing subprogram.
 During the function calling process for a short time it changes its purpose
 and contains the stack pointer value before the arguments of
 the callee.
-At the start of execution it is initialised with the initial stack pointer
-value (defined in the executable file, see
+At the start of the program execution it is initialised with the initial stack
+pointer value (defined in the executable file, see
 \hyperlink{executable}{the respective section} for details),
 which is the stack pointer value before the local variables of the main
 (initial) subprogram defined by
