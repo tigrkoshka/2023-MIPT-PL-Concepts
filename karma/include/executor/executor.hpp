@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>   // for uint32_t
-#include <iostream>  // for ostream, clog
 #include <memory>    // for unique_ptr
 #include <optional>  // for optional
+#include <ostream>   // for ostream
 #include <string>    // for string
 
 #include "utils/error.hpp"

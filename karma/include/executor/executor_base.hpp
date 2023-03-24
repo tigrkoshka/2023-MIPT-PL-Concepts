@@ -11,9 +11,6 @@ namespace karma {
 
 class Executor::ExecutorBase : detail::utils::traits::NonCopyableMovable {
    public:
-    // delete the default constructor defined in NonCopyableMovable
-    ExecutorBase() = delete;
-
     // do not make the following constructor explicit to be able to use it
     // to create children of CommandExecutor in a concise way
 

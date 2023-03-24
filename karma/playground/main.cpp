@@ -13,7 +13,7 @@ std::string Exec(const std::string& filepath) {
 int main() {
     std::string filepath = "../programs/print/playgrounds/printf";
 
-    karma::Compiler::Compile(Assembler(filepath));
+    karma::Compiler::Compile(Assembler(filepath), std::clog);
 
     karma::Executor executor;
     uint32_t ret_code =

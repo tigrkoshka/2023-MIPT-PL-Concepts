@@ -30,9 +30,6 @@ class Executor::Impl : detail::utils::traits::NonCopyableMovable {
                            std::ostream& log);
 
    public:
-    // delete the default constructor defined in NonCopyableMovable
-    Impl() = delete;
-
     explicit Impl(Config config = Config())
         : storage_(std::make_shared<Storage>(std::move(config))) {}
 

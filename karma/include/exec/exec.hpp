@@ -23,6 +23,17 @@ class Exec : detail::utils::traits::Static {
 
    public:
     struct Data : detail::utils::traits::NonCopyableMovable {
+        Data() = default;
+
+        Data(detail::specs::arch::Address entrypoint,
+             detail::specs::arch::Address initial_stack,
+             std::vector<detail::specs::cmd::Bin> code,
+             std::vector<detail::specs::arch::Word> constants)
+            : entrypoint(entrypoint),
+              initial_stack(initial_stack),
+              code(code),
+              constants(constants) {}
+
         detail::specs::arch::Address entrypoint{0};
         detail::specs::arch::Address initial_stack{
             detail::specs::arch::kMemorySize - 1};

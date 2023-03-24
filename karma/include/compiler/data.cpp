@@ -89,10 +89,10 @@ Exec::Data Compiler::Data::ToExecData(std::ostream& log) && {
         // we have checked the presence of the entrypoint in the beginning
         // of this function, and the labels substitution never unsets it
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        .entrypoint    = *entrypoint_.TryGetAddress(),
-        .initial_stack = static_cast<arch::Word>(arch::kMemorySize - 1),
-        .code          = std::move(code_),
-        .constants     = std::move(constants_),
+        *entrypoint_.TryGetAddress(),
+        static_cast<arch::Word>(arch::kMemorySize - 1),
+        std::move(code_),
+        std::move(constants_),
     };
 }
 

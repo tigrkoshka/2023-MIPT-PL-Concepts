@@ -1,7 +1,7 @@
 #pragma once
 
-#include <iostream>  // for ostream, clog
-#include <string>    // for string
+#include <ostream>  // for ostream
+#include <string>   // for string
 
 #include "utils/error.hpp"
 

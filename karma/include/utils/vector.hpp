@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>  // for same_as
+#include <cstddef>   // for size_t
 #include <vector>    // for vector
 
 namespace karma::detail::utils::vector {
@@ -14,11 +15,13 @@ void Append(std::vector<T>& dst, const Args&... srcs) {
 template <typename T, typename... Args>
     requires(std::same_as<Args, std::vector<T>> && ...)
 void CopyToBegin(std::vector<T>& dst, const Args&... srcs) {
-    typename std::vector<T>::iterator::difference_type start = 0;
+    using DiffT = typename std::vector<T>::iterator::difference_type;
+
+    DiffT start = 0;
 
     auto copy_and_advance = [&dst, &start](const std::vector<T>& src) {
         std::copy(src.begin(), src.end(), dst.begin() + start);
-        start += src.size();
+        start += static_cast<DiffT>(src.size());
     };
 
     (copy_and_advance(srcs), ...);

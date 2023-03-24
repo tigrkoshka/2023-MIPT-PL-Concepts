@@ -54,9 +54,6 @@ class Compiler::FileCompiler : detail::utils::traits::NonCopyableMovable {
     void ProcessCurrLine(bool is_first_line = false);
 
    public:
-    // delete the default constructor defined in NonCopyableMovable
-    FileCompiler() = delete;
-
     explicit FileCompiler(const std::unique_ptr<File>& file)
         : file_(file) {}
 
