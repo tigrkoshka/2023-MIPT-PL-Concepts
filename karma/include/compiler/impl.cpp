@@ -5,9 +5,11 @@
 #include <iostream>    // for ostream, cerr
 #include <memory>      // for std::unique_ptr
 #include <string>      // for string
+#if defined(__GNUC__) && !defined(__clang__)
 #include <syncstream>  // for osyncstream
-#include <thread>      // for thread
-#include <vector>      // for vector
+#endif
+#include <thread>  // for thread
+#include <vector>  // for vector
 
 #include "compiler/compiler.hpp"
 #include "compiler/data.hpp"
@@ -29,12 +31,15 @@ namespace exec = detail::specs::exec;
 void Compiler::Impl::CompileRoutine(std::span<const std::unique_ptr<File>> src,
                                     std::span<Data> dst,
                                     std::ostream& log) {
-    // TODO: delete this comment when Clang supports std::osyncstream
+    // TODO: delete this comment when Clang supports std::osyncstream,
+    //       also delete #if here and in includes above
     //
-    // C++20 std::osyncstream is currently only supported by GCC, and not Clang
-    // to compile with Clang delete this line (though the logs may interfere
-    // with each other) and delete the #include <syncstream> above
+    // C++20 std::osyncstream is currently only supported by GCC
+#if defined(__GNUC__) && !defined(__clang__)
     std::osyncstream synced_log{log};
+#else
+    std::ostream& synced_log = log;
+#endif
 
     for (size_t idx = 0; idx < src.size(); ++idx) {
         synced_log << "[compiler]: compiling " << src[idx]->Path() << std::endl;
