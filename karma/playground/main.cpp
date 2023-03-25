@@ -21,22 +21,24 @@ std::string DisassembledExec(const std::string& filepath) {
 int main() {
     std::string filepath = "../programs/print/playgrounds/printf";
 
-    karma::Compiler::Compile(Assembler(filepath), std::clog);
+    karma::Compiler::Compile(Assembler(filepath));
 
     karma::Executor executor(karma::Executor::Config::Strict());
-    uint32_t ret_code = executor.Execute(Exec(filepath), std::clog);
+    uint32_t ret_code = executor.Execute(Exec(filepath));
 
     std::cout << "executable returned code " << ret_code << std::endl;
 
-    karma::Disassembler::Disassemble(Exec(filepath), karma::Logger(std::clog));
+    karma::Disassembler::Disassemble(Exec(filepath));
 
     // disassembly testing
 
-    karma::Compiler::Compile(Disassembled(filepath), std::clog);
+    /*
+    karma::Compiler::Compile(Disassembled(filepath));
 
-    ret_code = executor.Execute(DisassembledExec(filepath), std::clog);
+    ret_code = executor.Execute(DisassembledExec(filepath));
 
     std::cout << "executable returned code " << ret_code << std::endl;
+    */
 
     return 0;
 }
