@@ -22,3 +22,16 @@ as the initial file with a `_disassembled` suffix and extension `.krm`.
 For details on default output files destinations refer to
 the compiler directory [README](../include/compiler/README.md) and
 the disassembler directory [README](../include/disassembler/README.md).
+
+## Usage
+
+The playground in the repository is set up to compile a Karma assembler file,
+execute the resulting Karma executable file, and then to disassemble it.
+
+To specify the initial Karma assembler file, one may simply modify the variable
+defined at the beginning of the `main` function in [main.cpp](main.cpp).
+
+> **Note**
+> 
+> The variable must be setup to a relative (to this directory) path of
+> the Karma assembler file *without the final extension*.

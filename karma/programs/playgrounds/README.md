@@ -14,5 +14,7 @@ understanding of the Karma assembler code development principles:
 * [hello_world_smart.krm](hello_world_smart.krm)
 * [factorial_loop.krm](factorial_loop.krm)
 * [factorial_recursion.krm](factorial_recursion.krm)
+* [fibonacci_loop](fibonacci_loop.krm)
+* [fibonacci_recursion](fibonacci_recursion.krm)
 * [square.krm](square.krm)
 * [printf.krm](printf.krm)

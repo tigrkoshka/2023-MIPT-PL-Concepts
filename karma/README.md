@@ -4,13 +4,8 @@ This directory provides the implementation of
 the [first task](https://clck.ru/33rsnH) of
 the MIPT *Concepts of Programming Languages (2023)* course.
 
-## C++ features used
-
-The implementation heavily uses the C++20 standard features, sometimes even if
-those are not absolutely necessary. That is because this task was taken not only
-as an opportunity to better understand a computer architecture and assembler
-languages, but also as a chance to learn more about modern C++ code design
-and libraries.
+The compliance of this implementation to the original task is discussed
+in the [Task.md](Task.md) file.
 
 ## Structure
 
@@ -87,3 +82,11 @@ may become interfered with one another, while a compilation with GCC prevents
 that interference. That is due to the fact that the Clang version of STL has not
 yet (as of March 2023) supported the C++20 `syncstream` library, which is used
 to resolve the messages interference issue when compiling with GCC.
+
+## C++ features used
+
+The implementation heavily uses the C++20 standard features, sometimes even if
+those are not absolutely necessary. That is because this task was taken not only
+as an opportunity to better understand a computer architecture and assembler
+languages, but also as a chance to learn more about modern C++ code design
+and libraries.

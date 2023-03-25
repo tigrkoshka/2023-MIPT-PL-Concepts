@@ -1,0 +1,108 @@
+# This program accepts a user-provided positive integer n,
+# computes the n-th fibonacci number using recursion, and then prints it.
+#
+# This is just another example (along with the program from
+# factorial_recursion.krm) of a basic recursion-using algorithm.
+
+include ../print/char.krm
+include ../print/string.krm
+include ../print/uint32.krm
+
+.aim: string "This program calculates the n-th fibonacci number using a loop\n"
+.invite: string "Please enter the desired index of the fibonacci number: "
+.result: string "Result: "
+
+# Accepts a single argument: the uint32 value identifying the index of
+# the fibonacci number to be computed
+#
+# Returns the uint32 value of the fibonacci number in r0
+fibonacci:
+    # load the uint32 index to r2 as the loop iterations counter
+    loadr r0 r14 3
+
+    # if the index is less than 2 (i.e. 0 or 1), then the fibonacci
+    # number equals the index, so we can simply return
+    # (the result is already in r0)
+    cmpi r0 2
+    jl __fibonacci.out
+
+    # calculate the fibonacci number for index n - 2, the result will be in r0
+    prc 0
+    push r0 -2 # argument (n - 2)
+    calli fibonacci
+
+    # push the result as a local variable
+    push r0 0
+
+    # restore the initial index from the function arguments into r0
+    #
+    # note the immediate operand which is 4 and not 3
+    # (as it usually is when loading the first argument),
+    # that is because we have pushed a value to the stack,
+    # so the stack contains one more value compared to whet
+    # it contained at the beginning of this function
+    loadr r0 r14 4
+
+    # calculate the fibonacci number for index n - 1, the result will be in r0
+    prc 0
+    push r0 -1 # argument (n - 1)
+    calli fibonacci
+
+    # restore the result of the previous call from the stack into r1
+    pop r1 0
+
+    # add the two results of the recursive calls above
+    # and place the sum into r0
+    add r0 r1 0
+
+    # return
+    __fibonacci.out:
+        ret 0
+
+
+main:
+    # print the aim of the program
+    la r0 .aim
+    prc 0
+    push r0 0
+    calli print_string
+
+    # print the invite
+    la r0 .invite
+    prc 0
+    push r0 0
+    calli print_string
+
+    # get the integer from stdin into r0
+    syscall r0 100
+
+    # call the fibonacci number computing function, the result will be in r0
+    prc 0
+    push r0 0
+    calli fibonacci
+
+    # save the result as a local variable
+    push r0 0
+
+    # print the result introduction
+    la r1 .result
+    prc 0
+    push r1 0
+    calli print_string
+
+    # restore the result from the stack
+    pop r0 0
+
+    # print the resulting value
+    prc 0
+    push r0 0
+    calli print_uint32_decimal
+
+    # print an additional newline
+    prc 0
+    calli print_newline
+
+    # exit the program with code 0
+    lc r0 0
+    syscall r0 0
+end main

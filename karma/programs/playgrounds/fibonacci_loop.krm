@@ -1,0 +1,104 @@
+# This program accepts a user-provided positive integer n,
+# computes the n-th fibonacci number using a loop, and then prints it.
+#
+# This is just another example (along with the program from factorial_loop.krm)
+# of a basic loop-using algorithm.
+
+include ../print/char.krm
+include ../print/string.krm
+include ../print/uint32.krm
+
+.aim: string "This program calculates the n-th fibonacci number using a loop\n"
+.invite: string "Please enter the desired index of the fibonacci number: "
+.result: string "Result: "
+
+# Accepts a single argument: the uint32 value identifying the index of
+# the fibonacci number to be computed
+#
+# Returns the uint32 value of the fibonacci number in r0
+fibonacci:
+    # load the uint32 index to r2 as the loop iterations counter
+    loadr r2 r14 3
+
+    # r0 = 0
+    # [prev = 0], this is the initialization of the return value
+    lc r0 0
+
+    # r1 = 1
+    # [curr = 1]
+    lc r1 1
+
+    __fibonacci.loop:
+        # if the remaining iterations counter is 0, break the cycle
+        cmpi r2 0
+        jeq __fibonacci.out
+
+        # r3 = r1
+        # [tmp = prev]
+        mov r3 r1 0
+
+        # r1 += r0
+        # [curr += prev]
+        add r1 r0 0
+
+        # r0 = r3
+        # [prev = tmp]
+        mov r0 r3 0
+
+        # decrease the remaining iterations counter
+        subi r2 1
+
+        # proceed to the next iteration
+        jmp __fibonacci.loop
+
+    # return
+    __fibonacci.out:
+        ret 0
+
+
+main:
+    # print the aim of the program
+    la r0 .aim
+    prc 0
+    push r0 0
+    calli print_string
+
+    # print the invite
+    la r0 .invite
+    prc 0
+    push r0 0
+    calli print_string
+
+    # get the integer from stdin into r0
+    syscall r0 100
+
+    # call the fibonacci number computing function, the result will be in r0
+    prc 0
+    push r0 0
+    calli fibonacci
+
+    # save the result as a local variable
+    push r0 0
+
+    # print the result introduction
+    la r1 .result
+    prc 0
+    push r1 0
+    calli print_string
+
+    # restore the result from the stack
+    pop r0 0
+
+    # print the resulting value
+    prc 0
+    push r0 0
+    calli print_uint32_decimal
+
+    # print an additional newline
+    prc 0
+    calli print_newline
+
+    # exit the program with code 0
+    lc r0 0
+    syscall r0 0
+end main

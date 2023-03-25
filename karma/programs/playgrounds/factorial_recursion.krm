@@ -77,7 +77,7 @@ main:
     # get the integer from stdin into r0
     syscall r0 100
 
-    # call the factorial counting function, the result will be in r0
+    # call the factorial computing function, the result will be in r0
     prc 0
     push r0 0
     calli fact
