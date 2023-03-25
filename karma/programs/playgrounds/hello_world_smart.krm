@@ -1,3 +1,8 @@
+# This program prints "Hello, world!\n" using the printing library.
+#
+# Note how much more concise and expressive this code looks im comparison with
+# the one writen in the hello_world_char_by_char.krm file.
+
 include ../print/string.krm
 
 .hello_world: string "Hello, world!\n"

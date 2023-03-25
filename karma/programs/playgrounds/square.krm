@@ -1,9 +1,38 @@
+# This program computes the square of a user-provided uint32 value and
+# prints the resulting value.
+#
+# This program has the same functionality as the respective ones from the docs
+# samples, but provides a better user experience and code style.
+#
+# All the lessons and style guides described in the comment at the beginning
+# of the factorial_loop.krm file may be applied here as well.
+#
+# Another important lesson that can be learned from this simple code is that
+# decomposition is not always needed. For example, the computational part of
+# this program consists of but a two commands:
+#
+#     mov r2 r0 0
+#     mul r0 r2 0
+#
+# If these commands were refactored into a separate function, a whole function
+# call procedure would need to be performed. That procedure would probably be
+# more computationally difficult than the calculation itself. Therefore,
+# the best choice here was to just place the contents of this function directly
+# inside the main function.
+#
+# Such a function reduction is called inlining a function, and it is what
+# the compiler is asked to do when a C++ function is marked as inline.
+# This is a commonly known optimization technique and almost all compilers also
+# perform this automatically for the functions that have few instructions and
+# are rarely used.
+
 include ../print/char.krm
 include ../print/string.krm
 include ../print/uint64.krm
 
 .aim: string "This program calculates the square of a positive number\n"
 .invite: string "Please enter a positive number: "
+.result: string "Result: "
 
 main:
     # print the aim of the program
@@ -26,6 +55,12 @@ main:
 
     # a pair of registers (r1,r0) contains the square
     mul r0 r2 0
+
+    # print the result introduction
+    la r2 .result
+    prc 0
+    push r2 0
+    calli print_string
 
     # print the uint64 value from (r1,r0) to stdout
     prc 0

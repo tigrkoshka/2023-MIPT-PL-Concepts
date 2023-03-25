@@ -1,9 +1,81 @@
+# This program computes the factorial of a user-provided uint32 value using
+# a loop and prints the resulting value.
+#
+# This is an extension of the sample from the docs doing the same thing.
+# In the beginning of execution this program prints its aim and invites a user
+# to input a number. After calculating the factorial, the result if printed
+# with a string specifying that this is the result of the calculations.
+# That means, that compared to the sample program from the docs, this program
+# provides a better user experience.
+#
+# It also uses the printing library for printing the resulting value instead
+# of the respective syscall code specified by the Karma assembler standard,
+# which emphasises the Karma assembler language capabilities and the fact that
+# it is in no way more 'magical' than the real-world assembler languages.
+# That means that the Karma assembler language does not abuse the fact that it
+# is being emulated by a C++ code and only uses some the higher-level language
+# features, such as arbitrary type formatting, purely for convenience and not
+# out of necessity.
+#
+# Another important lesson that can be learned from the simple code of this
+# file is that semantically the command labels usually represent not a single
+# command that come after them (as they do syntactically), but rather a whole
+# block of a Karma assembler program, be that a function, a cycle, or
+# an execution branch (analogous to if-else blocks in higher level languages)
+#
+# This file can also be used as a style guide on writing Karma assembler code.
+# The main things to note are:
+#
+#     - The labels assigned to the constants start with a dot
+#
+#       Example: .aim
+#
+#     - The labels, which semantically represent blocks of code, which are
+#       sub-blocks of other blocks, are prefixed with two underscores, followed
+#       by the name of the label assigned to the parent block, followed by a dot
+#
+#       Example: __fact.loop
+#
+#     - The function call blocks, including:
+#
+#           - the arguments preparation (if they are loaded to the registers
+#           solely for the purposes of the call)
+#
+#           - the function call utility preparation (the prc command)
+#
+#           - the arguments pushing to the stack
+#
+#           - the call itself
+#
+#       should not be divided by empty lines, but should be surrounded by them.
+#       A preceding comment specifying the aim of the function call is also
+#       advisable. This of this allows to make the code more readable
+#
+#       Example:  # print the aim of the program
+#                 la r0 .aim
+#                 prc 0
+#                 push r0 0
+#                 calli print_string
+#
+# Without a consistent naming system, large code in any assembler language would
+# become unsustainable, because the assembler languages do not have label usage
+# scopes, such as namespaces, classes, blocks surrounded by curly braces, etc.
+# as higher programming languages do. So, if the label names were chosen
+# primarily based on the aim to make them concise, those labels duplications
+# would very quickly occur on code base expansion, which would lead to
+# compilation errors due to label redefinitions. Consider, for example, how
+# many functions use loops, and what would happen if all of them were to name
+# the labels used in those loops as simply 'loop'.
+#
+# The printing library is written using these and other guidelines.
+
 include ../print/char.krm
 include ../print/string.krm
 include ../print/uint32.krm
 
 .aim: string "This program calculates the factorial of a positive number using a loop\n"
 .invite: string "Please enter a positive number: "
+.result: string "Result: "
 
 # Accepts a single argument: the uint32 value to get the factorial of
 #
@@ -57,6 +129,12 @@ main:
     prc 0
     push r0 0
     calli fact
+
+    # print the result introduction
+    la r1 .result
+    prc 0
+    push r1 0
+    calli print_string
 
     # print the resulting value
     prc 0

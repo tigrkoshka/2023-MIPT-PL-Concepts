@@ -1,9 +1,22 @@
+# This program computes the factorial of a user-provided uint32 value using
+# recursion and prints the resulting value.
+#
+# This program differs from the one in the factorial_loop.krm file only in
+# the implementation of the factorial calculation.
+# It provides a sample of a recursive function written in a sustainable code
+# style (unlike the sample from the docs, which only aims to demonstrate basic
+# Karma assembler commands usage).
+#
+# All the lessons and style guides described in the comment at the beginning
+# of the factorial_loop.krm file may be applied here as well.
+
 include ../print/char.krm
 include ../print/string.krm
 include ../print/uint32.krm
 
 .aim: string "This program calculates the factorial of a positive number using a recursion\n"
 .invite: string "Please enter a positive number: "
+.result: string "Result: "
 
 # Accepts a single argument: the uint32 value to get the factorial of
 #
@@ -68,6 +81,12 @@ main:
     prc 0
     push r0 0
     calli fact
+
+    # print the result introduction
+    la r1 .result
+    prc 0
+    push r1 0
+    calli print_string
 
     # print the resulting value
     prc 0

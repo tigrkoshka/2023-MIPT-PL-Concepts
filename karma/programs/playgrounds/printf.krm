@@ -1,3 +1,9 @@
+# This is a simple program demonstrating the usage of the printf function
+# provided by the printing library.
+#
+# For more samples on the printing library usage please refer to
+# the print/playgrounds subdirectory of the programs directory.
+
 include ../print/printf.krm
 
 format: string "String %s, decimal %i, hexadecimal %x"

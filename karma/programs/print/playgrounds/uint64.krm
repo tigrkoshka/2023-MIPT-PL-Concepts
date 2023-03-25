@@ -5,17 +5,24 @@ include ../uint64.krm
 .value: uint64 18446744073709551615
 
 main:
+    # load the base into r0
     load r0 .base
+
+    # load the uint64 value into (r2,r1)
     load2 r1 .value
+
+    # print the value
     prc 0
-    push r2 0
-    push r1 0
-    push r0 0
+    push r2 0 # value (high bits of the second argument)
+    push r1 0 # value (low bits of the second argument)
+    push r0 0 # base  (the first argument)
     calli print_uint64
 
+    # print an additional newline
     prc 0
     calli print_newline
 
+    # exit the program with code 0
     lc r0 0
     syscall r0 0
 end main
