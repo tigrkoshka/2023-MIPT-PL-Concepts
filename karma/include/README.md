@@ -10,6 +10,10 @@ Thus, the karma library consists of three _blocks_: `compiler`, `executor` and
 `disassembler`. Each block consists of a class in the `karma` namespace
 and three types of errors in the `karma::errors::<block_name>` namespace.
 
+Besides those blocks, the `karma` library exports a utility `Logger` struct,
+which can be used when calling the exported methods defined in each block
+(see [below](#logger) for details).
+
 ## Exported symbols
 
 ```c++
@@ -32,7 +36,7 @@ karma::
         |       MustDisassemble
         |       Disassemble
         |
-        Logger::
+        Logger::                         // utility
         |       NoOp
         |
         errors::
@@ -59,7 +63,7 @@ karma::
 ### Compiler and Disassembler
 
 The `karma::Compiler` and the `karma::Disassembler` classes provide only
-static methods for compiling Karma assembler programs and decompiling
+static methods for compiling Karma assembler programs and disassembling
 Karma executable files respectively.
 
 ### Executor
@@ -79,16 +83,17 @@ respectively. See the *Execution configuration* section of the
 
 The `karma::Executor::Config` class has various methods for the configuration
 setup and lookup as well as presets of commonly used configurations.
-See the executor block [README](executor/README.md) for details.
+See the `executor` block [README](executor/README.md) for details.
 
 ### Logger
 
 The `karma::Logger` struct is a simple wrapper for `std::ostream` providing
-a static method `NoOp`, which returns a wrapper for a no-op `std::stream`.
+a static method `NoOp`, which returns a wrapper for a no-op `std::ostream`,
+i.e. an `std::ostream` which drops the messages instead of printing them.
 
 This struct was introduced to resolve the overloads conflict for the exported
 methods of the `disassembler` block (see the note in the *Disassembler* section
-of the `disassembler` block's [README](disassembler/README.md) for details).
+of the `disassembler` block [README](disassembler/README.md) for details).
 
 The `karma::Logger` struct is accepted as a logger in all the exported methods
 of the `karma` library (see [below](#overloads) for details) and can be
@@ -99,8 +104,8 @@ implicitly constructed from an `std::ostream`.
 ### Variants
 
 All exported methods of the karma library classes have two variants,
-one of which has a `Must` prefix, and the other does not. The former throw
-exceptions (see [below](#exceptions)), while the latter wrap them in
+one of which has a `Must` prefix, and the other does not. The former throws
+exceptions (see [below](#exceptions)), while the latter wraps them in
 a `try-catch` block and print the exception info to `stderr`.
 
 ### Overloads
@@ -110,10 +115,12 @@ parameters. The overloads of these methods are designed so that any optional
 parameters may be skipped and any other may be specified at the same time.
 That is achieved by making all the optional parameters have different types.
 
-The last optional parameter of all the methods is the logger, which allows
-to specify the output stream for logging the compilation, execution and
-disassembling. The default value of this parameter is a no-op logger,
-i.e. a logger that drops the messages and does not print them anywhere.
+The last optional parameter of all the methods is an instance of
+the `Logger` struct, which allows to specify the output stream for
+logging the compilation, the execution and the disassembling processes.
+The default value of this parameter is the Logger returned from 
+the `karma::Logger::NoOp` static method, i.e. a logger that drops the messages
+and does not print them anywhere.
 
 For the list of all supported optional parameters and their default values
 please refer to the `README`s of the respective directories:

@@ -64,10 +64,10 @@ directive position in the program, this class provides an additional `Merge`
 method, which allows to merge two instances of the `Entrypoint` class
 into a single one.
 
-The `Merge` method simply selects the oe specified entrypoint from whichever
-instance specifies it. If both instances specify an entrypoint, a compilation
-error is thrown, which is in accordance to the 'one entry point per program'
-rule of the Karma assembler standard.
+The `Merge` method simply selects the entrypoint from whichever instance
+specifies it. If both instances specify an entrypoint, a compilation error
+is thrown, which is in accordance to the 'one entrypoint per program' rule
+of the Karma assembler standard.
 
 ### Labels
 
@@ -136,14 +136,13 @@ which is not empty.
 
 *Labels*
 
-The labels are combines so that all definitions and usages are preserved, but
-shifted is necessary.
+The labels are combined so that all definitions and usages are preserved, but
+shifted if necessary.
 
 That is, when a Karma assembler file is being compiled, the recorded labels'
 definitions (i.e. the addresses of the commands or constants represented by
 the labels) and the addresses of the commands that use them are relative
 to the start of the code/constants segment of the file.
-
 When combining the labels from all files, the command labels definitions and
 the labels usages positions are shifted (i.e. increased) by the size of
 the combined code segment of the previous files (in the order of inclusion,
@@ -152,12 +151,12 @@ are shifted by the size of the combine constants segment of the previous files.
 
 > **Note**
 >
-> For the constants labels this shift still does not produce the true addresses
-> of the referenced constants. Instead, it produces the addresses relative to
-> the beginning of the constants segment of the resulting Karma executable file.
-> The shift by the total code segment size needed to obtain the absolute
-> addresses of the constants is done on the labels substitution phase (see
-> [below](#toexecdata) for details).
+> For the constants labels this shift still does not produce the absolute
+> addresses of the referenced constants. Instead, it produces the addresses
+> relative to the beginning of the constants segment of the resulting Karma
+> executable file. The shift by the total code segment size needed to obtain
+> the absolute addresses of the constants is done on the labels substitution
+> phase (see [below](#toexecdata) for details).
 >
 > To get the absolute addresses of the constants, an additional shift by
 > the total code segment size is needed. If we were to apply this shift here,
@@ -178,7 +177,7 @@ Potentially the following `MergeAll` usage is allowed:
   the whole group. The same can be done for the group `B`
 
 * Now one may call the `MergeAll` method again, passing it the resulting `Data`
-  class instances for both groups to obtain a new `Data` class instances
+  class instances for both groups to obtain a new `Data` class instance
   representing both groups of files combined
 
 Currently, the described possibility is not used by the `Karma` compiler since
@@ -261,7 +260,7 @@ This method guarantees that no more than one file is simultaneously opened.
 have an invalid syntax.
 
 For details on the file inclusion rules and syntax see
-the *Includes* section of the [docs](../../docs/Karma.pdf).
+the *Include directive* section of the [docs](../../docs/Karma.pdf).
 
 ### File compiler
 
@@ -275,13 +274,15 @@ specifying the file to be compiled.
 When created, a `FileCompiler` class instance can only be used once as
 an rvalue since it provides a single rvalue method `PrepareData`, which
 compiles the Karma assembler file specified in the constructor and returns
-the produced parts of the resulting code and constants segments inside
-an instance of the `Data` class.
+the produced code and constants segments as well as the records of an entrypoint
+and labels (if those are specified in the file) inside an instance of
+the `Data` class.
 
-The `PrepareData` method of this class leaves the bits of the commands' binaries
-which specify the address operand blank in case the address operand was provided
-via a label. Those blanks are filled on the labels substitution phase of
-the compilation process (see [above](#data) for details).
+If the address operand was provided to an `RM` or `J` format command via
+a label, the `PrepareData` method of the `FileCompiler` class leaves
+the operand's bits blank in the respective commands' binaries. Those blanks
+are filled on the labels substitution phase of the compilation process
+(see [above](#data) for details).
 
 ### Impl
 
@@ -320,8 +321,8 @@ parameter specifying the path to the main Karma assembler file to be compiled
 as well as the following optional parameters:
 
 * **Destination**: the path of the resulting Karma executable file, defaults
-  to a file in the same directory as the provided main Karma assembler file with
-  the same name, with the last extension replaced with `.a`
+  to a file in the same directory as the provided main Karma assembler file,
+  with the same name, and with the last extension replaced with `.a`
 
 * **Number of workers**: the number of concurrent workers (threads) used to
   compile the Karma assembler program, defaults to the implementation-defined

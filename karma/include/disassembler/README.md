@@ -81,11 +81,11 @@ This method accepts the data extracted from the executable file
       during runtime (i.e. such that there is no place in the disassembly
       to put a label to represent this address)
 
-* If the conditions above do not apply, assigned a label to represent that
+* If the conditions above do not apply, assigns a label to represent that
   address
 
-* Additionally assigned a predefined `main` label to the entrypoint specified
-  by the provided exec data
+* Additionally, assigns a predefined `main` label to the entrypoint specified
+  by the provided executable file data
 
 The `Labels` class also provides a `TryGetLabel` method, which searches for
 a label assigned to either a constant or a command and returns its name if one
@@ -162,7 +162,7 @@ The public methods of this class do the following:
 > representation (unless it is ignored, in which case a decimal `0` value
 > is written regardless of what the command's binary specified).
 
-* Finishes the disassembled program with an `end main` statement
+* Finishes the disassembled program with an `end main` directive
 
 ### Disassembler
 
@@ -171,16 +171,16 @@ of the `Impl` class. It is also used as the namespace for all the classes
 described above.
 
 The exported methods of the `Disassembler` class accept a single compulsory
-parameter specifying the path to the Karma executable file to be decompiled
+parameter specifying the path to the Karma executable file to be disassembled
 as well as the following optional parameters:
 
-* **Destination**: specifies the destination to output the resulting Karma
-  assembler code and may be provided as:
+* **Destination**: the destination to output the resulting Karma assembler code
+  and, may be provided as:
     * the path of the resulting file
     * an `std::ostream`
 
   Defaults to a file in the same directory as the provided Karma executable
-  file with the same name, with the last extension dropped and replaced
+  file, with the same name, and with the last extension dropped and replaced
   with `_disassembled.krm`
 
 * **Logger**: the output stream to print the disassembling process info,
@@ -202,10 +202,10 @@ as well as the following optional parameters:
 > karma::Disassembler::Disassemble(/* src = */ "main.a",
 >                                  /* dst = */ std::cout);
 > 
-> // need to explicitly wrap the logger in a karma::Logger,
+> // need to explicitly wrap the logger in a karma::Logger struct,
 > // otherwise the overload above will be preferred,
-> // and the provided stream will be used as the output destination
-> // instead of the logs destination
+> // and the provided stream will be used as the output
+> // destination instead of the logs destination
 > karma::Disassembler::Disassemble(/* src = */ "main.a",
 >                                  /* log = */ karma::Logger(std::clog));
 > 

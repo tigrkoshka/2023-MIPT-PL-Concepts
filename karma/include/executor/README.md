@@ -68,8 +68,13 @@ the registers of a Karma computer.
 
 It is used as a centralized access point to both memory and registers, which
 allows for consistent access managing, including access limiting specified by
-the `Config` class provided to the constructor (see [below](#config) for
-details).
+the Karma computer and program execution configurations.
+
+A `Config` class instance is accepted by both the `Storage` class constructor
+and the `PrepareForExecution` method. The former specifies the Karma computer
+configuration, and the latter affects a single Karma program execution.
+For a specific execution, the strictest combination of these configurations
+is used (see [below](#config) for details).
 
 A single `Storage` class instance is created per an `Executor` class instance,
 and then distributed via `std::shared_ptr`s to all the other classes that need
@@ -82,14 +87,14 @@ The `ExecutorBase` class wraps a `Storage` class instance
 (i.e. provides methods with the same signature simply calling the respective
 methods of the `Storage` class).
 
-This class is used as a base class for all other classes implementing
+This class is used as the base class for all other classes implementing
 the Karma computer business logic. It allows for a single `Storage` class
 instance to be created per an `Executor` class instance and then shared between
 all the classes. This could not have been achieved were the other classes
 to be derived directly from the `Storage` class, so such a wrapper and method
 forwarder is needed.
 
-No `ExecutorBase` class instances are crated directly, they are only created as
+No `ExecutorBase` class instances are created directly, they are only created as
 parent instances of [CommonExecutor](#commonexecutor) class instances.
 
 ### CommonExecutor
@@ -97,19 +102,19 @@ parent instances of [CommonExecutor](#commonexecutor) class instances.
 The `CommonExecutor` class is derived from `ExecutorBase` and provides reused
 helper methods as well as methods managing the `flags` register, the stack,
 and the function calls. These methods are then used in the
-[`[RM | RR | RI | J]Executor`](#rm--rr--ri--jexecutor) classes business logics.
+[`[RM|RR|RI|J]Executor`](#rm--rr--ri--jexecutor) classes business logics.
 
-No `CommonExecutor` class instances are crated directly, they are only created
-as parent instances of [`[RM | RR | RI | J]Executor`](#rm--rr--ri--jexecutor)
+No `CommonExecutor` class instances are created directly, they are only created
+as parent instances of [`[RM|RR|RI|J]Executor`](#rm--rr--ri--jexecutor)
 classes instances.
 
 ### \[RM | RR | RI | J\]Executor
 
-These classes are derived from `CommonExecutor` and provide the main part of
-the Karma assembler commands business logic.
+These classes are derived from the `CommonExecutor` class and provide the main
+part of the Karma assembler commands business logic.
 
 Each of these classes represents the commands of the respective format.
-The public interfaces of each of these classes provide a single method `GetMap`,
+The public interface of each of these classes provides a single `GetMap` method,
 which returns a mapping from the command code to an `std::function` implementing
 the command's business logic.
 
@@ -117,8 +122,8 @@ These functions are created as lambda expressions inside the private methods
 of these classes (a private method per Karma assembler command) and capture
 the `this` pointer of the respective class, which provides access
 to the Karma computer address space and registers via the methods of
-the `ExecutorBase` class from which these classes are indirectly derived
-(through `CommonExecutor` class).
+the `ExecutorBase` class from which these classes are indirectly (through
+the `CommonExecutor` class) derived.
 
 Because of the `this` pointer capturing in the lambda expressions, the instances
 of these classes must be preserved while the functions provided by the mapping
@@ -165,7 +170,7 @@ The `Impl` class implements the main part of the Karma computer business logic.
 
 Its constructor is the place where the instance of the `Storage` class is
 created. It also creates the instances of
-the [`[RM | RR | RI | J]Executor`](#rm--rr--ri--jexecutor)
+the [`[RM|RR|RI|J]Executor`](#rm--rr--ri--jexecutor)
 classes and stores the mappings returned by their `GetMap` methods
 (see [above](#rm--rr--ri--jexecutor) for details).
 
@@ -178,13 +183,13 @@ read the data from it via the `Exec::Read` method (see the exec directory
 on a Karma computer, and return the return code of the execution after it is
 finished.
 
-These methods parse each command for its code and arguments and executing
-them with the methods specified by the stored mappings returned from
-the `GetMap` methods of
-the [`[RM | RR | RI | J]Executor`](#rm--rr--ri--jexecutor) classes. They also
-manage the instruction pointer register to proceed to the next executed
-instruction (see the *r15 register* paragraph of the *Karma calling convention*
-section of the [docs](../../docs/Karma.pdf) for details).
+These methods parse each command for its code and arguments and execute those
+commands with the methods specified by the stored mappings returned from
+the `GetMap` methods of the [`[RM|RR|RI|J]Executor`](#rm--rr--ri--jexecutor)
+classes. They also manage the instruction pointer register to proceed to the
+next executed instruction (see the *r15 register* paragraph of
+the *Karma calling convention* section of the [docs](../../docs/Karma.pdf) for
+details).
 
 > **Note**
 >
@@ -229,8 +234,8 @@ Currently, there are two presets: `ExtraStrict` and `Strict`.
 *ExtraStrict*
 
 The `ExtraStrict` preset blocks the read and write access to the stack pointer,
-stack frame pointer and instruction pointer registers (i.e. r13-r15) as well as
-to the code and constants segments of the code.
+stack frame pointer and instruction pointer registers (i.e. `r13`–`r15`)
+as well as to the code and constants segments of the code.
 
 > **Warning**
 >
@@ -243,7 +248,7 @@ to the code and constants segments of the code.
 
 *Strict*
 
-The `Strict` preset is like the `ExtraStrict`, but lifts the read block to
+The `Strict` preset is like `ExtraStrict`, but lifts the read block on
 the stack pointer register and the constants segment, which allows to avoid
 the inconveniences of the `ExtraStrict` preset mentioned in the note above.
 
@@ -252,9 +257,9 @@ to be passed to the `Executor` class constructor.
 
 > **Note**
 >
-> Though recommended, this preset does not provide the default values for
-> the configuration settings, because the [docs](../../docs/Karma.pdf) specify
-> that the default values should indicate no blocks at all.
+> Though recommended, the configuration produced by this preset is not
+> the default one, because the [docs](../../docs/Karma.pdf) specify that
+> the default configuration should indicate no blocks at all.
 
 #### AccessConfig
 
