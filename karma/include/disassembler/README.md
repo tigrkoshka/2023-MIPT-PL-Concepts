@@ -3,7 +3,7 @@
 ## Overview
 
 This directory provides the disassembling part of the public interface
-of the [karma library](..).
+of the [*karma* library](..).
 
 ## Dependencies
 

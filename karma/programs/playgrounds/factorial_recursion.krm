@@ -82,11 +82,17 @@ main:
     push r0 0
     calli fact
 
+    # save the result as a local variable
+    push r0 0
+
     # print the result introduction
     la r1 .result
     prc 0
     push r1 0
     calli print_string
+
+    # restore the result from the stack
+    pop r0 0
 
     # print the resulting value
     prc 0

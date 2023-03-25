@@ -21,7 +21,26 @@
 # file is that semantically the command labels usually represent not a single
 # command that come after them (as they do syntactically), but rather a whole
 # block of a Karma assembler program, be that a function, a cycle, or
-# an execution branch (analogous to if-else blocks in higher level languages)
+# an execution branch (analogous to if-else blocks in higher level languages).
+#
+# The third point to be taken from this file is that before a function call
+# all values that are stored in volatile registers (i.e. not r13-r15)
+# and are planned on being used after the call should be stored to the stack
+# and then retrieved from it after the return from the function, because
+# the values in the volatile registers may be overwritten during the function
+# execution.
+#
+#     Example:  # save the result as a local variable
+#               push r0 0
+#
+#               # print the result introduction
+#               la r1 .result
+#               prc 0
+#               push r1 0
+#               calli print_string
+#
+#               # restore the result from the stack
+#               pop r0 0
 #
 # This file can also be used as a style guide on writing Karma assembler code.
 # The main things to note are:
@@ -130,11 +149,17 @@ main:
     push r0 0
     calli fact
 
+    # save the result as a local variable
+    push r0 0
+
     # print the result introduction
     la r1 .result
     prc 0
     push r1 0
     calli print_string
+
+    # restore the result from the stack
+    pop r0 0
 
     # print the resulting value
     prc 0

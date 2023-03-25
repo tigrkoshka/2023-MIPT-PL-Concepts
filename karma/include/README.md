@@ -2,15 +2,15 @@
 
 ## Overview
 
-The `karma` library provides tools to compile Karma assembler programs and
+The *karma* library provides tools to compile Karma assembler programs and
 execute the resulting Karma executable file as well as to disassemble
 an existing Karma executable file back into the Karma assembler language.
 
-Thus, the karma library consists of three _blocks_: `compiler`, `executor` and
+Thus, the *karma* library consists of three _blocks_: `compiler`, `executor` and
 `disassembler`. Each block consists of a class in the `karma` namespace
 and three types of errors in the `karma::errors::<block_name>` namespace.
 
-Besides those blocks, the `karma` library exports a utility `Logger` struct,
+Besides those blocks, the *karma* library exports a utility `Logger` struct,
 which can be used when calling the exported methods defined in each block
 (see [below](#logger) for details).
 
@@ -96,14 +96,14 @@ methods of the `disassembler` block (see the note in the *Disassembler* section
 of the `disassembler` block [README](disassembler/README.md) for details).
 
 The `karma::Logger` struct is accepted as a logger in all the exported methods
-of the `karma` library (see [below](#overloads) for details) and can be
+of the *karma* library (see [below](#overloads) for details) and can be
 implicitly constructed from an `std::ostream`.
 
 ## Methods
 
 ### Variants
 
-All exported methods of the karma library classes have two variants,
+All exported methods of the *karma* library classes have two variants,
 one of which has a `Must` prefix, and the other does not. The former throws
 exceptions (see [below](#exceptions)), while the latter wraps them in
 a `try-catch` block and print the exception info to `stderr`.
@@ -118,7 +118,7 @@ That is achieved by making all the optional parameters have different types.
 The last optional parameter of all the methods is an instance of
 the `Logger` struct, which allows to specify the output stream for
 logging the compilation, the execution and the disassembling processes.
-The default value of this parameter is the Logger returned from 
+The default value of this parameter is the Logger returned from
 the `karma::Logger::NoOp` static method, i.e. a logger that drops the messages
 and does not print them anywhere.
 
@@ -148,9 +148,9 @@ Each block defines three new types of exceptions:
 * `karma::<block_name>::Error` is the base type for two other
   exceptions types of each block and is not usually thrown directly.
   An exception of *precisely* this type indicates an unexpected bug
-  in the `karma` library and should be reported as an issue.
+  in the *karma* library and should be reported as an issue.
 
-* `karma::<block_name>::InternalError` indicates a bug in the `karma` library
+* `karma::<block_name>::InternalError` indicates a bug in the *karma* library
   that was caught by internal checks, and usually provides informative debug
   info. If thrown, should be reported as an issue with the debug info
   attachment.
@@ -163,7 +163,7 @@ It is guaranteed that any exception thrown by the methods in a `karma`
 library block is either of type `karma::errors::<block_name>::Error` or of
 a type derived from it.
 
-Therefore, an exception-safe usage of the `karma` library method with
+Therefore, an exception-safe usage of the *karma* library method with
 the `Must` prefix looks somewhat like this:
 
 ```c++
@@ -189,7 +189,7 @@ try {
 }
 ```
 
-An exception-safe `karma` library usage either only uses exported methods
+An exception-safe *karma* library usage either only uses exported methods
 without the `Must` prefix, or looks somewhat like this:
 
 ```c++

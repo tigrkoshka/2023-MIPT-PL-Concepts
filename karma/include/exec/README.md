@@ -3,11 +3,11 @@
 ## Overview
 
 This directory provides the tools to read/write a Karma executable file,
-which are used throughout the [karma library](..).
+which are used throughout the [*karma* library](..).
 
 It also provides the types of the errors caused by an attempt to read a Karma
 executable file, which are a part of the public interface of the
-[karma library](..).
+[*karma* library](..).
 
 ## Dependencies
 

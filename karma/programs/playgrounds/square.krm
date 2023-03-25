@@ -56,11 +56,19 @@ main:
     # a pair of registers (r1,r0) contains the square
     mul r0 r2 0
 
+    # save the result as a local variable
+    push r1 0
+    push r0 0
+
     # print the result introduction
     la r2 .result
     prc 0
     push r2 0
     calli print_string
+
+    # restore the result from the stack
+    pop r0 0
+    pop r1 0
 
     # print the uint64 value from (r1,r0) to stdout
     prc 0

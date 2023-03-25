@@ -3,15 +3,15 @@
 ## Overview
 
 This directory provides basic utility functions used throughout
-the [karma library](..).
+the [*karma* library](..).
 
-It also provides the base type for all [karma library](..) errors,
-which is a part of the public interface of the [karma library](..).
+It also provides the base type for all [*karma* library](..) errors,
+which is a part of the public interface of the [*karma* library](..).
 
 ## Dependencies
 
 Both the declarations and the definitions of the symbols from this directory
-are not dependent on any other parts of the [karma library](..).
+are not dependent on any other parts of the [*karma* library](..).
 
 ## Symbols
 
