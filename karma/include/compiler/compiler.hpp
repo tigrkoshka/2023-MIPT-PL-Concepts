@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstddef>  // for size_t
-#include <ostream>  // for ostream
 #include <string>   // for string
 
 #include "utils/error.hpp"
+#include "utils/logger.hpp"
 
 namespace karma {
 
@@ -50,31 +50,30 @@ class Compiler {
     static void MustCompile(const std::string& src,
                             const std::string& dst = "",
                             size_t n_workers       = kDefaultWorkers,
-                            std::ostream& log      = no_op_logger);
+                            Logger log             = Logger::NoOp());
     static void Compile(const std::string& src,
                         const std::string& dst = "",
                         size_t n_workers       = kDefaultWorkers,
-                        std::ostream& log      = no_op_logger);
+                        Logger log             = Logger::NoOp());
 
     static void MustCompile(const std::string& src,
                             const std::string& dst,
-                            std::ostream& log);
+                            Logger log);
     static void Compile(const std::string& src,
                         const std::string& dst,
-                        std::ostream& log);
+                        Logger log);
 
     static void MustCompile(const std::string& src,
                             size_t n_workers,
-                            std::ostream& log = no_op_logger);
+                            Logger log = Logger::NoOp());
     static void Compile(const std::string& src,
                         size_t n_workers,
-                        std::ostream& log = no_op_logger);
+                        Logger log = Logger::NoOp());
 
-    static void MustCompile(const std::string& src, std::ostream& log);
-    static void Compile(const std::string& src, std::ostream& log);
+    static void MustCompile(const std::string& src, Logger log);
+    static void Compile(const std::string& src, Logger log);
 
    private:
-    static std::ostream& no_op_logger;
     static const size_t kDefaultWorkers;
 };
 

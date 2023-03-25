@@ -31,7 +31,10 @@ karma::
         Disassembler::                   // disassembler block
         |       MustDisassemble
         |       Disassemble
-        |       
+        |
+        Logger::
+        |       NoOp
+        |
         errors::
                 Error
                 |
@@ -78,6 +81,19 @@ The `karma::Executor::Config` class has various methods for the configuration
 setup and lookup as well as presets of commonly used configurations.
 See the executor block [README](executor/README.md) for details.
 
+### Logger
+
+The `karma::Logger` struct is a simple wrapper for `std::ostream` providing
+a static method `NoOp`, which returns a wrapper for a no-op `std::stream`.
+
+This struct was introduced to resolve the overloads conflict for the exported
+methods of the `disassembler` block (see the note in the *Disassembler* section
+of the `disassembler` block's [README](disassembler/README.md) for details).
+
+The `karma::Logger` struct is accepted as a logger in all the exported methods
+of the `karma` library (see [below](#overloads) for details) and can be
+implicitly constructed from an `std::ostream`.
+
 ## Methods
 
 ### Variants
@@ -101,8 +117,8 @@ i.e. a logger that drops the messages and does not print them anywhere.
 
 For the list of all supported optional parameters and their default values
 please refer to the `README`s of the respective directories:
-[compiler](compiler/README.md), [executor](executor/README.md) and
-[disassembler](disassembler/README.md).
+[`compiler`](compiler/README.md), [`executor`](executor/README.md) and
+[`disassembler`](disassembler/README.md).
 
 ### Return values
 

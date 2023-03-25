@@ -203,7 +203,9 @@ as well as the following optional parameters:
 >                                  /* dst = */ std::cout);
 > 
 > // need to explicitly wrap the logger in a karma::Logger,
-> // otherwise the overload above will be preferred
+> // otherwise the overload above will be preferred,
+> // and the provided stream will be used as the output destination
+> // instead of the logs destination
 > karma::Disassembler::Disassemble(/* src = */ "main.a",
 >                                  /* log = */ karma::Logger(std::clog));
 > 

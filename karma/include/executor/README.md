@@ -295,15 +295,17 @@ as well as the following optional parameters:
 > configuration is meant to be used, i.e. all the following calls are valid:
 >
 > ```c++
-> karma::Executor::Execute(/* exec_path = */ "main.a",
->                          /* config = */ karma::Executor::Config::Strict(),
->                          /* log = */ std::clog);
+> karma::Executor executor; 
+>
+> executor.Execute(/* exec_path = */ "main.a",
+>                  /* config = */ karma::Executor::Config::Strict(),
+>                  /* log = */ std::clog);
 > 
-> karma::Executor::Execute(/* exec_path = */ "main.a",
->                          /* config = */ karma::Executor::Config::Strict());
+> executor.Execute(/* exec_path = */ "main.a",
+>                  /* config = */ karma::Executor::Config::Strict());
 > 
-> karma::Executor::Execute(/* exec_path = */ "main.a",
->                          /* log = */ std::clog);
+> executor.Execute(/* exec_path = */ "main.a",
+>                  /* log = */ std::clog);
 > 
-> karma::Executor::Execute(/* exec_path = */ "main.a");
+> executor.Execute(/* exec_path = */ "main.a");
 > ```

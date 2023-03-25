@@ -16,13 +16,11 @@ int main() {
     karma::Compiler::Compile(Assembler(filepath), std::clog);
 
     karma::Executor executor(karma::Executor::Config::Strict());
-    uint32_t ret_code = executor.Execute(Exec(filepath));
+    uint32_t ret_code = executor.Execute(Exec(filepath), std::clog);
 
     std::cout << "executable returned code " << ret_code << std::endl;
 
-    karma::Disassembler::Disassemble(/* src = */ Exec(filepath),
-                                     /* dst = */ std::cout,
-                                     /* log = */ std::clog);
+    karma::Disassembler::Disassemble(Exec(filepath), karma::Logger(std::clog));
 
     return 0;
 }

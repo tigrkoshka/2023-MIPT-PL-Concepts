@@ -8,40 +8,36 @@
 
 namespace karma {
 
-void Disassembler::MustDisassemble(const std::string& exec_path,
+void Disassembler::MustDisassemble(const std::string& src,
                                    const std::string& dst,
-                                   std::ostream& log) {
-    Impl::MustDisassemble(exec_path, dst, log);
+                                   Logger log) {
+    Impl::MustDisassemble(src, dst, log.log);
 }
 
-void Disassembler::Disassemble(const std::string& exec_path,
+void Disassembler::Disassemble(const std::string& src,
                                const std::string& dst,
-                               std::ostream& log) {
-    Impl::Disassemble(exec_path, dst, log);
+                               Logger log) {
+    Impl::Disassemble(src, dst, log.log);
 }
 
-void Disassembler::MustDisassemble(const std::string& exec_path,
+void Disassembler::MustDisassemble(const std::string& src,
                                    std::ostream& out,
-                                   std::ostream& log) {
-    Impl::MustDisassemble(exec_path, out, log);
+                                   Logger log) {
+    Impl::MustDisassemble(src, out, log.log);
 }
 
-void Disassembler::Disassemble(const std::string& exec_path,
+void Disassembler::Disassemble(const std::string& src,
                                std::ostream& out,
-                               std::ostream& log) {
-    Impl::Disassemble(exec_path, out, log);
+                               Logger log) {
+    Impl::Disassemble(src, out, log.log);
 }
 
-void Disassembler::MustDisassemble(const std::string& exec_path,
-                                   std::ostream& log) {
-    MustDisassemble(exec_path, "", log);
+void Disassembler::MustDisassemble(const std::string& src, Logger log) {
+    MustDisassemble(src, "", log);
 }
 
-void Disassembler::Disassemble(const std::string& exec_path,
-                               std::ostream& log) {
-    MustDisassemble(exec_path, "", log);
+void Disassembler::Disassemble(const std::string& src, Logger log) {
+    MustDisassemble(src, "", log);
 }
-
-std::ostream& Disassembler::no_op_logger = detail::utils::logger::no_op;
 
 }  // namespace karma

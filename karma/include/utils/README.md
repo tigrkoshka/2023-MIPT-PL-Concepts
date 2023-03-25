@@ -20,7 +20,10 @@ are not dependent on any other parts of the [karma library](..).
 ```c++
 karma::
         errors::       // error.hpp
-                Error
+        |       Error
+        |
+        Logger::       // logger.hpp
+                NoOp
 ```
 
 ### Karma internal
@@ -32,8 +35,6 @@ karma::
                         concepts::                   // concepts.hpp
                         |        IntOrFloat
                         |        Hashable
-                        logger::                     // logger.hpp
-                        |        no_op
                         map::                        // map.hpp
                         |        Revert
                         strings::                    // strings.hpp

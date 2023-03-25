@@ -327,12 +327,12 @@ void Disassembler::Impl::DisassembleCode(const Segment& code,
 ///                          Disassembling to stream                         ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
+void Disassembler::Impl::DisassembleImpl(const std::string& src,
                                          std::ostream& out,
                                          std::ostream& log) {
     log << "[disassembler]: reading the executable file" << std::endl;
 
-    Exec::Data data = Exec::Read(exec_path);
+    Exec::Data data = Exec::Read(src);
 
     log << "[disassembler]: successfully read the executable file" << std::endl;
 
@@ -360,13 +360,13 @@ void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
     log << "[disassembler]: successfully disassembled commands" << std::endl;
 }
 
-void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
+void Disassembler::Impl::MustDisassemble(const std::string& src,
                                          std::ostream& out,
                                          std::ostream& log) {
     using std::string_literals::operator""s;
 
     try {
-        DisassembleImpl(exec_path, out, log);
+        DisassembleImpl(src, out, log);
     } catch (const errors::disassembler::Error& e) {
         log << "[disassembler]: error: " << e.what() << std::endl;
         throw e;
@@ -389,11 +389,11 @@ void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
     }
 }
 
-void Disassembler::Impl::Disassemble(const std::string& exec_path,
+void Disassembler::Impl::Disassemble(const std::string& src,
                                      std::ostream& out,
                                      std::ostream& log) {
     try {
-        MustDisassemble(exec_path, out, log);
+        MustDisassemble(src, out, log);
     } catch (const errors::Error& e) {
         std::cerr << e.what() << std::endl;
     }
@@ -403,12 +403,12 @@ void Disassembler::Impl::Disassemble(const std::string& exec_path,
 ///                           Disassembling to file                          ///
 ////////////////////////////////////////////////////////////////////////////////
 
-void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
+void Disassembler::Impl::DisassembleImpl(const std::string& src,
                                          const std::string& dst,
                                          std::ostream& log) {
     std::string real_dst = dst;
     if (real_dst.empty()) {
-        std::filesystem::path src_path(exec_path);
+        std::filesystem::path src_path(src);
 
         std::filesystem::path dst_path = src_path.parent_path();
         dst_path /= src_path.stem();
@@ -421,16 +421,16 @@ void Disassembler::Impl::DisassembleImpl(const std::string& exec_path,
         throw InternalError::FailedToOpen(real_dst);
     }
 
-    return DisassembleImpl(exec_path, out, log);
+    return DisassembleImpl(src, out, log);
 }
 
-void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
+void Disassembler::Impl::MustDisassemble(const std::string& src,
                                          const std::string& dst,
                                          std::ostream& log) {
     using std::string_literals::operator""s;
 
     try {
-        DisassembleImpl(exec_path, dst, log);
+        DisassembleImpl(src, dst, log);
     } catch (const errors::disassembler::Error& e) {
         log << "[disassembler]: error: " << e.what() << std::endl;
         throw e;
@@ -453,11 +453,11 @@ void Disassembler::Impl::MustDisassemble(const std::string& exec_path,
     }
 }
 
-void Disassembler::Impl::Disassemble(const std::string& exec_path,
+void Disassembler::Impl::Disassemble(const std::string& src,
                                      const std::string& dst,
                                      std::ostream& log) {
     try {
-        MustDisassemble(exec_path, dst, log);
+        MustDisassemble(src, dst, log);
     } catch (const errors::Error& e) {
         std::cerr << e.what() << std::endl;
     }

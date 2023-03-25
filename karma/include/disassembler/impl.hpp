@@ -40,28 +40,28 @@ class Disassembler::Impl : detail::utils::traits::Static {
                                 std::ostream& out,
                                 const Labels& labels);
 
-    static void DisassembleImpl(const std::string& exec_path,
+    static void DisassembleImpl(const std::string& src,
                                 std::ostream& out,
                                 std::ostream& log);
 
-    static void DisassembleImpl(const std::string& exec_path,
+    static void DisassembleImpl(const std::string& src,
                                 const std::string& dst,
                                 std::ostream& log);
 
    public:
-    static void MustDisassemble(const std::string& exec_path,
+    static void MustDisassemble(const std::string& src,
                                 std::ostream& out,
                                 std::ostream& log);
 
-    static void Disassemble(const std::string& exec_path,
+    static void Disassemble(const std::string& src,
                             std::ostream& out,
                             std::ostream& log);
 
-    static void MustDisassemble(const std::string& exec_path,
+    static void MustDisassemble(const std::string& src,
                                 const std::string& dst,
                                 std::ostream& log);
 
-    static void Disassemble(const std::string& exec_path,
+    static void Disassemble(const std::string& src,
                             const std::string& dst,
                             std::ostream& log);
 };

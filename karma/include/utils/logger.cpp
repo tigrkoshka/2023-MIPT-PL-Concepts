@@ -1,18 +1,18 @@
 #include "logger.hpp"
 
-#include <ostream>    // for ostream
-#include <streambuf>  // for streambuf
+#include <ostream>  // for ostream
 
-namespace karma::detail::utils::logger {
+namespace karma {
 
-class NoOpStreamBuff : public std::streambuf {
-   public:
-    int overflow(int num) override {
-        return num;
-    }
-};
+int Logger::NoOpStreamBuff::overflow(int num) {
+    return num;
+}
 
-NoOpStreamBuff no_op_stream_buff;
-std::ostream no_op(&no_op_stream_buff);
+Logger Logger::NoOp() {
+    return {no_op_stream};
+}
 
-}  // namespace karma::detail::utils::logger
+Logger::NoOpStreamBuff Logger::no_op_stream_buff = NoOpStreamBuff();
+std::ostream Logger::no_op_stream = std::ostream(&no_op_stream_buff);
+
+}  // namespace karma

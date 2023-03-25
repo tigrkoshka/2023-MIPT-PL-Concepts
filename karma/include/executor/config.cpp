@@ -206,36 +206,48 @@ size_t Config::MinStackAddress() const {
 
 // NOLINTNEXTLINE(fuchsia-overloaded-operator)
 std::ostream& operator<<(std::ostream& out, const Config& config) {
-    out << "write blocked registers: {";
-    for (arch::Register reg : config.write_.blocked_registers_) {
-        if (!arch::kRegisterNumToName.contains(reg)) {
-            continue;
+    auto print_registers = [&out](const Config::Registers& registers) {
+        out << "{";
+
+        bool comma = false;
+        for (arch::Register reg : registers) {
+            if (!arch::kRegisterNumToName.contains(reg)) {
+                continue;
+            }
+
+            if (std::exchange(comma, true)) {
+                out << ", ";
+            }
+
+            out << arch::kRegisterNumToName.at(reg);
         }
 
-        out << arch::kRegisterNumToName.at(reg) << ", ";
-    }
-    out << "}" << std::endl;
+        out << "}";
+    };
 
-    out << "read-write blocked registers: {";
-    for (arch::Register reg : config.read_write_.blocked_registers_) {
-        if (!arch::kRegisterNumToName.contains(reg)) {
-            continue;
-        }
+    out << "registers blocks:" << std::endl;
 
-        out << arch::kRegisterNumToName.at(reg) << ", ";
-    }
-    out << "}" << std::endl;
+    out << "    write:      ";
+    print_registers(config.write_.blocked_registers_);
+    out << std::endl;
 
-    out << std::boolalpha << "code segment blocks: " << std::endl
-        << "    write:      " << config.write_.code_segment_blocked_
-        << std::endl
-        << "    read-write: " << config.read_write_.code_segment_blocked_
-        << std::endl
-        << "constants segment blocks: " << std::endl
-        << "    write:      " << config.write_.constants_segment_blocked_
-        << std::endl
-        << "    read-write: " << config.read_write_.constants_segment_blocked_
+    out << "    read-write: ";
+    print_registers(config.read_write_.blocked_registers_);
+    out << std::endl;
+
+    // remember formatting flags before setting boolalpha
+    std::ios_base::fmtflags old_flags = out.setf(std::ios_base::boolalpha);
+
+    out << "code segment blocks:" << std::endl
+        << "    write: " << config.CodeSegmentIsWriteBlocked() << std::endl
+        << "    read:  " << config.CodeSegmentIsReadWriteBlocked() << std::endl
+        << "constants segment blocks:" << std::endl
+        << "    write: " << config.ConstantsSegmentIsWriteBlocked() << std::endl
+        << "    read:  " << config.ConstantsSegmentIsReadWriteBlocked()
         << std::endl;
+
+    // restore flags
+    out.flags(old_flags);
 
     out << "stack: ";
     if (!config.max_stack_size_) {

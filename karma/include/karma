@@ -4,3 +4,5 @@
 #include "disassembler/disassembler.hpp"
 #include "executor/config.hpp"
 #include "executor/executor.hpp"
+#include "utils/error.hpp"
+#include "utils/logger.hpp"

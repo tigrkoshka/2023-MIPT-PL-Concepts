@@ -7,6 +7,7 @@
 #include <string>    // for string
 
 #include "utils/error.hpp"
+#include "utils/logger.hpp"
 
 namespace karma {
 
@@ -65,18 +66,17 @@ class Executor {
 
     ReturnCode MustExecute(const std::string& exec_path,
                            const Config&,
-                           std::ostream& log = no_op_logger);
+                           Logger log = Logger::NoOp());
     ReturnCode Execute(const std::string& exec_path,
                        const Config&,
-                       std::ostream& log = no_op_logger);
+                       Logger log = Logger::NoOp());
 
     ReturnCode MustExecute(const std::string& exec_path,
-                           std::ostream& log = no_op_logger);
+                           Logger log = Logger::NoOp());
     ReturnCode Execute(const std::string& exec_path,
-                       std::ostream& log = no_op_logger);
+                       Logger log = Logger::NoOp());
 
    private:
-    static std::ostream& no_op_logger;
     std::unique_ptr<Impl> impl_;
 };
 

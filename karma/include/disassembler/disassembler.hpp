@@ -4,6 +4,7 @@
 #include <string>   // for string
 
 #include "utils/error.hpp"
+#include "utils/logger.hpp"
 
 namespace karma {
 
@@ -41,30 +42,25 @@ class Disassembler {
     Disassembler& operator=(Disassembler&&) = delete;
 
    public:
-    static void MustDisassemble(const std::string& exec_path,
+    static void MustDisassemble(const std::string& src,
                                 const std::string& dst = "",
-                                std::ostream& log      = no_op_logger);
+                                Logger log             = Logger::NoOp());
 
-    static void Disassemble(const std::string& exec_path,
+    static void Disassemble(const std::string& src,
                             const std::string& dst = "",
-                            std::ostream& log      = no_op_logger);
+                            Logger log             = Logger::NoOp());
 
-    static void MustDisassemble(const std::string& exec_path,
+    static void MustDisassemble(const std::string& src,
                                 std::ostream& out,
-                                std::ostream& log = no_op_logger);
+                                Logger log = Logger::NoOp());
 
-    static void Disassemble(const std::string& exec_path,
+    static void Disassemble(const std::string& src,
                             std::ostream& out,
-                            std::ostream& log = no_op_logger);
+                            Logger log = Logger::NoOp());
 
-    static void MustDisassemble(const std::string& exec_path,
-                                std::ostream& log);
+    static void MustDisassemble(const std::string& src, Logger log);
 
-    static void Disassemble(const std::string& exec_path,
-                            std::ostream& log);
-
-   private:
-    static std::ostream& no_op_logger;
+    static void Disassemble(const std::string& src, Logger log);
 };
 
 namespace errors::disassembler {
