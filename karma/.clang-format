@@ -16,10 +16,8 @@ DerivePointerAlignment: false
 PackConstructorInitializers: Never
 PointerAlignment: Left
 RequiresClausePosition: OwnLine
-# TODO: uncomment when clang-format@16 (in llvm@16) is released
-#RequiresExpressionIndentation: OuterScope
+RequiresExpressionIndentation: OuterScope
 SortIncludes: CaseSensitive
 SortUsingDeclarations: false
 InsertTrailingCommas: Wrapped
-# TODO: uncomment when clang-format@16 (in llvm@16) is released
-#InsertNewlineAtEOF: true
+InsertNewlineAtEOF: true

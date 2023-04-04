@@ -9,15 +9,9 @@ namespace karma::detail::utils::concepts {
 template <typename T>
 concept IntOrFloat = std::integral<T> || std::floating_point<T>;
 
-// TODO: turn formatting on when clang-format@16 (in llvm@16) is released
-// clang-format does not yet properly support concepts definition
-// clang-format off
-
 template <typename T>
 concept Hashable = requires(T val) {
     { std::hash<T>{}(val) } -> std::convertible_to<std::size_t>;
 };
-
-// clang-format on
 
 }  // namespace karma::detail::utils::concepts
