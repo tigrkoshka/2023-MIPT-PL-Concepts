@@ -60,7 +60,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SYSCALL() {
             }
 
             case syscall::PRINTDOUBLE: {
-                arch::TwoWords words = GetTwoRegisters(args.reg);
+                const arch::TwoWords words = GetTwoRegisters(args.reg);
                 std::cout << std::bit_cast<arch::Double>(words) << std::flush;
                 break;
             }
@@ -134,7 +134,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::NOT() {
 
 Executor::RIExecutor::Operation Executor::RIExecutor::SHLI() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Word rhs = ImmWord(args);
+        const arch::Word rhs = ImmWord(args);
         CheckBitwiseShiftRHS(rhs, cmd::SHLI);
         WReg(args.reg) <<= rhs;
         return {};
@@ -143,7 +143,7 @@ Executor::RIExecutor::Operation Executor::RIExecutor::SHLI() {
 
 Executor::RIExecutor::Operation Executor::RIExecutor::SHRI() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Word rhs = ImmWord(args);
+        const arch::Word rhs = ImmWord(args);
         CheckBitwiseShiftRHS(rhs, cmd::SHRI);
         WReg(args.reg) >>= rhs;
         return {};

@@ -39,13 +39,13 @@ void Executor::CommonExecutor::Divide(arch::TwoWords lhs,
         throw ExecutionError::DivisionByZero(lhs, rhs);
     }
 
-    arch::TwoWords quotient = lhs / rhs;
+    const arch::TwoWords quotient = lhs / rhs;
 
     if (quotient > static_cast<arch::TwoWords>(arch::kMaxWord)) {
         throw ExecutionError::QuotientOverflow(lhs, rhs);
     }
 
-    arch::TwoWords remainder = lhs % rhs;
+    const arch::TwoWords remainder = lhs % rhs;
 
     WReg(recv)     = static_cast<arch::Word>(quotient);
     WReg(recv + 1) = static_cast<arch::Word>(remainder);
@@ -78,7 +78,7 @@ void Executor::CommonExecutor::PrepareCall() {
 
 arch::Address Executor::CommonExecutor::Call(args::Address callee) {
     // remember the return address to return from this function
-    arch::Address ret = RReg(arch::kInstructionRegister, kInternalUse);
+    const arch::Address ret = RReg(arch::kInstructionRegister, kInternalUse);
 
     // push the return address to the stack
     Push(ret);

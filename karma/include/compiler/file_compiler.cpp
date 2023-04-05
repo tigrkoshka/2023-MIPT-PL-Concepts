@@ -139,7 +139,7 @@ void Compiler::FileCompiler::ProcessUint64Constant() {
         size_t pos{};
 
         // there is no function specifically for uint32_t values
-        consts::UInt64 value = std::stoull(curr_token_, &pos, 0);
+        const consts::UInt64 value = std::stoull(curr_token_, &pos, 0);
 
         if (pos != curr_token_.size()) {
             throw CompileError::InvalidConstValue(consts::UINT64,
@@ -159,7 +159,7 @@ void Compiler::FileCompiler::ProcessDoubleConstant() {
     try {
         size_t pos{};
 
-        consts::Double value = std::stod(curr_token_, &pos);
+        const consts::Double value = std::stod(curr_token_, &pos);
 
         if (pos != curr_token_.size()) {
             throw CompileError::InvalidConstValue(consts::DOUBLE,
@@ -302,13 +302,13 @@ cmd::CodeFormat Compiler::FileCompiler::GetCodeFormat() const {
         throw CompileError::UnknownCommand({curr_token_, Where()});
     }
 
-    cmd::Code code = cmd::kNameToCode.at(curr_token_);
+    const cmd::Code code = cmd::kNameToCode.at(curr_token_);
 
     if (!cmd::kCodeToFormat.contains(code)) {
         throw InternalError::FormatNotFound(code, Where());
     }
 
-    cmd::Format format = cmd::kCodeToFormat.at(code);
+    const cmd::Format format = cmd::kCodeToFormat.at(code);
 
     return {code, format};
 }
@@ -341,7 +341,7 @@ args::Immediate Compiler::FileCompiler::GetImmediate(size_t bit_size) const {
 
     try {
         size_t pos{};
-        Int operand = std::stoi(curr_token_, &pos, 0);
+        const Int operand = std::stoi(curr_token_, &pos, 0);
 
         if (pos != curr_token_.size()) {
             throw CompileError::ImmediateNotANumber({curr_token_, Where()});
@@ -379,7 +379,7 @@ args::Address Compiler::FileCompiler::GetAddress(bool is_entrypoint) {
         //
         // we do not use std::stoul, because we want to give a separate
         // compile error if a user specified a negative value as an address
-        int32_t operand = std::stoi(curr_token_, &pos, 0);
+        const int32_t operand = std::stoi(curr_token_, &pos, 0);
 
         if (pos != curr_token_.size()) {
             // this means that there is a number in the beginning of word,
@@ -430,7 +430,7 @@ args::RMArgs Compiler::FileCompiler::GetRMArgs() {
         throw CompileError::RMNoRegister(Where());
     }
 
-    args::Register reg = GetRegister();
+    const args::Register reg = GetRegister();
 
     if (!file_->GetToken(curr_token_)) {
         throw CompileError::RMNoAddress(Where());
@@ -444,13 +444,13 @@ args::RRArgs Compiler::FileCompiler::GetRRArgs() {
         throw CompileError::RRNoReceiver(Where());
     }
 
-    args::Register recv = GetRegister();
+    const args::Register recv = GetRegister();
 
     if (!file_->GetToken(curr_token_)) {
         throw CompileError::RRNoSource(Where());
     }
 
-    args::Register src = GetRegister();
+    const args::Register src = GetRegister();
 
     if (!file_->GetToken(curr_token_)) {
         throw CompileError::RRNoModifier(Where());
@@ -464,7 +464,7 @@ args::RIArgs Compiler::FileCompiler::GetRIArgs() {
         throw CompileError::RINoRegister(Where());
     }
 
-    args::Register reg = GetRegister();
+    const args::Register reg = GetRegister();
 
     if (!file_->GetToken(curr_token_)) {
         throw CompileError::RINoImmediate(Where());
@@ -569,7 +569,7 @@ Compiler::Data Compiler::FileCompiler::PrepareData() && {
     // process the rest of the file
     while (file_->NextLine()) {
         ProcessCurrLine();
-    };
+    }
 
     if (latest_word_was_label_) {
         throw CompileError::FileEndsWithLabel(

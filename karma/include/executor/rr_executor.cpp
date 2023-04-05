@@ -62,7 +62,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::DIV() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::SHL() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Word rhs = RHSWord(args);
+        const arch::Word rhs = RHSWord(args);
         CheckBitwiseShiftRHS(rhs, cmd::SHL);
         WReg(args.recv) <<= rhs;
         return {};
@@ -71,7 +71,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::SHL() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::SHR() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Word rhs = RHSWord(args);
+        const arch::Word rhs = RHSWord(args);
         CheckBitwiseShiftRHS(rhs, cmd::SHR);
         WReg(args.recv) >>= rhs;
         return {};
@@ -109,7 +109,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::ITOD() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::DTOI() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Double dbl = RHSDouble(args);
+        const arch::Double dbl = RHSDouble(args);
         if (dbl >= static_cast<arch::Double>(arch::kMaxWord)) {
             throw ExecutionError::DtoiOverflow(dbl);
         }
@@ -123,7 +123,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::DTOI() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::ADDD() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Double res = LHSDouble(args) + RHSDouble(args);
+        const arch::Double res = LHSDouble(args) + RHSDouble(args);
         PutTwoRegisters(std::bit_cast<arch::TwoWords>(res), args.recv);
         return {};
     };
@@ -131,7 +131,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::ADDD() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::SUBD() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Double res = LHSDouble(args) - RHSDouble(args);
+        const arch::Double res = LHSDouble(args) - RHSDouble(args);
         PutTwoRegisters(std::bit_cast<arch::TwoWords>(res), args.recv);
         return {};
     };
@@ -139,7 +139,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::SUBD() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::MULD() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Double res = LHSDouble(args) * RHSDouble(args);
+        const arch::Double res = LHSDouble(args) * RHSDouble(args);
         PutTwoRegisters(std::bit_cast<arch::TwoWords>(res), args.recv);
         return {};
     };
@@ -147,8 +147,8 @@ Executor::RRExecutor::Operation Executor::RRExecutor::MULD() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::DIVD() {
     return [this](Args args) -> MaybeReturnCode {
-        arch::Double lhs = LHSDouble(args);
-        arch::Double rhs = RHSDouble(args);
+        const arch::Double lhs = LHSDouble(args);
+        const arch::Double rhs = RHSDouble(args);
 
         if (rhs == 0) {
             throw ExecutionError::DivisionByZero(lhs, rhs);
@@ -189,7 +189,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::LOADR() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::LOADR2() {
     return [this](Args args) -> MaybeReturnCode {
-        args::Address address = RHSWord(args);
+        const args::Address address = RHSWord(args);
 
         WReg(args.recv)     = RMem(address);
         WReg(args.recv + 1) = RMem(address + 1);
@@ -206,7 +206,7 @@ Executor::RRExecutor::Operation Executor::RRExecutor::STORER() {
 
 Executor::RRExecutor::Operation Executor::RRExecutor::STORER2() {
     return [this](Args args) -> MaybeReturnCode {
-        args::Address address = RHSWord(args);
+        const args::Address address = RHSWord(args);
 
         WMem(address)     = RReg(args.recv);
         WMem(address + 1) = RReg(args.recv + 1);

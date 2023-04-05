@@ -28,6 +28,9 @@ namespace exec = detail::specs::exec;
 ///                                Prepare data                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
+// TODO: seems like a bug in clang-tidy
+//       (this function is declared static in .hpp)
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 void Compiler::Impl::CompileRoutine(std::span<const std::unique_ptr<File>> src,
                                     std::span<Data> dst,
                                     std::ostream& log) {
@@ -61,11 +64,14 @@ Exec::Data Compiler::Impl::PrepareExecData(const Files& files,
     log << "[compiler]: compiling with " << n_workers << " workers"
         << std::endl;
 
+    // TODO: seems like a bug in clang-tidy
+    // NOLINTBEGIN(cppcoreguidelines-init-variables)
     std::vector<Data> files_data(files.size());
     std::vector<std::thread> workers;
+    // NOLINTEND(cppcoreguidelines-init-variables)
 
-    size_t rough_n_files_per_worker = files.size() / n_workers;
-    size_t n_workers_more_files     = files.size() % n_workers;
+    const size_t rough_n_files_per_worker = files.size() / n_workers;
+    const size_t n_workers_more_files     = files.size() % n_workers;
 
     using DiffT      = Files::iterator::difference_type;
     auto files_start = files.begin();
@@ -105,16 +111,16 @@ void Compiler::Impl::CompileImpl(const std::string& src,
                                  std::ostream& log) {
     log << "[compiler]: parsing includes" << std::endl;
 
-    Files files = IncludesManager().GetFiles(src);
+    const Files files = IncludesManager().GetFiles(src);
 
     log << "[compiler]: successfully parsed includes, obtained " << files.size()
         << " files" << std::endl;
 
-    Exec::Data data = PrepareExecData(files, n_workers, log);
+    const Exec::Data data = PrepareExecData(files, n_workers, log);
 
     std::string exec_path = dst;
     if (exec_path.empty()) {
-        std::filesystem::path src_path(src);
+        const std::filesystem::path src_path(src);
 
         std::filesystem::path dst_path = src_path.parent_path();
         dst_path /= src_path.stem().replace_extension(exec::kDefaultExtension);

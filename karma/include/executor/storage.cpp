@@ -30,7 +30,8 @@ void Executor::Storage::PrepareForExecution(const Exec::Data& exec_data,
 }
 
 void Executor::Storage::CheckPushAllowed() {
-    arch::Address curr_stack_address = registers_.at(arch::kStackRegister);
+    const arch::Address curr_stack_address =
+        registers_.at(arch::kStackRegister);
 
     if (curr_stack_address > arch::kMemorySize) {
         // precaution in case the stack is unbounded, but has somehow

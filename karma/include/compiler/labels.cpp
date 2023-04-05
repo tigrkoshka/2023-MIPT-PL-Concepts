@@ -4,7 +4,6 @@
 #include <cstddef>   // for size_t
 #include <optional>  // for optional
 #include <string>    // for string
-#include <utility>   // for move
 
 #include "compiler/compiler.hpp"
 #include "specs/syntax.hpp"
@@ -52,14 +51,14 @@ void Compiler::Labels::Merge(Labels&& other,
     }
 
     for (const auto& [label, usages] : other.usages_) {
-        for (size_t usage : usages) {
+        for (const size_t usage : usages) {
             usages_[label].push_back(usage + code_shift);
         }
     }
 
     for (const auto& [label, usage_sample] : other.usage_samples_) {
         if (!usage_samples_.contains(label)) {
-            usage_samples_[label] = std::move(usage_sample);
+            usage_samples_[label] = usage_sample;
         }
     }
 }
@@ -74,7 +73,7 @@ void Compiler::Labels::CheckLabel(const std::string& label,
         throw CompileError::LabelStartsWithDigit({label, pos});
     }
 
-    for (char symbol : label) {
+    for (const char symbol : label) {
         if (!syntax::IsAllowedLabelChar(symbol)) {
             throw CompileError::InvalidLabelCharacter(symbol, {label, pos});
         }

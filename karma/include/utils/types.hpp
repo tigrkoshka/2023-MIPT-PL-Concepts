@@ -67,8 +67,8 @@ uint64_t Join(uint32_t low, uint32_t high);
  */
 template <std::unsigned_integral Uint>
 std::make_signed_t<Uint> GetSignedValue(Uint bits, size_t bit_size) {
-    using Int            = std::make_signed_t<Uint>;
-    size_t orig_bit_size = sizeof(Uint) * kByteSize;
+    using Int                  = std::make_signed_t<Uint>;
+    const size_t orig_bit_size = sizeof(Uint) * kByteSize;
 
     if (bit_size > orig_bit_size) {
         std::ostringstream ss;
@@ -137,8 +137,8 @@ std::make_signed_t<Uint> GetSignedValue(Uint bits, size_t bit_size) {
  */
 template <std::signed_integral Int>
 std::make_unsigned_t<Int> GetUnsignedBits(Int value, size_t bit_size) {
-    using Uint           = std::make_unsigned_t<Int>;
-    size_t orig_bit_size = sizeof(Int) * kByteSize;
+    using Uint                 = std::make_unsigned_t<Int>;
+    const size_t orig_bit_size = sizeof(Int) * kByteSize;
 
     if (bit_size > orig_bit_size) {
         std::ostringstream ss;

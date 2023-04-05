@@ -40,7 +40,7 @@ void Compiler::Data::SubstituteLabels() {
         }
 
         auto definition = static_cast<arch::Address>(*definition_opt);
-        for (size_t cmd_idx : usages) {
+        for (const size_t cmd_idx : usages) {
             // the address always occupies the last
             // bits of the command binary
             code_[cmd_idx] |= definition;

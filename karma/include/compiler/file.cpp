@@ -46,7 +46,7 @@ utils::Generator<const Compiler::File*> Compiler::File::ToRoot() const {
     for (const File* curr = this; curr != nullptr; curr = curr->parent_) {
         co_yield curr;
     }
-};
+}
 
 void Compiler::File::Open() {
     if (stream_.is_open()) {
@@ -100,9 +100,9 @@ bool Compiler::File::GetToken(std::string& token) {
     return static_cast<bool>(curr_line_ >> token);
 }
 
+// TODO: seems like a bug in clang-tidy
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 std::string Compiler::File::WhereNoLine() const {
-    std::ostringstream where;
-
     auto files    = ToRoot();
     auto get_path = [](const File* file) -> std::string {
         return file->Path();
@@ -115,8 +115,13 @@ std::string Compiler::File::WhereNoLine() const {
     //       that does exactly what is needed, but we do not
     //       want to use experimental features, so here is a workaround
 
-    std::ostream_iterator<std::string> dst{where, kIncludedFromSep.data()};
-    std::ranges::copy(pipeline, dst);
+    // TODO: seems like a bug in clang-tidy,
+    //       cannot declare const, because then an iterator cannot be created
+    // NOLINTNEXTLINE(misc-const-correctness)
+    std::ostringstream where;
+    std::ranges::copy(
+        pipeline,
+        std::ostream_iterator<std::string>{where, kIncludedFromSep.data()});
 
     // remove the trailing separator
     std::string res = where.str();

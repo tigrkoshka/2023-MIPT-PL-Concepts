@@ -73,14 +73,14 @@ appear, which is the binary of the playground program.
 
 ### Compilers
 
-The building was tested on Apple Clang 14.0.3 and GCC 12.2.0.
+The building was tested on Clang 16.0.0 and GCC 12.2.0.
 
 There is one specific feature of the *karma* library that only works when
 compiling with GCC. That feature is the logging messages on multithreaded Karma
-assembler program compilation. When compiled with Apple Clang those messages
+assembler program compilation. When compiled with Clang those messages
 may become interfered with one another, while a compilation with GCC prevents
 that interference. That is due to the fact that the Clang version of STL has not
-yet (as of March 2023) supported the C++20 `syncstream` library, which is used
+yet (as of April 2023) supported the C++20 `syncstream` library, which is used
 to resolve the messages interference issue when compiling with GCC.
 
 ## C++ features used

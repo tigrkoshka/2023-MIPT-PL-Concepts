@@ -13,6 +13,7 @@
 
 namespace karma {
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 class Compiler::Data : detail::utils::traits::NonCopyableMovable {
    private:
     friend class FileCompiler;

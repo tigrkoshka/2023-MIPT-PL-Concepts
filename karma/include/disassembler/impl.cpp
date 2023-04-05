@@ -35,7 +35,7 @@ namespace syntax = detail::specs::syntax;
 
 std::string Disassembler::Impl::GetUint32Value(const Segment& constants,
                                                size_t& pos) {
-    size_t start = pos;
+    const size_t start = pos;
 
     if (pos >= constants.size()) {
         throw DisassembleError::ConstantNoValue(start,
@@ -49,7 +49,7 @@ std::string Disassembler::Impl::GetUint32Value(const Segment& constants,
 
 std::string Disassembler::Impl::GetUint64Value(const Segment& constants,
                                                size_t& pos) {
-    size_t start = pos;
+    const size_t start = pos;
 
     if (pos >= constants.size()) {
         throw DisassembleError::ConstantNoValue(start,
@@ -58,7 +58,7 @@ std::string Disassembler::Impl::GetUint64Value(const Segment& constants,
                                                 constants.size());
     }
 
-    arch::Word low = constants[pos++];
+    const arch::Word low = constants[pos++];
 
     if (pos >= constants.size()) {
         throw DisassembleError::ConstantNoValue(start,
@@ -67,16 +67,14 @@ std::string Disassembler::Impl::GetUint64Value(const Segment& constants,
                                                 constants.size());
     }
 
-    arch::Word high = constants[pos++];
+    const arch::Word high = constants[pos++];
 
-    consts::UInt64 value = utils::types::Join(low, high);
-
-    return std::to_string(value);
+    return std::to_string(utils::types::Join(low, high));
 }
 
 std::string Disassembler::Impl::GetDoubleValue(const Segment& constants,
                                                size_t& pos) {
-    size_t start = pos;
+    const size_t start = pos;
 
     if (pos >= constants.size()) {
         throw DisassembleError::ConstantNoValue(start,
@@ -85,7 +83,7 @@ std::string Disassembler::Impl::GetDoubleValue(const Segment& constants,
                                                 constants.size());
     }
 
-    arch::Word low = constants[pos++];
+    const arch::Word low = constants[pos++];
 
     if (pos >= constants.size()) {
         throw DisassembleError::ConstantNoValue(start,
@@ -94,7 +92,7 @@ std::string Disassembler::Impl::GetDoubleValue(const Segment& constants,
                                                 constants.size());
     }
 
-    arch::Word high = constants[pos++];
+    const arch::Word high = constants[pos++];
 
     auto value = std::bit_cast<consts::Double>(utils::types::Join(low, high));
 
@@ -106,7 +104,7 @@ std::string Disassembler::Impl::GetDoubleValue(const Segment& constants,
 
 std::string Disassembler::Impl::GetCharValue(const Segment& constants,
                                              size_t& pos) {
-    size_t start = pos;
+    const size_t start = pos;
 
     if (pos >= constants.size()) {
         throw DisassembleError::ConstantNoValue(start,
@@ -115,7 +113,7 @@ std::string Disassembler::Impl::GetCharValue(const Segment& constants,
                                                 constants.size());
     }
 
-    std::string character{static_cast<consts::Char>(constants[pos++])};
+    const std::string character{static_cast<consts::Char>(constants[pos++])};
 
     return consts::kCharQuote + utils::strings::Escape(character) +
            consts::kCharQuote;
@@ -123,7 +121,7 @@ std::string Disassembler::Impl::GetCharValue(const Segment& constants,
 
 std::string Disassembler::Impl::GetStringValue(const Segment& constants,
                                                size_t& pos) {
-    size_t start = pos;
+    const size_t start = pos;
 
     if (pos >= constants.size()) {
         throw DisassembleError::ConstantNoValue(start,
@@ -166,11 +164,11 @@ void Disassembler::Impl::DisassembleConstants(const Segment& constants,
             throw DisassembleError::UnknownConstantType(type);
         }
 
-        auto curr_address         = static_cast<arch::Address>(code_size + pos);
-        std::string current_label = labels.RecordConstantLabel(curr_address);
+        auto curr_address = static_cast<arch::Address>(code_size + pos);
+        const std::string current_label =
+            labels.RecordConstantLabel(curr_address);
 
-        std::string value{};
-
+        std::string value;
         switch (type) {
             case consts::UINT32:
                 value = GetUint32Value(constants, pos);
@@ -217,7 +215,7 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command,
                                                  const Labels& labels) {
     std::ostringstream result;
 
-    cmd::Code code = cmd::GetCode(command);
+    const cmd::Code code = cmd::GetCode(command);
 
     if (!cmd::kCodeToFormat.contains(code)) {
         throw DisassembleError::UnknownCommand(code);
@@ -229,9 +227,9 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command,
 
     result << cmd::kCodeToName.at(code) << " ";
 
-    switch (cmd::Format format = cmd::kCodeToFormat.at(code)) {
+    switch (const cmd::Format format = cmd::kCodeToFormat.at(code)) {
         case cmd::RM: {
-            args::RMArgs args = cmd::parse::RM(command);
+            const args::RMArgs args = cmd::parse::RM(command);
 
             result << GetRegister(args.reg) << " ";
 
@@ -247,7 +245,7 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command,
         }
 
         case cmd::RR: {
-            args::RRArgs args = cmd::parse::RR(command);
+            const args::RRArgs args = cmd::parse::RR(command);
 
             result << GetRegister(args.recv) << " ";
             result << GetRegister(args.src) << " ";
@@ -261,7 +259,7 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command,
         }
 
         case cmd::RI: {
-            args::RIArgs args = cmd::parse::RI(command);
+            const args::RIArgs args = cmd::parse::RI(command);
 
             result << GetRegister(args.reg) << " ";
 
@@ -281,7 +279,7 @@ std::string Disassembler::Impl::GetCommandString(cmd::Bin command,
                 break;
             }
 
-            args::JArgs args = cmd::parse::J(command);
+            const args::JArgs args = cmd::parse::J(command);
 
             if (std::optional<std::string> label =
                     labels.TryGetLabel(args.addr)) {
@@ -332,7 +330,7 @@ void Disassembler::Impl::DisassembleImpl(const std::string& src,
                                          std::ostream& log) {
     log << "[disassembler]: reading the executable file" << std::endl;
 
-    Exec::Data data = Exec::Read(src);
+    const Exec::Data data = Exec::Read(src);
 
     log << "[disassembler]: successfully read the executable file" << std::endl;
 
@@ -408,7 +406,7 @@ void Disassembler::Impl::DisassembleImpl(const std::string& src,
                                          std::ostream& log) {
     std::string real_dst = dst;
     if (real_dst.empty()) {
-        std::filesystem::path src_path(src);
+        const std::filesystem::path src_path(src);
 
         std::filesystem::path dst_path = src_path.parent_path();
         dst_path /= src_path.stem();

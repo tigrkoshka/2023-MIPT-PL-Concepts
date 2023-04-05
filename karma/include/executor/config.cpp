@@ -210,7 +210,7 @@ std::ostream& operator<<(std::ostream& out, const Config& config) {
         out << "{";
 
         bool comma = false;
-        for (arch::Register reg : registers) {
+        for (const arch::Register reg : registers) {
             if (!arch::kRegisterNumToName.contains(reg)) {
                 continue;
             }
@@ -236,7 +236,7 @@ std::ostream& operator<<(std::ostream& out, const Config& config) {
     out << std::endl;
 
     // remember formatting flags before setting boolalpha
-    std::ios_base::fmtflags old_flags = out.setf(std::ios_base::boolalpha);
+    const std::ios_base::fmtflags old = out.setf(std::ios_base::boolalpha);
 
     out << "code segment blocks:" << std::endl
         << "    write: " << config.CodeSegmentIsWriteBlocked() << std::endl
@@ -247,7 +247,7 @@ std::ostream& operator<<(std::ostream& out, const Config& config) {
         << std::endl;
 
     // restore flags
-    out.flags(old_flags);
+    out.flags(old);
 
     out << "stack: ";
     if (!config.max_stack_size_) {

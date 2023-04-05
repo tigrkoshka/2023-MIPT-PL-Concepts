@@ -31,8 +31,8 @@ class Exec : detail::utils::traits::Static {
              std::vector<detail::specs::arch::Word> constants)
             : entrypoint(entrypoint),
               initial_stack(initial_stack),
-              code(code),
-              constants(constants) {}
+              code(std::move(code)),
+              constants(std::move(constants)) {}
 
         detail::specs::arch::Address entrypoint{0};
         detail::specs::arch::Address initial_stack{

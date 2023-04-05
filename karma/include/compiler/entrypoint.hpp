@@ -10,6 +10,7 @@
 
 namespace karma {
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 class Compiler::Entrypoint : detail::utils::traits::NonCopyableMovable {
    private:
     using InternalError = errors::compiler::InternalError::Builder;

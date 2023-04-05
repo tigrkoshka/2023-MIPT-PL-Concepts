@@ -183,6 +183,7 @@ class Generator {
         : handle_(handle) {}
 
     Generator() = default;
+    // NOLINTNEXTLINE(hicpp-use-equals-default,modernize-use-equals-default)
     ~Generator() {
         handle_.destroy();
     }

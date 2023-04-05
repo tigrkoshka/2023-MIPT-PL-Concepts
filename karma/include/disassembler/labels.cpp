@@ -30,8 +30,8 @@ void Disassembler::Labels::PrepareCommandLabels(const Exec::Data& data) {
     // use ordered set for the resulting labels indices
     // to be the same order as they appear in the code
     std::set<arch::Address> command_labels_addresses;
-    for (cmd::Bin command : data.code) {
-        cmd::Code code = cmd::GetCode(command);
+    for (const cmd::Bin command : data.code) {
+        const cmd::Code code = cmd::GetCode(command);
 
         if (!cmd::kCodeToFormat.contains(code)) {
             throw DisassembleError::UnknownCommand(code);
@@ -39,7 +39,7 @@ void Disassembler::Labels::PrepareCommandLabels(const Exec::Data& data) {
 
         switch (cmd::kCodeToFormat.at(code)) {
             case cmd::RM: {
-                arch::Address addr = cmd::parse::RM(command).addr;
+                const arch::Address addr = cmd::parse::RM(command).addr;
 
                 if (addr < code_end_address) {
                     command_labels_addresses.insert(addr);
@@ -48,7 +48,7 @@ void Disassembler::Labels::PrepareCommandLabels(const Exec::Data& data) {
             }
 
             case cmd::J: {
-                arch::Address addr = cmd::parse::J(command).addr;
+                const arch::Address addr = cmd::parse::J(command).addr;
 
                 // prevent unnecessary labels in RET and
                 if (!cmd::kJIgnoreAddress.contains(code) &&
@@ -66,7 +66,7 @@ void Disassembler::Labels::PrepareCommandLabels(const Exec::Data& data) {
 
     command_labels_[data.entrypoint] = kMainLabel;
 
-    for (arch::Address address : command_labels_addresses) {
+    for (const arch::Address address : command_labels_addresses) {
         // the entrypoint has a special label
         if (address == data.entrypoint) {
             continue;

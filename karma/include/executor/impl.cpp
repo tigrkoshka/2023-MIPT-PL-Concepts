@@ -21,7 +21,7 @@ Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
         throw ExecutionError::UnknownCommand(code);
     }
 
-    switch (cmd::Format format = cmd::kCodeToFormat.at(code)) {
+    switch (const cmd::Format format = cmd::kCodeToFormat.at(code)) {
         case cmd::RM: {
             if (!rm_map_.contains(code)) {
                 throw InternalError::UnprocessedCommandForFormat(format, code);
@@ -69,7 +69,7 @@ Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec_path,
                                                  std::ostream& log) {
     log << "[executor]: reading the executable file" << std::endl;
 
-    Exec::Data data = Exec::Read(exec_path);
+    const Exec::Data data = Exec::Read(exec_path);
 
     log << "[executor]: successfully read the executable file" << std::endl;
 
@@ -82,7 +82,7 @@ Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec_path,
     log << "[executor]: executing the program" << std::endl;
 
     while (true) {
-        arch::Address curr_address =
+        const arch::Address curr_address =
             storage_->RReg(arch::kInstructionRegister, true);
 
         if (curr_address >= arch::kMemorySize) {

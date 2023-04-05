@@ -18,10 +18,13 @@ ${CMAKE_CXX_FLAGS} \
 -fsanitize=undefined \
 ")
 
-# silence the "file has no symbols" warning for those .hpp files,
-# for which the respective .cpp file is empty
-SET(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
-SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+# llvm-ranlib does not have -no_warning_for_no_symbols option
+if (NOT CMAKE_RANLIB MATCHES "llvm")
+    # silence the "file has no symbols" warning for those .hpp files,
+    # for which the respective .cpp file is empty
+    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+endif ()
 
 # enable including files by their relative path to the current directory
 # instead of by the relative path to the file where the inclusion happens
@@ -38,7 +41,7 @@ add_subdirectory(disassembler)
 # add the karma STATIC library target
 add_library(karma STATIC karma)
 
-# link the OBJECT sub-libraries to the karma SOURCE library
+# link the OBJECT sub-libraries to the karma STATIC library
 # see https://cmake.org/pipermail/cmake/2018-September/068263.html
 # for explanation on combining several libraries into one
 target_link_libraries(karma compiler executor disassembler exec specs utils)

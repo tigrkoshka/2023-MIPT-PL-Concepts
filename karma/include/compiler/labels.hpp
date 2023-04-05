@@ -13,6 +13,7 @@
 
 namespace karma {
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 class Compiler::Labels : detail::utils::traits::NonCopyableMovable {
    private:
     using CompileError = errors::compiler::CompileError::Builder;

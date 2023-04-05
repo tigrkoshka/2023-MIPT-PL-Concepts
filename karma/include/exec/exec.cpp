@@ -61,12 +61,12 @@ void Exec::Write(const Data& data, const std::string& exec_path) {
     binary << std::string(exec::kCodeSegmentPos - exec::kMetaInfoEndPos, '0');
 
     // code
-    for (cmd::Bin command : data.code) {
+    for (const cmd::Bin command : data.code) {
         write_word(command);
     }
 
     // constants
-    for (cmd::Bin command : data.constants) {
+    for (const cmd::Bin command : data.constants) {
         write_word(command);
     }
 }
@@ -104,6 +104,8 @@ Exec::Data Exec::Read(const std::string& exec_path) {
     binary.seekg(0);
 
     auto read_word = [&binary]() -> arch::Word {
+        // the value is modified via ptr
+        // NOLINTNEXTLINE(misc-const-correctness)
         arch::Word word{};
         binary.read(std::bit_cast<char*>(&word), 4);
         return word;
@@ -128,8 +130,8 @@ Exec::Data Exec::Read(const std::string& exec_path) {
     Data data;
 
     // read the code and constants segments sizes (in bytes)
-    size_t code_size   = read_word();
-    size_t consts_size = read_word();
+    const size_t code_size   = read_word();
+    const size_t consts_size = read_word();
 
     // check that the exec file size equals the size specified by the header
     if (exec_size != exec::kHeaderSize + code_size + consts_size) {
@@ -146,7 +148,7 @@ Exec::Data Exec::Read(const std::string& exec_path) {
     data.initial_stack = read_word();
 
     // read the target processor ID
-    arch::Word processor_id = read_word();
+    const arch::Word processor_id = read_word();
     if (processor_id != exec::kProcessorID) {
         throw ExecFileError::Builder::InvalidProcessorID(processor_id,
                                                          exec_path);

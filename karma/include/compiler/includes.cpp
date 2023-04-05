@@ -17,6 +17,8 @@ std::vector<std::filesystem::path> Compiler::IncludesManager::GetIncludes(
     const std::unique_ptr<File>& file) {
     std::string token;
 
+    // TODO: seems like a bug in clang-tidy
+    // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
     std::vector<std::filesystem::path> includes;
 
     file->Open();
@@ -43,7 +45,7 @@ std::vector<std::filesystem::path> Compiler::IncludesManager::GetIncludes(
 void Compiler::IncludesManager::ProcessFileIncludes(
     const std::unique_ptr<File>& file) {
     for (const auto& rel_include : GetIncludes(file)) {
-        std::filesystem::path include = std::filesystem::weakly_canonical(
+        const std::filesystem::path include = std::filesystem::weakly_canonical(
             file->Path().parent_path() / rel_include);
 
         if (all_includes_.contains(include)) {
@@ -61,7 +63,8 @@ void Compiler::IncludesManager::ProcessFileIncludes(
 
 std::vector<std::unique_ptr<Compiler::File>>
 Compiler::IncludesManager::GetFiles(const std::string& root) && {
-    std::filesystem::path abs_root = std::filesystem::weakly_canonical(root);
+    const std::filesystem::path abs_root =
+        std::filesystem::weakly_canonical(root);
 
     all_includes_.insert(abs_root);
     auto root_file = std::make_unique<File>(abs_root);
