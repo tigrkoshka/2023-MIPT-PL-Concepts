@@ -1,0 +1,43 @@
+#pragma once
+
+#include "auto_object.hpp"
+#include "exception.hpp"
+#include "object_manager.hpp"
+#include "utils.hpp"
+
+#define TRY                                                 \
+    do {                                                    \
+        except::details::Node exception;                    \
+        except::details::Push(&exception);                  \
+        except::details::ObjectManager::RecordCheckpoint(); \
+                                                            \
+        volatile except::details::Status status;            \
+        status = static_cast<except::details::Status>(      \
+            setjmp(static_cast<int*>(exception.buf)));      \
+                                                            \
+        if (status == except::details::Status::NO_EXCEPTION) {
+// clang-format off
+
+#define CATCH(___exception_type)                            \
+        } else if (exception.type == (___exception_type)) { \
+            status = except::details::Status::HANDLED;
+
+#define CATCH_ALL \
+        } else {  \
+            status = except::details::Status::HANDLED;
+
+#define ENDTRY                                                  \
+        }                                                       \
+        if (status == except::details::Status::NO_EXCEPTION) {  \
+            except::details::ObjectManager::PopCheckpoint();    \
+            except::details::Pop();                             \
+        } else if (status == except::details::Status::RAISED) { \
+            except::details::Throw(exception.type,              \
+                                   exception.file,              \
+                                   exception.line);             \
+        }                                                       \
+    } while(false)
+// clang-format on
+
+#define THROW(___exception_type) \
+    except::details::Throw(___exception_type, __FILE__, __LINE__)
