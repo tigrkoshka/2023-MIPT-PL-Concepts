@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstddef>  // for size_t
-#include <string>   // for string
+#include <source_location>  // for source_location
+#include <string>           // for string
 
 namespace except {
 
@@ -10,8 +10,7 @@ std::string Message(Type type);
 
 struct Exception {
     Type type{};
-    const char* file{nullptr};
-    size_t line{0};
+    std::source_location source_location;
 };
 
 }  // namespace except

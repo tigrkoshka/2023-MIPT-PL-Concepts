@@ -1,7 +1,10 @@
 #include "exception_stack.hpp"
 
-#include <optional>  // for optional, nullopt
-#include <stack>     // for stack
+#include <csetjmp>          // for longjmp
+#include <iostream>         // for cerr, endl
+#include <optional>         // for optional, nullopt
+#include <source_location>  // for source_location
+#include <stack>            // for stack
 
 #include "object_manager.hpp"
 #include "throw.hpp"
@@ -19,11 +22,10 @@ int* Node::Buff() {
     return static_cast<int*>(buf_);
 }
 
-void Node::Raise(Type type, const char* file, size_t line) {
-    exception_.type = type;
-    exception_.file = file;
-    exception_.line = line;
-    status_ = Status::RAISED;
+void Node::Raise(Type type, std::source_location source_location) {
+    exception_.type            = type;
+    exception_.source_location = source_location;
+    status_                    = Status::RAISED;
 }
 
 bool Node::Handle(std::optional<Type> type) {
@@ -33,6 +35,10 @@ bool Node::Handle(std::optional<Type> type) {
 
     status_ = Status::HANDLED;
     return true;
+}
+
+void Node::Rethrow() const {
+    Throw(exception_.type, exception_.source_location);
 }
 
 void Node::Finalize() {
@@ -47,7 +53,7 @@ void Node::Finalize() {
             // do nothing
             break;
         case Status::RAISED:
-            Throw(exception_.type, exception_.file, exception_.line);
+            Rethrow();
     }
 }
 
@@ -55,7 +61,7 @@ bool Node::IsFinalized() const {
     return finalized_;
 }
 
-std::optional<Node*> Node::TryGetCurrent() {
+std::optional<Node*> TryGetCurrent() {
     if (stack.empty()) {
         return std::nullopt;
     }

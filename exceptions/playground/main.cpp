@@ -33,7 +33,7 @@ void Bar() {
 
     TRY {
         AutoObject<NonTrivial> object2;
-        THROW(except::Type::A);
+        Throw(except::Type::A);
     }
     CATCH(except::Type::A) {
         std::cout << "caught exception A in Bar" << std::endl;
@@ -42,7 +42,7 @@ void Bar() {
 
         TRY {
             Baz();
-            THROW(except::Type::A);
+            Throw(except::Type::A);
         }
         CATCH(except::Type::A) {
             std::cout << "caught inner exception A in Bar" << std::endl;
@@ -51,21 +51,20 @@ void Bar() {
             AutoObject<NonTrivial> object3;
         }
 
-        THROW(except::Type::C);
+        Throw(except::Type::C);
     }
 }
 
 void Foo() {
     TRY {
-        Baz();
-        Bar();
+        Throw(except::Type::A);
     }
     CATCH(except::Type::B) {
         std::cout << "caught exception B in Foo" << std::endl;
 
         TRY {
             Baz();
-            THROW(except::Type::A);
+            Throw(except::Type::A);
         }
         CATCH(except::Type::A) {
             std::cout << "caught inner exception A in Foo" << std::endl;
@@ -78,7 +77,7 @@ void Foo() {
         std::cout << "caught unknown exception in Foo" << std::endl;
     }
 
-    THROW(except::Type::D);
+    Throw(except::Type::D);
 }
 
 int main() {

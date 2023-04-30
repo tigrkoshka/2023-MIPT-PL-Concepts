@@ -1,8 +1,9 @@
 #pragma once
 
-#include <csetjmp>   // for jump_buf
-#include <optional>  // for optional
-#include <stack>     // for stack
+#include <csetjmp>          // for jump_buf
+#include <optional>         // for optional
+#include <source_location>  // for source_location
+#include <stack>            // for stack
 
 #include "exception.hpp"
 
@@ -17,12 +18,11 @@ class Node {
 
     int* Buff();
 
-    void Raise(Type type, const char* file, size_t line);
+    void Raise(Type type, std::source_location);
     bool Handle(std::optional<Type> = std::nullopt);
+    void Rethrow() const;
     void Finalize();
     [[nodiscard]] bool IsFinalized() const;
-
-    static std::optional<Node*> TryGetCurrent();
 
    private:
     std::jmp_buf buf_{};
@@ -32,5 +32,7 @@ class Node {
     volatile Status status_ = Status::NO_EXCEPTION;
     bool finalized_{false};
 };
+
+std::optional<Node*> TryGetCurrent();
 
 }  // namespace except::detail

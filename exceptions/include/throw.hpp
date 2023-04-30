@@ -1,12 +1,8 @@
 #pragma once
 
-#include <cstddef>  // for size_t
-#include <string>   // for string
+#include <source_location>  // for source_location
 
 #include "exception.hpp"
 
-namespace except::detail {
-
-void Throw(Type type, const char* file, size_t line);
-
-}  // namespace except::detail
+void Throw(except::Type type,
+           std::source_location = std::source_location::current());

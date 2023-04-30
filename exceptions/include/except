@@ -1,23 +1,18 @@
 #pragma once
 
 #include "auto_object.hpp"
-#include "exception.hpp"
 #include "exception_stack.hpp"
-#include "object_manager.hpp"
 #include "throw.hpp"
 
-#define TRY                                                               \
-    for (except::detail::Node node; !node.IsFinalized(); node.Finalize()) \
-        if (setjmp(node.Buff()) == 0)
+#define TRY                                      \
+    for (except::detail::Node ___exception_node; \
+         !___exception_node.IsFinalized();       \
+         ___exception_node.Finalize())           \
+        if (setjmp(___exception_node.Buff()) == 0)
 
-#define CATCH(___exception_type) else if (node.Handle((___exception_type)))
+#define CATCH(___exception_type) \
+    else if (___exception_node.Handle((___exception_type)))
 
-#define CATCH_ALL else if (node.Handle())
+#define CATCH_ALL else if (___exception_node.Handle())
 
-#define THROW(___exception_type) \
-    except::detail::Throw(___exception_type, __FILE__, __LINE__)
-
-#define RETHROW                                \
-    except::detail::Throw(node.exception.type, \
-                          node.exception.file, \
-                          node.exception.line)
+#define RETHROW ___exception_node.Rethrow();
