@@ -1,6 +1,6 @@
 #include "exception.hpp"
 
-#include <string>  // for string
+#include <string>   // for string
 
 namespace except {
 
@@ -14,6 +14,9 @@ std::string Message(Type type) {
             return "C";
         case Type::D:
             return "D";
+        default:
+            // never reach here
+            return "unknown";
     }
 }
 

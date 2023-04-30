@@ -7,8 +7,6 @@
 
 namespace except::detail {
 
-enum class Status { NO_EXCEPTION, RAISED, HANDLED };
-
-void Throw(Type type, std::string file, size_t line);
+void Throw(Type type, const char* file, size_t line);
 
 }  // namespace except::detail

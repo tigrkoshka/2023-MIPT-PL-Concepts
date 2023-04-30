@@ -6,43 +6,18 @@
 #include "object_manager.hpp"
 #include "throw.hpp"
 
-#define TRY                                                \
-    do {                                                   \
-        except::detail::Node node;                         \
-        except::detail::stack.push(&node);                 \
-        except::detail::ObjectManager::RecordCheckpoint(); \
-                                                           \
-        volatile except::detail::Status status;            \
-        status = static_cast<except::detail::Status>(      \
-            setjmp(static_cast<int*>(node.buf)));          \
-                                                           \
-        if (status == except::detail::Status::NO_EXCEPTION) {
+#define TRY                                                               \
+    for (except::detail::Node node; !node.IsFinalized(); node.Finalize()) \
+        if (setjmp(node.Buff()) == 0)
 
-// clang-format off
+#define CATCH(___exception_type) else if (node.Handle((___exception_type)))
 
-#define CATCH(___exception_type)                                 \
-        } else if (node.exception.type == (___exception_type)) { \
-            status = except::detail::Status::HANDLED;
+#define CATCH_ALL else if (node.Handle())
 
-#define CATCH_ALL \
-        } else {  \
-            status = except::detail::Status::HANDLED;
+#define THROW(___exception_type) \
+    except::detail::Throw(___exception_type, __FILE__, __LINE__)
 
 #define RETHROW                                \
     except::detail::Throw(node.exception.type, \
                           node.exception.file, \
                           node.exception.line)
-
-#define ENDTRY                                                 \
-        }                                                      \
-        if (status == except::detail::Status::NO_EXCEPTION) {  \
-            except::detail::ObjectManager::PopCheckpoint();    \
-            except::detail::stack.pop();                       \
-        } else if (status == except::detail::Status::RAISED) { \
-            RETHROW;                                           \
-        }                                                      \
-    } while(false)
-// clang-format on
-
-#define THROW(___exception_type) \
-    except::detail::Throw(___exception_type, __FILE__, __LINE__)

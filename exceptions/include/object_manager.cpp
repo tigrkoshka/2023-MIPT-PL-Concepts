@@ -2,6 +2,9 @@
 
 #include <stack>  // for stack
 
+// TODO: delete
+#include <cassert> // for assert
+
 namespace except::detail {
 
 bool ObjectManager::TopIsCheckpoint() {

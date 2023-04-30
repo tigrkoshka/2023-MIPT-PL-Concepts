@@ -4,8 +4,7 @@
 #include <cstddef>    // for size_t
 #include <exception>  // for terminate
 #include <iostream>   // for cerr, endl
-#include <string>     // for string
-#include <utility>    // for move
+#include <optional>   // for optional
 
 #include "exception.hpp"
 #include "exception_stack.hpp"
@@ -13,25 +12,17 @@
 
 namespace except::detail {
 
-void Throw(Type type, std::string file, size_t line) {
-    if (stack.empty()) {
-        std::cerr << "uncaught exception of type " << Message(type)
-                  << " at line " << line << " of file " << file << std::endl;
+void Throw(Type type, const char* file, size_t line) {
+    std::optional<Node*> current_opt = Node::TryGetCurrent();
+    if (!current_opt) {
+        std::cerr << "uncaught exception " << Message(type) << " at line "
+                  << line << " of file " << file << std::endl;
         std::terminate();
     }
 
-    Node* current = stack.top();
-    stack.pop();
-
-    current->exception.type = type;
-    current->exception.file = std::move(file);
-    current->exception.line = line;
-
     ObjectManager::UnwindToCheckpoint();
-
-    // NOLINTNEXTLINE(cert-err52-cpp)
-    std::longjmp(static_cast<int*>(current->buf),
-                 static_cast<int>(Status::RAISED));
+    current_opt.value()->Raise(type, file, line);
+    std::longjmp(current_opt.value()->Buff(), 1); // NOLINT(cert-err52-cpp)
 }
 
 }  // namespace except::detail

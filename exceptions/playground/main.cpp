@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <except>
+#include "../include/except"
 
 struct NonTrivial {
     NonTrivial()
@@ -50,11 +50,9 @@ void Bar() {
             Baz();
             AutoObject<NonTrivial> object3;
         }
-        ENDTRY;
 
         THROW(except::Type::C);
     }
-    ENDTRY;
 }
 
 void Foo() {
@@ -75,12 +73,10 @@ void Foo() {
             Baz();
             AutoObject<NonTrivial> object3;
         }
-        ENDTRY;
     }
     CATCH_ALL {
         std::cout << "caught unknown exception in Foo" << std::endl;
     }
-    ENDTRY;
 
     THROW(except::Type::D);
 }

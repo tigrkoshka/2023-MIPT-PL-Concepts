@@ -10,8 +10,8 @@ std::string Message(Type type);
 
 struct Exception {
     Type type{};
-    std::string file;
-    size_t line{};
+    const char* file{nullptr};
+    size_t line{0};
 };
 
 }  // namespace except
