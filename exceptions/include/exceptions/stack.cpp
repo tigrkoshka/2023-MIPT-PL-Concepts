@@ -1,4 +1,4 @@
-#include "exception_stack.hpp"
+#include "stack.hpp"
 
 #include <csetjmp>          // for longjmp
 #include <iostream>         // for cerr, endl
@@ -6,8 +6,7 @@
 #include <source_location>  // for source_location
 #include <stack>            // for stack
 
-#include "object_manager.hpp"
-#include "throw.hpp"
+#include "objects/manager.hpp"
 
 namespace except::detail {
 
@@ -22,13 +21,13 @@ int* Node::Buff() {
     return static_cast<int*>(buf_);
 }
 
-void Node::Raise(Type type, std::source_location source_location) {
+void Node::Throw(Type type, std::source_location source_location) {
     exception_.type            = type;
     exception_.source_location = source_location;
     status_                    = Status::RAISED;
 }
 
-bool Node::Handle(std::optional<Type> type) {
+bool Node::Catch(std::optional<Type> type) {
     if (type.has_value() && exception_.type != type.value()) {
         return false;
     }
@@ -38,7 +37,7 @@ bool Node::Handle(std::optional<Type> type) {
 }
 
 void Node::Rethrow() const {
-    Throw(exception_.type, exception_.source_location);
+    ::Throw(exception_.type, exception_.source_location);
 }
 
 void Node::Finalize() {
@@ -73,3 +72,19 @@ std::optional<Node*> TryGetCurrent() {
 }
 
 }  // namespace except::detail
+
+void Throw(except::Type type, std::source_location source_location) {
+    std::optional<except::detail::Node*> current_opt =
+        except::detail::TryGetCurrent();
+
+    if (!current_opt) {
+        std::cerr << "uncaught exception " << Message(type) << " at line "
+                  << source_location.line() << " of file "
+                  << source_location.file_name() << std::endl;
+        std::terminate();
+    }
+
+    except::detail::ObjectManager::UnwindToCheckpoint();
+    current_opt.value()->Throw(type, source_location);
+    std::longjmp(current_opt.value()->Buff(), 1);  // NOLINT(cert-err52-cpp)
+}

@@ -57,7 +57,7 @@ void Bar() {
 
 void Foo() {
     TRY {
-        Throw(except::Type::A);
+        Bar();
     }
     CATCH(except::Type::B) {
         std::cout << "caught exception B in Foo" << std::endl;
@@ -72,9 +72,6 @@ void Foo() {
             Baz();
             AutoObject<NonTrivial> object3;
         }
-    }
-    CATCH_ALL {
-        std::cout << "caught unknown exception in Foo" << std::endl;
     }
 
     Throw(except::Type::D);

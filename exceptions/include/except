@@ -1,8 +1,7 @@
 #pragma once
 
-#include "auto_object.hpp"
-#include "exception_stack.hpp"
-#include "throw.hpp"
+#include "exceptions/stack.hpp"
+#include "objects/auto.hpp"
 
 #define TRY                                      \
     for (except::detail::Node ___exception_node; \
@@ -11,8 +10,8 @@
         if (setjmp(___exception_node.Buff()) == 0)
 
 #define CATCH(___exception_type) \
-    else if (___exception_node.Handle((___exception_type)))
+    else if (___exception_node.Catch((___exception_type)))
 
-#define CATCH_ALL else if (___exception_node.Handle())
+#define CATCH_ALL else if (___exception_node.Catch())
 
 #define RETHROW ___exception_node.Rethrow();

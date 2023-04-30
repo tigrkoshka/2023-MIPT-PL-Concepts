@@ -2,7 +2,7 @@
 
 #include <type_traits>  // for is_destructible_v, ...
 
-#include "object_manager.hpp"
+#include "manager.hpp"
 
 template <typename T>
 struct AutoObject final : T {
