@@ -2,7 +2,7 @@
 
 #include <stack>  // for stack
 
-namespace except::details {
+namespace except::detail {
 
 bool ObjectManager::TopIsCheckpoint() {
     return !k_destroyers.empty() && k_destroyers.top().index() == 0;
@@ -45,4 +45,4 @@ void ObjectManager::UnwindToCheckpoint() {
 
 std::stack<ObjectManager::Item> ObjectManager::k_destroyers;
 
-}  // namespace except::details
+}  // namespace except::detail

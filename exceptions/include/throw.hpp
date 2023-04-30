@@ -5,10 +5,10 @@
 
 #include "exception.hpp"
 
-namespace except::details {
+namespace except::detail {
 
-void Push(Node* exception);
-void Pop();
+enum class Status { NO_EXCEPTION, RAISED, HANDLED };
+
 void Throw(Type type, std::string file, size_t line);
 
-}  // namespace except::details
+}  // namespace except::detail

@@ -1,39 +1,31 @@
-#include "utils.hpp"
+#include "throw.hpp"
 
 #include <csetjmp>    // for longjmp
 #include <cstddef>    // for size_t
 #include <exception>  // for terminate
 #include <iostream>   // for cerr, endl
 #include <string>     // for string
-#include <utility>    // for move, exchange
+#include <utility>    // for move
 
 #include "exception.hpp"
+#include "exception_stack.hpp"
 #include "object_manager.hpp"
 
-namespace except::details {
-
-thread_local Node* top;
-
-void Push(Node* exception) {
-    exception->prev = std::exchange(top, exception);
-}
-
-void Pop() {
-    top = top->prev;
-}
+namespace except::detail {
 
 void Throw(Type type, std::string file, size_t line) {
-    if (top == nullptr) {
+    if (stack.empty()) {
         std::cerr << "uncaught exception of type " << Message(type)
                   << " at line " << line << " of file " << file << std::endl;
         std::terminate();
     }
 
-    Node* current = std::exchange(top, top->prev);
+    Node* current = stack.top();
+    stack.pop();
 
-    current->type = type;
-    current->file = std::move(file);
-    current->line = line;
+    current->exception.type = type;
+    current->exception.file = std::move(file);
+    current->exception.line = line;
 
     ObjectManager::UnwindToCheckpoint();
 
@@ -42,4 +34,4 @@ void Throw(Type type, std::string file, size_t line) {
                  static_cast<int>(Status::RAISED));
 }
 
-}  // namespace except::details
+}  // namespace except::detail

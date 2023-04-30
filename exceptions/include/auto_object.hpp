@@ -16,13 +16,13 @@ struct AutoObject final : T {
     void Register()
         requires kObjectManagerEnabled
     {
-        except::details::ObjectManager::RecordObject<AutoObject<T>>(*this);
+        except::detail::ObjectManager::RecordObject<AutoObject<T>>(*this);
     }
 
     void Unregister()
         requires kObjectManagerEnabled
     {
-        except::details::ObjectManager::PopDestructible();
+        except::detail::ObjectManager::PopDestructible();
     }
 
    public:
@@ -73,14 +73,12 @@ struct AutoObject final : T {
     }
 
     AutoObject& operator=(const AutoObject&)  //
-        noexcept(std::is_nothrow_copy_assignable_v<T> &&
-                 !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_copy_assignable_v<T> && !kObjectManagerEnabled)
         requires std::is_copy_assignable_v<T>
     = default;
 
     AutoObject& operator=(AutoObject&&)  //
-        noexcept(std::is_nothrow_move_assignable_v<T> &&
-                 !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_move_assignable_v<T> && !kObjectManagerEnabled)
         requires std::is_move_assignable_v<T>
     = default;
 };

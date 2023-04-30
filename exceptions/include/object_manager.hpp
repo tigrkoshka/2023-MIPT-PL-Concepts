@@ -6,7 +6,7 @@
 #include <type_traits>  // for is_destructible_v
 #include <variant>      // for variant, monostate
 
-namespace except::details {
+namespace except::detail {
 
 class ObjectManager final {
    private:
@@ -56,4 +56,4 @@ class ObjectManager final {
     static std::stack<Item> k_destroyers;
 };
 
-}  // namespace except::details
+}  // namespace except::detail

@@ -2,42 +2,47 @@
 
 #include "auto_object.hpp"
 #include "exception.hpp"
+#include "exception_stack.hpp"
 #include "object_manager.hpp"
-#include "utils.hpp"
+#include "throw.hpp"
 
-#define TRY                                                 \
-    do {                                                    \
-        except::details::Node exception;                    \
-        except::details::Push(&exception);                  \
-        except::details::ObjectManager::RecordCheckpoint(); \
-                                                            \
-        volatile except::details::Status status;            \
-        status = static_cast<except::details::Status>(      \
-            setjmp(static_cast<int*>(exception.buf)));      \
-                                                            \
-        if (status == except::details::Status::NO_EXCEPTION) {
+#define TRY                                                \
+    do {                                                   \
+        except::detail::Node node;                         \
+        except::detail::stack.push(&node);                 \
+        except::detail::ObjectManager::RecordCheckpoint(); \
+                                                           \
+        volatile except::detail::Status status;            \
+        status = static_cast<except::detail::Status>(      \
+            setjmp(static_cast<int*>(node.buf)));          \
+                                                           \
+        if (status == except::detail::Status::NO_EXCEPTION) {
+
 // clang-format off
 
-#define CATCH(___exception_type)                            \
-        } else if (exception.type == (___exception_type)) { \
-            status = except::details::Status::HANDLED;
+#define CATCH(___exception_type)                                 \
+        } else if (node.exception.type == (___exception_type)) { \
+            status = except::detail::Status::HANDLED;
 
 #define CATCH_ALL \
         } else {  \
-            status = except::details::Status::HANDLED;
+            status = except::detail::Status::HANDLED;
 
-#define ENDTRY                                                  \
-        }                                                       \
-        if (status == except::details::Status::NO_EXCEPTION) {  \
-            except::details::ObjectManager::PopCheckpoint();    \
-            except::details::Pop();                             \
-        } else if (status == except::details::Status::RAISED) { \
-            except::details::Throw(exception.type,              \
-                                   exception.file,              \
-                                   exception.line);             \
-        }                                                       \
+#define RETHROW                                \
+    except::detail::Throw(node.exception.type, \
+                          node.exception.file, \
+                          node.exception.line)
+
+#define ENDTRY                                                 \
+        }                                                      \
+        if (status == except::detail::Status::NO_EXCEPTION) {  \
+            except::detail::ObjectManager::PopCheckpoint();    \
+            except::detail::stack.pop();                       \
+        } else if (status == except::detail::Status::RAISED) { \
+            RETHROW;                                           \
+        }                                                      \
     } while(false)
 // clang-format on
 
 #define THROW(___exception_type) \
-    except::details::Throw(___exception_type, __FILE__, __LINE__)
+    except::detail::Throw(___exception_type, __FILE__, __LINE__)

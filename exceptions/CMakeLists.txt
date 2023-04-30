@@ -1,4 +1,4 @@
-# This CMakeLists file is for Clion to build both the karma library
+# This CMakeLists file is for Clion to build both the except library
 # and playground and then run the playground executable
 
 cmake_minimum_required(VERSION 3.23)
