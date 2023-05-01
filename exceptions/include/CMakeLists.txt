@@ -34,10 +34,11 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 add_library(
         except STATIC
         except
-        exceptions/exception.cpp
         objects/manager.cpp
         objects/auto.cpp
-        exceptions/stack.cpp)
+        exceptions/exception.cpp
+        exceptions/stack.cpp
+        utils/concepts.cpp utils/concepts.hpp)
 
 # place the resulting library archive in the except/lib directory
 # instead of in the build directory produced by cmake

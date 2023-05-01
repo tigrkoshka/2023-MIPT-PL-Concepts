@@ -11,7 +11,7 @@ namespace except::detail {
 
 class Node {
    private:
-    enum class Status { NO_EXCEPTION, RAISED, HANDLED };
+    enum class Status { NO_EXCEPTION, THROWN, CAUGHT };
 
    public:
     Node();

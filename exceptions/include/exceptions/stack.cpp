@@ -8,6 +8,60 @@
 
 #include "objects/manager.hpp"
 
+// stack
+// caught
+
+/*
+ * try {
+ *     try {
+ *        throw(type::A);
+ *     } catch (type::A) {
+ *        try {
+ *           try {
+ *              throw;
+ *           } catch (type::A) {
+ *              throw;
+ *           }
+ *        } catch(type::A) {
+ *           // OK
+ *        }
+ *
+ *        throw;
+ *     } catch (type::B) {
+ *        S2
+ *     }
+ * } catch (type::A) {
+ *     // OK
+ * }
+ *
+ *
+ * for (Node exc; !exc.finalized(); exc.finalize()) {
+ *     stack.push(exc);
+ *
+ *     if (setjmp(exc.buff) == 0) {
+ *         // ...
+ *         //
+ *         // throw:
+ *         //   if (stack.empty()) {
+ *         //      // log and terminate
+ *         //   }
+ *         //   call all destructors
+ *         //   Node curr = stack.top();
+ *         //   stack.pop();
+ *         //   curr.status = THROWN;
+ *         //   longjmp(curr.buff, 1);
+ *     } else if (exc.type == type::A) {
+ *         exc.status = CAUGHT;
+ *         S1
+ *     } else if (exc.type == type::B) {
+ *         // Throw(exc.type);
+ *         exc.status = CAUGHT;
+ *         S2
+ *     }
+ *  }
+ *
+ */
+
 namespace except::detail {
 
 thread_local std::stack<Node*> stack;
@@ -24,7 +78,7 @@ int* Node::Buff() {
 void Node::Throw(Type type, std::source_location source_location) {
     exception_.type            = type;
     exception_.source_location = source_location;
-    status_                    = Status::RAISED;
+    status_                    = Status::THROWN;
 }
 
 bool Node::Catch(std::optional<Type> type) {
@@ -32,7 +86,7 @@ bool Node::Catch(std::optional<Type> type) {
         return false;
     }
 
-    status_ = Status::HANDLED;
+    status_ = Status::CAUGHT;
     return true;
 }
 
@@ -48,11 +102,12 @@ void Node::Finalize() {
             ObjectManager::PopCheckpoint();
             stack.pop();
             break;
-        case Status::HANDLED:
+        case Status::CAUGHT:
             // do nothing
             break;
-        case Status::RAISED:
+        case Status::THROWN:
             Rethrow();
+            break;
     }
 }
 
