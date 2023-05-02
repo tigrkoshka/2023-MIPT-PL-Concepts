@@ -2,7 +2,7 @@
 
 #include "../include/except"
 
-struct NonTrivial {
+struct NonTrivial final {
     explicit NonTrivial()
         : index_(index++) {
         std::cout << "NonTrivial: default " << index_ << std::endl;
@@ -80,6 +80,7 @@ void InitializerLists() {
         {1, 2, 3},
         std::allocator<int>()
     };
+
     std::vector<int> v = {
         {1, 2, 3},
         std::allocator<int>()
@@ -87,6 +88,11 @@ void InitializerLists() {
 
     AutoObject<std::vector<int>> o2{1, 2, 3};
     std::vector<int> v2{1, 2, 3};
+
+    AutoObject<std::vector<int>> o3 = {1, 2, 3};
+    std::vector<int> v3 = {1, 2, 3};
+
+    const AutoObject<std::vector<int>>& o4 = std::move(v3);
 }
 
 void Constructors() {
@@ -212,14 +218,14 @@ void Conversions() {
 
         {
             bool ntb = nt;
-            bool oob = oo;
+            bool oob = oo.Get();
 
             std::cout << ntb && oob;
         }
 
         {
             auto ntb = static_cast<bool>(nt);
-            auto oob = static_cast<bool>(oo);
+            auto oob = static_cast<bool>(oo.Get());
 
             std::cout << ntb && oob;
         }
@@ -236,7 +242,7 @@ void Conversions() {
 
         {
             auto nts = static_cast<std::string>(nt);
-            auto oos = static_cast<std::string>(oo);
+            auto oos = static_cast<std::string>(oo.Get());
 
             std::cout << nts + oos;
         }
@@ -251,14 +257,14 @@ void Assignments() {
         AutoObject<NonTrivial> oo2{2ull};
 
         std::cout << "Start:" << std::endl;
-        std::cout << "    first:  " << static_cast<size_t>(oo) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo2) << std::endl;
+        std::cout << "    first:  " << static_cast<size_t>(oo.Get()) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo2.Get()) << std::endl;
 
         oo = oo2;
 
         std::cout << "End:" << std::endl;
-        std::cout << "    first:  " << static_cast<size_t>(oo) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo2) << std::endl;
+        std::cout << "    first:  " << static_cast<size_t>(oo.Get()) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo2.Get()) << std::endl;
 
         std::cout << std::endl;
     }
@@ -268,14 +274,14 @@ void Assignments() {
         AutoObject<NonTrivial> oo2{2ull};
 
         std::cout << "Start:" << std::endl;
-        std::cout << "    first:  " << static_cast<size_t>(oo) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo2) << std::endl;
+        std::cout << "    first:  " << static_cast<size_t>(oo.Get()) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo2.Get()) << std::endl;
 
         oo = std::move(oo2);
 
         std::cout << "End:" << std::endl;
-        std::cout << "    first:  " << static_cast<size_t>(oo) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo2) << std::endl;
+        std::cout << "    first:  " << static_cast<size_t>(oo.Get()) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo2.Get()) << std::endl;
 
         std::cout << std::endl;
     }
@@ -286,13 +292,13 @@ void Assignments() {
 
         std::cout << "Start:" << std::endl;
         std::cout << "    first:  " << static_cast<size_t>(nt) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo.Get()) << std::endl;
 
         oo = nt;
 
         std::cout << "End:" << std::endl;
         std::cout << "    first:  " << static_cast<size_t>(nt) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo.Get()) << std::endl;
 
         std::cout << std::endl;
     }
@@ -303,13 +309,13 @@ void Assignments() {
 
         std::cout << "Start:" << std::endl;
         std::cout << "    first:  " << static_cast<size_t>(nt) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo.Get()) << std::endl;
 
         oo = std::move(nt);
 
         std::cout << "End:" << std::endl;
         std::cout << "    first:  " << static_cast<size_t>(nt) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo.Get()) << std::endl;
 
         std::cout << std::endl;
     }
@@ -320,13 +326,13 @@ void Assignments() {
 
         std::cout << "Start:" << std::endl;
         std::cout << "    first:  " << static_cast<size_t>(nt) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo.Get()) << std::endl;
 
-        nt = oo;
+        nt = oo.Get();
 
         std::cout << "End:" << std::endl;
         std::cout << "    first:  " << static_cast<size_t>(nt) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo.Get()) << std::endl;
 
         std::cout << std::endl;
     }
@@ -337,13 +343,13 @@ void Assignments() {
 
         std::cout << "Start:" << std::endl;
         std::cout << "    first:  " << static_cast<size_t>(nt) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo.Get()) << std::endl;
 
-        nt = std::move(oo);
+        nt = std::move(oo.Get());
 
         std::cout << "End:" << std::endl;
         std::cout << "    first:  " << static_cast<size_t>(nt) << std::endl;
-        std::cout << "    second: " << static_cast<size_t>(oo) << std::endl;
+        std::cout << "    second: " << static_cast<size_t>(oo.Get()) << std::endl;
 
         std::cout << std::endl;
     }

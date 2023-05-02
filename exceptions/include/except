@@ -1,5 +1,6 @@
 #pragma once
 
+#include "exceptions/exception.hpp"
 #include "exceptions/stack.hpp"
 #include "objects/auto.hpp"
 
@@ -29,3 +30,6 @@
 
 using except::detail::Throw;
 using except::detail::Rethrow;
+
+template <typename T>
+using AutoObject = except::detail::AutoObject<T>;

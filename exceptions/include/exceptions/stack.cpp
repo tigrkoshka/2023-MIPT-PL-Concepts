@@ -27,8 +27,7 @@
  *
  *           } catch (type::A) {     // 1 (0), 3 (1)         : 2 (1), 4 (2)
  *
- *                                   // while stack.top().depth <
- * caught.top().depth
+ *                                   // while stack.top().depth < caught.top().depth
  *                                   // pop from caught
  *              rethrow;             // 1 (0), 3* (1)        : 2 (1)
  *           }
@@ -69,8 +68,7 @@
  *
  *         } catch (type::B) {           // 1 (0)                : 2 (1), 3 (1)
  *
- *                                       // while stack.top().depth <
- * caught.top().depth
+ *                                       // while stack.top().depth < caught.top().depth
  *                                       // pop from caught
  *             rethrow;                  // 1* (0)               :
  *         }
@@ -135,15 +133,13 @@
  *                                   // so just longjmp
  *             throw(type::A);       // 1 (0), 5* (1)                 : 2 (1)
  *
- *         } catch (type::A) {       // 1 (0)                         : 2 (1), 5
- * (1)
+ *         } catch (type::A) {       // 1 (0)                         : 2 (1), 5 (1)
  *             // OK
  *                                   // stack is empty (aka not raised),
  *                                   // so pop from caught
  *         }                         // 1 (0)                         : 2 (1)
  *
- *                                   // while stack.top().depth <
- * caught.top().depth,
+ *                                   // while stack.top().depth < caught.top().depth,
  *                                   // pop from caught
  *         rethrow;                  // 1* (0)                        :
  *     }
@@ -168,8 +164,7 @@
  *                                       // so do not pop from caught
  *                     throw(type::B);   // 1 (0), 3 (1), 4 (2), 5* (3) : 2 (1)
  *
- *                 } catch (type::B) {   // 1 (0), 3 (1), 4 (2)         : 2 (1),
- * 5 (3)
+ *                 } catch (type::B) {   // 1 (0), 3 (1), 4 (2)         : 2 (1), 5 (3)
  *
  *                                       // while stack.top().depth <
  * caught.top().depth,
@@ -261,27 +256,6 @@ bool TryCatch(Type type) {
     return Catch();
 }
 
-void Throw(except::Type type, std::source_location source_location) {
-    if (stack.empty()) {
-        std::cerr << "uncaught exception " << Message(type) << " at line "
-                  << source_location.line() << " of file "
-                  << source_location.file_name() << std::endl;
-        std::terminate();
-    }
-
-    while (!caught.empty() && stack.top().depth < caught.top().depth) {
-        caught.pop();
-    }
-
-    ObjectManager::UnwindToCheckpoint();
-    stack.top().Raise(type, source_location);
-    std::longjmp(stack.top().Buff(), 1);  // NOLINT(cert-err52-cpp)
-}
-
-void Rethrow() {
-    Throw(caught.top().exception.type, caught.top().exception.source_location);
-}
-
 void FinishTry() {
     if (stack.empty()) {
         caught.pop();
@@ -303,6 +277,27 @@ void FinishTry() {
         ObjectManager::PopCheckpoint();
         stack.pop();
     }
+}
+
+void Throw(except::Type type, std::source_location source_location) {
+    if (stack.empty()) {
+        std::cerr << "uncaught exception " << Message(type) << " at line "
+                  << source_location.line() << " of file "
+                  << source_location.file_name() << std::endl;
+        std::terminate();
+    }
+
+    while (!caught.empty() && stack.top().depth < caught.top().depth) {
+        caught.pop();
+    }
+
+    ObjectManager::UnwindToCheckpoint();
+    stack.top().Raise(type, source_location);
+    std::longjmp(stack.top().Buff(), 1);  // NOLINT(cert-err52-cpp)
+}
+
+void Rethrow() {
+    Throw(caught.top().exception.type, caught.top().exception.source_location);
 }
 
 }  // namespace except::detail
