@@ -9,33 +9,12 @@
 
 namespace except::detail {
 
-class Node {
-   private:
-    enum class Status { NO_EXCEPTION, THROWN, CAUGHT };
-
-   public:
-    Node();
-
-    int* Buff();
-
-    void Throw(Type type, std::source_location);
-    bool Catch(std::optional<Type> = std::nullopt);
-    void Rethrow() const;
-    void Finalize();
-    [[nodiscard]] bool IsFinalized() const;
-
-   private:
-    std::jmp_buf buf_{};
-
-    Exception exception_;
-
-    volatile Status status_ = Status::NO_EXCEPTION;
-    bool finalized_{false};
-};
-
-std::optional<Node*> TryGetCurrent();
-
-}  // namespace except::detail
-
+std::pair<bool, int*> StartTry();
+bool Catch();
+bool TryCatch(Type);
 void Throw(except::Type type,
            std::source_location = std::source_location::current());
+void Rethrow();
+void FinishTry();
+
+}  // namespace except::detail

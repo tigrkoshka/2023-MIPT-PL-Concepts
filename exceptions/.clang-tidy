@@ -21,6 +21,8 @@ Checks: >
   -hicpp-uppercase-literal-suffix,
   -cert-dcl16-c,
   
+  -hicpp-special-member-functions,
+  
   -readability-named-parameter,
   -hicpp-named-parameter,
 
@@ -72,3 +74,4 @@ CheckOptions:
   readability-identifier-length.IgnoredVariableNames: ^ss$
   readability-simplify-boolean-expr.ChainedConditionalReturn: true
   readability-simplify-boolean-expr.ChainedConditionalAssignment: true
+  cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: true

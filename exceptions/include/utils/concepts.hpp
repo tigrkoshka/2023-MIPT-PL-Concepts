@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts> // for constructible_from
 #include <utility>  // for declval
 
 namespace except::detail::utils::concepts {
@@ -13,7 +14,7 @@ concept IsImplicitlyConstructible = requires {
 };
 
 template <typename T, typename... From>
-concept IsOnlyExplicitlyConstructible = std::is_constructible_v<T, From...> &&
+concept IsOnlyExplicitlyConstructible = std::constructible_from<T, From...> &&
                                         !IsImplicitlyConstructible<T, From...>;
 
 }  // namespace except::detail::utils::concepts

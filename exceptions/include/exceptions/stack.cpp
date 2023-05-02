@@ -6,140 +6,303 @@
 #include <source_location>  // for source_location
 #include <stack>            // for stack
 
+#include "exceptions/node.hpp"
 #include "objects/manager.hpp"
 
-// stack
-// caught
+/*                                   // stack                : caught
+ *
+ * try {                             // 1 (0)                :
+ *     try {                         // 1 (0), 2 (1)         :
+ *
+ *                                   // caught is empty, so just longjmp
+ *        throw(type::A);            // 1 (0), 2* (1)        :
+ *
+ *     } catch (type::A) {           // 1 (0)                : 2 (1)
+ *        try {                      // 1 (0), 3 (1)         : 2 (1)
+ *           try {                   // 1 (0), 3 (1), 4 (2)  : 2 (1)
+ *
+ *                                   // stack.top().depth >= caught.top().depth
+ *                                   // so do not pop from caught, just longjmp
+ *              rethrow;             // 1 (0), 3 (1), 4* (2) : 2 (1)
+ *
+ *           } catch (type::A) {     // 1 (0), 3 (1)         : 2 (1), 4 (2)
+ *
+ *                                   // while stack.top().depth <
+ * caught.top().depth
+ *                                   // pop from caught
+ *              rethrow;             // 1 (0), 3* (1)        : 2 (1)
+ *           }
+ *        } catch(type::A) {         // 1 (0)                : 2 (1), 3 (1)
+ *           // OK
+ *                                   // stack.top() is not raised,
+ *                                   // stack.top().depth < caught.top().depth
+ *                                   // so pop from caught
+ *        }                          // 1 (0)                : 2 (1)
+ *
+ *                                   // while stack.top().depth <
+ * caught.top().depth
+ *                                   // pop from caught
+ *        rethrow;                   // 1* (0)               :
+ *     }
+ * } catch (type::A) {               //                      : 1 (0)
+ *     // OK
+ *                                   // stack is empty (aka not raised),
+ *                                   // so pop from caught
+ * }                                 //                      :
+ *
+ */
 
 /*
- * try {
- *     try {
- *        throw(type::A);
- *     } catch (type::A) {
- *        try {
- *           try {
- *              throw;
- *           } catch (type::A) {
- *              throw;
- *           }
- *        } catch(type::A) {
- *           // OK
- *        }
+ * try {                                 // 1 (0)
+ *     try {                             // 1 (0), 2 (1)         :
  *
- *        throw;
- *     } catch (type::B) {
- *        S2
+ *                                       // caught is empty, so just longjmp
+ *         throw(type::A)                // 1 (0), 2* (1)        :
+ *
+ *     } catch (type::A) {               // 1 (0)                : 2 (1)
+ *         try {                         // 1 (0), 3 (1)         : 2 (1)
+ *
+ *                                       // stack.top().depth >=
+ * caught.top().depth,
+ *                                       // so just longjmp
+ *             throw(type::B)            // 1 (0), 3* (1)        : 2 (1)
+ *
+ *         } catch (type::B) {           // 1 (0)                : 2 (1), 3 (1)
+ *
+ *                                       // while stack.top().depth <
+ * caught.top().depth
+ *                                       // pop from caught
+ *             rethrow;                  // 1* (0)               :
+ *         }
  *     }
- * } catch (type::A) {
+ * } catch (type::B) {                   //                      : 1 (0)
  *     // OK
- * }
+ *                                       // stack is empty (aka not raised),
+ *                                       // so pop from caught
+ * }                                     //                      :
  *
+ */
+
+/*
+ * try {                             // 1 (0)                :
+ *     try {                         // 1 (0), 2 (1)         :
  *
- * for (Node exc; !exc.finalized(); exc.finalize()) {
- *     stack.push(exc);
+ *                                   // caught is empty, so just longjmp
+ *         throw(type::A);           // 1 (0), 2* (1)        :
  *
- *     if (setjmp(exc.buff) == 0) {
- *         // ...
- *         //
- *         // throw:
- *         //   if (stack.empty()) {
- *         //      // log and terminate
- *         //   }
- *         //   call all destructors
- *         //   Node curr = stack.top();
- *         //   stack.pop();
- *         //   curr.status = THROWN;
- *         //   longjmp(curr.buff, 1);
- *     } else if (exc.type == type::A) {
- *         exc.status = CAUGHT;
- *         S1
- *     } else if (exc.type == type::B) {
- *         // Throw(exc.type);
- *         exc.status = CAUGHT;
- *         S2
+ *     } catch (type::A) {           // 1 (0)                : 2 (1)
+ *
+ *                                   // while stack.top().depth <
+ * caught.top().depth,
+ *                                   // pop from caught
+ *         throw(type::B);           // 1* (0)               :
  *     }
- *  }
+ * } catch (type::B) {               //                      : 1 (0)
+ *     // OK
+ *                                   // stack is empty (aka not raised),
+ *                                   // so pop from caught
+ * }                                 //                      :
+ *
+ */
+
+/*
+ * try {                             // 1 (0)                         :
+ *     try {                         // 1 (0), 2 (1)                  :
+ *         try {                     // 1 (0), 2 (1), 3 (2)           :
+ *             try {                 // 1 (0), 2 (1), 3 (2), 4 (3)    :
+ *
+ *                                   // caught is empty, so just longjmp
+ *                 throw(type::A);   // 1 (0), 2 (1), 3 (2), 4* (3)   :
+ *
+ *             } catch (type::A) {   // 1 (0), 2 (1), 3 (2)           : 4 (3)
+ *
+ *                                   // while stack.top().depth <
+ * caught.top().depth,
+ *                                   // pop from caught
+ *                 throw(type::B);   // 1 (0), 2 (1), 3* (2)          :
+ *             }
+ *         } catch (type::B) {       // 1 (0), 2 (1)                  : 3 (2)
+ *
+ *                                   // while stack.top().depth <
+ * caught.top().depth,
+ *                                   // pop from caught
+ *             rethrow;              // 1 (0), 2* (1)                 :
+ *         }
+ *     } catch (type::B) {           // 1 (0)                         : 2 (1)
+ *         try {                     // 1 (0), 5 (1)                  : 2 (1)
+ *
+ *                                   // stack.top().depth >= caught.top().depth,
+ *                                   // so just longjmp
+ *             throw(type::A);       // 1 (0), 5* (1)                 : 2 (1)
+ *
+ *         } catch (type::A) {       // 1 (0)                         : 2 (1), 5
+ * (1)
+ *             // OK
+ *                                   // stack is empty (aka not raised),
+ *                                   // so pop from caught
+ *         }                         // 1 (0)                         : 2 (1)
+ *
+ *                                   // while stack.top().depth <
+ * caught.top().depth,
+ *                                   // pop from caught
+ *         rethrow;                  // 1* (0)                        :
+ *     }
+ * } catch (type::B) {               //                               : 1 (0)
+ *     // OK
+ *                                   // stack is empty (aka not raised),
+ *                                   // so pop from caught
+ * }                                 //                               :
+ *
+ */
+
+/* try {                                 // 1 (0)                       :
+ *     try {                             // 1 (0), 2 (0)                :
+ *         throw(type::A);               // 1 (0), 2* (1)               :
+ *     } catch (type::A) {               // 1 (0)                       : 2 (1)
+ *         try {                         // 1 (0), 3 (1)                : 2 (1)
+ *             try {                     // 1 (0), 3 (1), 4 (2)         : 2 (1)
+ *                 try {                 // 1 (0), 3 (1), 4 (2), 5 (3)  : 2 (1)
+ *
+ *                                       // stack.top().depth >=
+ * caught.top().depth
+ *                                       // so do not pop from caught
+ *                     throw(type::B);   // 1 (0), 3 (1), 4 (2), 5* (3) : 2 (1)
+ *
+ *                 } catch (type::B) {   // 1 (0), 3 (1), 4 (2)         : 2 (1),
+ * 5 (3)
+ *
+ *                                       // while stack.top().depth <
+ * caught.top().depth,
+ *                                       // pop from caught
+ *                     rethrow;          // 1 (0), 3 (1), 4* (2)        : 2 (1)
+ *                 }
+ *             } catch (type::A) {       // fails
+ *                 // smth
+ *
+ *                                       // stack.top() is raised,
+ *                                       // so pop from stack;
+ *                                       // stack.top().depth >=
+ * caught.top().depth,
+ *                                       // so do not pop from caught
+ *             }                         // 1 (0), 3* (1)               : 2 (1)
+ *
+ *         } catch (type::A) {           // fails
+ *             // smth
+ *                                       // stack.top() is raised,
+ *                                       // so pop from stack;
+ *                                       // while stack.top().depth <
+ * caught.top().depth
+ *                                       // pop from caught
+ *         }                             // 1* (0)                      :
+ *     }
+ * } catch (type::B) {                   //                             : 1 (0)
+ *     // OK
+ *                                       // stack is empty (aka not raised),
+ *                                       // so pop from caught
+ * }                                     //                             :
+ *
+ */
+
+/*
+ * try {                   // 1 (0)  :
+ *    // OK
+ * } catch (type::A) {
+ *    // smth
+ *                         // stack top is not raised
+ *                         // and caught is empty,
+ *                         // so pop from stack
+ * }                       //        :
+ *
+ */
+
+/*
+ * try {                      // 1 (0)  :
+ *
+ *                            // caught is empty, so just longjmp
+ *    throw(type::A);         // 1* (0) :
+ * } catch (type::A) {        //        : 1 (0)
+ *    try {                   // 2 (0)  : 1 (0)
+ *        // OK
+ *    } catch (type::B) {
+ *        // smth
+ *                            // stack.top() is not raised
+ *                            // stack.top().depth >= caught.top().depth,
+ *                            // so pop from stack
+ *    }                       //        : 1 (0)
+ *
+ *                            // stack is empty (aka not raised),
+ *                            // so pop from caught
+ * }                          //        :
  *
  */
 
 namespace except::detail {
 
-thread_local std::stack<Node*> stack;
+thread_local std::stack<Node> stack;
+thread_local std::stack<Node> caught;
 
-Node::Node() {
-    stack.push(this);
+std::pair<bool, int*> StartTry() {
+    stack.emplace(stack.size());
     ObjectManager::RecordCheckpoint();
+    return {true, stack.top().Buff()};
 }
 
-int* Node::Buff() {
-    return static_cast<int*>(buf_);
-}
-
-void Node::Throw(Type type, std::source_location source_location) {
-    exception_.type            = type;
-    exception_.source_location = source_location;
-    status_                    = Status::THROWN;
-}
-
-bool Node::Catch(std::optional<Type> type) {
-    if (type.has_value() && exception_.type != type.value()) {
-        return false;
-    }
-
-    status_ = Status::CAUGHT;
+bool Catch() {
+    caught.push(stack.top());
+    stack.pop();
     return true;
 }
 
-void Node::Rethrow() const {
-    ::Throw(exception_.type, exception_.source_location);
-}
-
-void Node::Finalize() {
-    finalized_ = true;
-
-    switch (status_) {
-        case Status::NO_EXCEPTION:
-            ObjectManager::PopCheckpoint();
-            stack.pop();
-            break;
-        case Status::CAUGHT:
-            // do nothing
-            break;
-        case Status::THROWN:
-            Rethrow();
-            break;
-    }
-}
-
-bool Node::IsFinalized() const {
-    return finalized_;
-}
-
-std::optional<Node*> TryGetCurrent() {
-    if (stack.empty()) {
-        return std::nullopt;
+bool TryCatch(Type type) {
+    if (stack.top().exception.type != type) {
+        return false;
     }
 
-    Node* node = stack.top();
-    stack.pop();
-
-    return node;
+    return Catch();
 }
-
-}  // namespace except::detail
 
 void Throw(except::Type type, std::source_location source_location) {
-    std::optional<except::detail::Node*> current_opt =
-        except::detail::TryGetCurrent();
-
-    if (!current_opt) {
+    if (stack.empty()) {
         std::cerr << "uncaught exception " << Message(type) << " at line "
                   << source_location.line() << " of file "
                   << source_location.file_name() << std::endl;
         std::terminate();
     }
 
-    except::detail::ObjectManager::UnwindToCheckpoint();
-    current_opt.value()->Throw(type, source_location);
-    std::longjmp(current_opt.value()->Buff(), 1);  // NOLINT(cert-err52-cpp)
+    while (!caught.empty() && stack.top().depth < caught.top().depth) {
+        caught.pop();
+    }
+
+    ObjectManager::UnwindToCheckpoint();
+    stack.top().Raise(type, source_location);
+    std::longjmp(stack.top().Buff(), 1);  // NOLINT(cert-err52-cpp)
 }
+
+void Rethrow() {
+    Throw(caught.top().exception.type, caught.top().exception.source_location);
+}
+
+void FinishTry() {
+    if (stack.empty()) {
+        caught.pop();
+        return;
+    }
+
+    if (stack.top().raised) {
+        // same as Catch(); Rethrow();
+
+        const Node thrown = stack.top();
+        stack.pop();
+
+        Throw(thrown.exception.type, thrown.exception.source_location);
+    }
+
+    if (!caught.empty() && stack.top().depth < caught.top().depth) {
+        caught.pop();
+    } else {
+        ObjectManager::PopCheckpoint();
+        stack.pop();
+    }
+}
+
+}  // namespace except::detail

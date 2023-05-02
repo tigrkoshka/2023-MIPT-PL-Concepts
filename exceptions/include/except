@@ -3,15 +3,20 @@
 #include "exceptions/stack.hpp"
 #include "objects/auto.hpp"
 
-#define TRY                                      \
-    for (except::detail::Node ___exception_node; \
-         !___exception_node.IsFinalized();       \
-         ___exception_node.Finalize())           \
-        if (setjmp(___exception_node.Buff()) == 0)
+#define CONCAT_(a, b) a##b
+#define CONCAT(a, b) CONCAT_(a, b)
+#define NAME(name) CONCAT(name, __LINE__)
+
+#define TRY                                                          \
+    for (auto [NAME(once), NAME(buff)] = except::detail::StartTry(); \
+         NAME(once);                                                 \
+         except::detail::FinishTry(), NAME(once) = !NAME(once))      \
+        if (setjmp(NAME(buff)) == 0)
 
 #define CATCH(___exception_type) \
-    else if (___exception_node.Catch((___exception_type)))
+    else if (except::detail::TryCatch((___exception_type)))
 
-#define CATCH_ALL else if (___exception_node.Catch())
+#define CATCH_ALL else if (except::detail::Catch())
 
-#define RETHROW ___exception_node.Rethrow();
+using except::detail::Throw;
+using except::detail::Rethrow;
