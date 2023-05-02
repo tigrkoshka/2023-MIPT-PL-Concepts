@@ -3,20 +3,29 @@
 #include "exceptions/stack.hpp"
 #include "objects/auto.hpp"
 
-#define CONCAT_(a, b) a##b
-#define CONCAT(a, b) CONCAT_(a, b)
-#define NAME(name) CONCAT(name, __LINE__)
+#define EXCEPT_DETAIL_GET_MACRO(ZERO, ONE, MACRO, ...) MACRO
+#define EXCEPT_DETAIL_CONCAT_(a, b) a##b
+#define EXCEPT_DETAIL_CONCAT(a, b) EXCEPT_DETAIL_CONCAT_(a, b)
+#define EXCEPT_DETAIL_NAME(name) EXCEPT_DETAIL_CONCAT(name, __LINE__)
 
-#define TRY                                                          \
-    for (auto [NAME(once), NAME(buff)] = except::detail::StartTry(); \
-         NAME(once);                                                 \
-         except::detail::FinishTry(), NAME(once) = !NAME(once))      \
-        if (setjmp(NAME(buff)) == 0)
+#define EXCEPT_DETAIL_CATCH_IMPL(exception_type) \
+    else if (except::detail::TryCatch((exception_type)))
 
-#define CATCH(___exception_type) \
-    else if (except::detail::TryCatch((___exception_type)))
+#define EXCEPT_DETAIL_CATCH_ALL else if (except::detail::Catch())
 
-#define CATCH_ALL else if (except::detail::Catch())
+#define TRY                                                            \
+    for (auto [EXCEPT_DETAIL_NAME(except_detail_once),                 \
+               EXCEPT_DETAIL_NAME(except_detail_buff)] =               \
+             except::detail::StartTry();                               \
+         std::exchange(EXCEPT_DETAIL_NAME(except_detail_once), false); \
+         except::detail::FinishTry())                                  \
+        if (setjmp(EXCEPT_DETAIL_NAME(except_detail_buff)) == 0)
+
+#define CATCH(...)                                            \
+    EXCEPT_DETAIL_GET_MACRO(ZERO __VA_OPT__(, )##__VA_ARGS__, \
+                            EXCEPT_DETAIL_CATCH_IMPL,         \
+                            EXCEPT_DETAIL_CATCH_ALL)          \
+    __VA_OPT__((__VA_ARGS__))
 
 using except::detail::Throw;
 using except::detail::Rethrow;

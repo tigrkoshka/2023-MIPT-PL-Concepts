@@ -12,8 +12,8 @@ namespace except::detail {
 std::pair<bool, int*> StartTry();
 bool Catch();
 bool TryCatch(Type);
-void Throw(except::Type type,
-           std::source_location = std::source_location::current());
+[[noreturn]] void Throw(except::Type type,
+                        std::source_location = std::source_location::current());
 void Rethrow();
 void FinishTry();
 

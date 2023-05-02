@@ -484,9 +484,11 @@ void Test5() {
 void Test6() {
     TRY {
         // OK
-    } CATCH (except::Type::A) {
+    }
+    CATCH(except::Type::A) {
         std::cout << "unexpected 1" << std::endl;
-    } CATCH_ALL {
+    }
+    CATCH() {
         std::cout << "unexpected 2" << std::endl;
     }
 }
@@ -494,12 +496,14 @@ void Test6() {
 void Test7() {
     TRY {
         Throw(except::Type::A);
-    } CATCH (except::Type::A) {
+    }
+    CATCH(except::Type::A) {
         std::cout << "caught 1" << std::endl;
 
         TRY {
             // OK
-        } CATCH (except::Type::B) {
+        }
+        CATCH(except::Type::B) {
             std::cout << "unexpected 1" << std::endl;
         }
     }
