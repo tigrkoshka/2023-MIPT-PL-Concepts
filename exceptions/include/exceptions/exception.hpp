@@ -5,12 +5,8 @@
 
 namespace except {
 
-enum class Type { A, B, C, D };
-std::string Message(Type type);
-
 struct Exception {
-    Type type{};
-    std::source_location source_location;
+    virtual ~Exception() = default;
 };
 
 }  // namespace except

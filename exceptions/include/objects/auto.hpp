@@ -9,8 +9,8 @@
 namespace except::detail {
 
 template <typename T>
-    requires(utils::concepts::IsClass<T> &&  //
-             utils::concepts::IsPure<T>)
+    requires(utils::concepts::Class<T> &&  //
+             utils::concepts::NonCVRef<T>)
 struct AutoObject final {
    private:
     static constexpr bool kObjectManagerEnabled = std::is_destructible_v<T>;
@@ -36,7 +36,7 @@ struct AutoObject final {
 
     template <typename... From>
         requires std::constructible_from<T, From...>
-    explicit(!utils::concepts::IsImplicitlyConstructible<T, From...>)
+    explicit(!utils::concepts::ImplicitlyConstructible<T, From...>)
         // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
         AutoObject(From&&... from)  //
         noexcept(std::is_nothrow_constructible_v<T, From...> &&
@@ -49,8 +49,9 @@ struct AutoObject final {
 
     template <typename List>
         requires std::constructible_from<T, std::initializer_list<List>&>
-    explicit(!utils::concepts::
-                 IsImplicitlyConstructible<T, std::initializer_list<List>&>)
+    explicit(
+        !utils::concepts::ImplicitlyConstructible<T,
+                                                  std::initializer_list<List>&>)
         AutoObject(std::initializer_list<List> list)  //
         noexcept(
             std::is_nothrow_constructible_v<T, std::initializer_list<List>> &&
@@ -67,7 +68,7 @@ struct AutoObject final {
                                          Args...>
     explicit(
         !utils::concepts::
-            IsImplicitlyConstructible<T, std::initializer_list<List>&, Args...>)
+            ImplicitlyConstructible<T, std::initializer_list<List>&, Args...>)
         AutoObject(std::initializer_list<List> list, Args... args)  //
         noexcept(std::is_nothrow_constructible_v<T,
                                                  std::initializer_list<List>&,
@@ -79,7 +80,7 @@ struct AutoObject final {
 
     // copy constructor
 
-    explicit(!utils::concepts::IsImplicitlyConstructible<T, const T&>)
+    explicit(!utils::concepts::ImplicitlyConstructible<T, const T&>)
         AutoObject(const AutoObject& other)  //
         noexcept(std::is_nothrow_copy_constructible_v<T> &
                  !kObjectManagerEnabled)
@@ -91,7 +92,7 @@ struct AutoObject final {
 
     // move constructor
 
-    explicit(!utils::concepts::IsImplicitlyConstructible<T, T&&>)
+    explicit(!utils::concepts::ImplicitlyConstructible<T, T&&>)
         AutoObject(AutoObject&& other)  //
         noexcept(std::is_nothrow_move_constructible_v<T> &&
                  !kObjectManagerEnabled)
@@ -168,8 +169,8 @@ struct AutoObject final {
 };
 
 template <typename T>
-    requires(utils::concepts::IsClass<T> &&  //
-             utils::concepts::IsPure<T> &&   //
+    requires(utils::concepts::Class<T> &&  //
+             utils::concepts::NonCVRef<T> &&   //
              !std::is_final_v<T>)
 struct AutoObject<T> final : T {
    private:
@@ -196,7 +197,7 @@ struct AutoObject<T> final : T {
 
     template <typename... From>
         requires std::constructible_from<T, From...>
-    explicit(!utils::concepts::IsImplicitlyConstructible<T, From...>)
+    explicit(!utils::concepts::ImplicitlyConstructible<T, From...>)
         // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
         AutoObject(From&&... from)  //
         noexcept(std::is_nothrow_constructible_v<T, From...> &&
@@ -209,8 +210,9 @@ struct AutoObject<T> final : T {
 
     template <typename List>
         requires std::constructible_from<T, std::initializer_list<List>&>
-    explicit(!utils::concepts::
-                 IsImplicitlyConstructible<T, std::initializer_list<List>&>)
+    explicit(
+        !utils::concepts::ImplicitlyConstructible<T,
+                                                  std::initializer_list<List>&>)
         AutoObject(std::initializer_list<List> list)  //
         noexcept(
             std::is_nothrow_constructible_v<T, std::initializer_list<List>> &&
@@ -227,7 +229,7 @@ struct AutoObject<T> final : T {
                                          Args...>
     explicit(
         !utils::concepts::
-            IsImplicitlyConstructible<T, std::initializer_list<List>&, Args...>)
+            ImplicitlyConstructible<T, std::initializer_list<List>&, Args...>)
         AutoObject(std::initializer_list<List> list, Args... args)  //
         noexcept(std::is_nothrow_constructible_v<T,
                                                  std::initializer_list<List>&,
@@ -239,7 +241,7 @@ struct AutoObject<T> final : T {
 
     // copy constructor
 
-    explicit(!utils::concepts::IsImplicitlyConstructible<T, const T&>)
+    explicit(!utils::concepts::ImplicitlyConstructible<T, const T&>)
         AutoObject(const AutoObject& other)  //
         noexcept(std::is_nothrow_copy_constructible_v<T> &
                  !kObjectManagerEnabled)
@@ -251,7 +253,7 @@ struct AutoObject<T> final : T {
 
     // move constructor
 
-    explicit(!utils::concepts::IsImplicitlyConstructible<T, T&&>)
+    explicit(!utils::concepts::ImplicitlyConstructible<T, T&&>)
         AutoObject(AutoObject&& other)  //
         noexcept(std::is_nothrow_move_constructible_v<T> &&
                  !kObjectManagerEnabled)

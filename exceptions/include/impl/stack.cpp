@@ -6,7 +6,7 @@
 #include <source_location>  // for source_location
 #include <stack>            // for stack
 
-#include "exceptions/node.hpp"
+#include "impl/node.hpp"
 #include "objects/manager.hpp"
 
 /*                                   // stack                : caught
@@ -27,7 +27,8 @@
  *
  *           } catch (type::A) {     // 1 (0), 3 (1)         : 2 (1), 4 (2)
  *
- *                                   // while stack.top().depth < caught.top().depth
+ *                                   // while stack.top().depth <
+ * caught.top().depth
  *                                   // pop from caught
  *              rethrow;             // 1 (0), 3* (1)        : 2 (1)
  *           }
@@ -68,7 +69,8 @@
  *
  *         } catch (type::B) {           // 1 (0)                : 2 (1), 3 (1)
  *
- *                                       // while stack.top().depth < caught.top().depth
+ *                                       // while stack.top().depth <
+ * caught.top().depth
  *                                       // pop from caught
  *             rethrow;                  // 1* (0)               :
  *         }
@@ -133,13 +135,15 @@
  *                                   // so just longjmp
  *             throw(type::A);       // 1 (0), 5* (1)                 : 2 (1)
  *
- *         } catch (type::A) {       // 1 (0)                         : 2 (1), 5 (1)
+ *         } catch (type::A) {       // 1 (0)                         : 2 (1), 5
+ * (1)
  *             // OK
  *                                   // stack is empty (aka not raised),
  *                                   // so pop from caught
  *         }                         // 1 (0)                         : 2 (1)
  *
- *                                   // while stack.top().depth < caught.top().depth,
+ *                                   // while stack.top().depth <
+ * caught.top().depth,
  *                                   // pop from caught
  *         rethrow;                  // 1* (0)                        :
  *     }
@@ -164,7 +168,8 @@
  *                                       // so do not pop from caught
  *                     throw(type::B);   // 1 (0), 3 (1), 4 (2), 5* (3) : 2 (1)
  *
- *                 } catch (type::B) {   // 1 (0), 3 (1), 4 (2)         : 2 (1), 5 (3)
+ *                 } catch (type::B) {   // 1 (0), 3 (1), 4 (2)         : 2 (1),
+ * 5 (3)
  *
  *                                       // while stack.top().depth <
  * caught.top().depth,
@@ -242,20 +247,6 @@ std::pair<bool, int*> StartTry() {
     return {true, stack.top().Buff()};
 }
 
-bool Catch() {
-    caught.push(stack.top());
-    stack.pop();
-    return true;
-}
-
-bool TryCatch(Type type) {
-    if (stack.top().exception.type != type) {
-        return false;
-    }
-
-    return Catch();
-}
-
 void FinishTry() {
     if (stack.empty()) {
         caught.pop();
@@ -265,10 +256,10 @@ void FinishTry() {
     if (stack.top().raised) {
         // same as Catch(); Rethrow();
 
-        const Node thrown = stack.top();
+        Node thrown = std::move(stack.top());
         stack.pop();
 
-        Throw(thrown.exception.type, thrown.exception.source_location);
+        DoThrow(std::move(thrown.data), thrown.source_location);
     }
 
     if (!caught.empty() && stack.top().depth < caught.top().depth) {
@@ -279,11 +270,16 @@ void FinishTry() {
     }
 }
 
-void Throw(except::Type type, std::source_location source_location) {
+bool CatchAll() {
+    caught.push(std::move(stack.top()));
+    stack.pop();
+    return true;
+};
+
+void DoThrow(Data data, std::source_location source_location) {
     if (stack.empty()) {
-        std::cerr << "uncaught exception " << Message(type) << " at line "
-                  << source_location.line() << " of file "
-                  << source_location.file_name() << std::endl;
+        std::cerr << "uncaught exception at line " << source_location.line()
+                  << " of file " << source_location.file_name() << std::endl;
         std::terminate();
     }
 
@@ -292,12 +288,12 @@ void Throw(except::Type type, std::source_location source_location) {
     }
 
     ObjectManager::UnwindToCheckpoint();
-    stack.top().Raise(type, source_location);
+    stack.top().Raise(std::move(data), source_location);
     std::longjmp(stack.top().Buff(), 1);  // NOLINT(cert-err52-cpp)
 }
 
 void Rethrow() {
-    Throw(caught.top().exception.type, caught.top().exception.source_location);
+    DoThrow(std::move(caught.top().data), caught.top().source_location);
 }
 
 }  // namespace except::detail

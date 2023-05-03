@@ -34,9 +34,10 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 add_library(
         except STATIC
         except
-        exceptions/stack.cpp
-        exceptions/node.cpp
+        impl/stack.cpp
+        impl/node.cpp
         exceptions/exception.cpp
+        impl/data.cpp
         objects/auto.cpp
         objects/manager.cpp
         utils/concepts.cpp

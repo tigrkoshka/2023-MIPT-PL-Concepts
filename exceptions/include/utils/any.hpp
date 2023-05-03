@@ -4,6 +4,9 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include <any>
+
+#include "utils/concepts.hpp"
 
 namespace except::detail::utils {
 
@@ -24,7 +27,6 @@ class Any {
     };
 
     template <std::copy_constructible ValueType>
-        requires(!std::is_class_v<ValueType>)
     struct Storage final : public StorageBase {
         template <typename... Args>
             requires std::constructible_from<ValueType, Args...>
@@ -60,8 +62,7 @@ class Any {
 
     template <typename ValueType>
         requires(!std::same_as<std::decay_t<ValueType>, Any> &&
-                 !std::same_as<std::decay_t<ValueType>,
-                               std::in_place_type_t<std::decay_t<ValueType>>> &&
+                 !concepts::InplaceType<ValueType> &&
                  std::copy_constructible<std::decay_t<ValueType>>)
     // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
     Any(ValueType&& value) {  // NOLINT(bugprone-forwarding-reference-overload)
@@ -176,20 +177,23 @@ class BadAnyCast : public std::bad_cast {
 // AnyCast
 
 template <typename ValueType>
-    requires std::constructible_from<ValueType, std::remove_cvref_t<ValueType>>
+    requires std::constructible_from<ValueType,
+                                     const std::remove_cvref_t<ValueType>&>
 ValueType AnyCast(const Any& anything) {
-    if (auto* value = AnyCast<std::remove_cvref_t<ValueType>>(&anything)) {
-        return static_cast<ValueType>(*value);
+    auto* value = AnyCast<std::remove_cvref_t<ValueType>>(&anything);
+    if (value == nullptr) {
+        throw BadAnyCast();
     }
 
-    throw BadAnyCast();
+    return static_cast<ValueType>(*value);
 }
 
 template <typename ValueType>
-    requires std::constructible_from<ValueType, std::remove_cvref_t<ValueType>>
+    requires std::constructible_from<ValueType, std::remove_cvref_t<ValueType>&>
 ValueType AnyCast(Any& anything) {
-    if (auto* value = AnyCast<std::remove_cvref_t<ValueType>>(&anything)) {
-        return static_cast<ValueType>(*value);
+    auto* value = AnyCast<std::remove_cvref_t<ValueType>>(&anything);
+    if (value == nullptr) {
+        throw BadAnyCast();
     }
 
     throw BadAnyCast();
@@ -198,11 +202,12 @@ ValueType AnyCast(Any& anything) {
 template <typename ValueType>
     requires std::constructible_from<ValueType, std::remove_cvref_t<ValueType>>
 ValueType AnyCast(Any&& anything) {
-    if (auto* value = AnyCast<std::remove_cvref_t<ValueType>>(&anything)) {
-        return static_cast<ValueType>(std::move(*value));
+    auto* value = AnyCast<std::remove_cvref_t<ValueType>>(&anything);
+    if (value == nullptr) {
+        throw BadAnyCast();
     }
 
-    throw BadAnyCast();
+    return static_cast<ValueType>(std::move(*value));
 }
 
 template <typename ValueType>

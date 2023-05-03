@@ -1,18 +1,24 @@
 #pragma once
 
 #include "exceptions/exception.hpp"
-#include "exceptions/stack.hpp"
+#include "impl/stack.hpp"
 #include "objects/auto.hpp"
 
-#define EXCEPT_DETAIL_GET_MACRO(ZERO, ONE, MACRO, ...) MACRO
+#define EXCEPT_DETAIL_GET_MACRO(ZERO, ONE, TWO, MACRO, ...) MACRO
 #define EXCEPT_DETAIL_CONCAT_(a, b) a##b
 #define EXCEPT_DETAIL_CONCAT(a, b) EXCEPT_DETAIL_CONCAT_(a, b)
 #define EXCEPT_DETAIL_NAME(name) EXCEPT_DETAIL_CONCAT(name, __LINE__)
 
-#define EXCEPT_DETAIL_CATCH_IMPL(exception_type) \
-    else if (except::detail::TryCatch((exception_type)))
+// clang-format off
+#define EXCEPT_DETAIL_CATCH_IMPL_WITH_VAR(Type, name)  \
+    else if (except::detail::CanCatch<Type>)           \
+        if (Type name = except::detail::Catch<Type>(); true)
+// clang-format on
 
-#define EXCEPT_DETAIL_CATCH_ALL else if (except::detail::Catch())
+#define EXCEPT_DETAIL_CATCH_IMPL(Type) \
+    else if (except::detail::MaybeCatch<Type>())
+
+#define EXCEPT_DETAIL_CATCH_ALL else if (except::detail::CatchAll())
 
 #define TRY                                                            \
     for (auto [EXCEPT_DETAIL_NAME(except_detail_once),                 \
@@ -22,13 +28,20 @@
          except::detail::FinishTry())                                  \
         if (setjmp(EXCEPT_DETAIL_NAME(except_detail_buff)) == 0)
 
-#define CATCH(...)                                            \
-    EXCEPT_DETAIL_GET_MACRO(ZERO __VA_OPT__(, )##__VA_ARGS__, \
-                            EXCEPT_DETAIL_CATCH_IMPL,         \
-                            EXCEPT_DETAIL_CATCH_ALL)          \
+#define CATCH(...)                                             \
+    EXCEPT_DETAIL_GET_MACRO(ZERO __VA_OPT__(, )##__VA_ARGS__,  \
+                            EXCEPT_DETAIL_CATCH_IMPL_WITH_VAR, \
+                            EXCEPT_DETAIL_CATCH_IMPL,          \
+                            EXCEPT_DETAIL_CATCH_ALL)           \
     __VA_OPT__((__VA_ARGS__))
 
-using except::detail::Throw;
+template <typename Exception>
+[[noreturn]] void Throw(
+    Exception exception,
+    std::source_location source_location = std::source_location::current()) {
+    except::detail::DoThrow(except::detail::Data{exception}, source_location);
+}
+
 using except::detail::Rethrow;
 
 template <typename T>

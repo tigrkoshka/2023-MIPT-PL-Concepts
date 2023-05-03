@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #include "../include/except"
 
@@ -355,6 +356,8 @@ void Assignments() {
     }
 }
 
+/*
+
 void Test1() {
     TRY {
         TRY {
@@ -515,13 +518,48 @@ void Test7() {
     }
 }
 
+*/
+
+struct A : except::Exception {};
+
+struct C {};
+
+struct B : A, C {};
+
+void Test() {
+    TRY {
+        TRY {
+            Throw(B{});
+        } CATCH (const A&) {
+            std::cout << "caught 1" << std::endl;
+            Rethrow();
+        }
+    } CATCH(A&) {
+        std::cout << "caught 2" << std::endl;
+    };
+}
+
+void TestCPP() {
+    try {
+        try {
+            throw B{};
+        } catch (const A&) {
+            std::cout << "caught 1" << std::endl;
+            throw;
+        }
+    } catch (A&) {
+        std::cout << "caught 2" << std::endl;
+    }
+}
+
 int main() {
-    Test1();
-    Test2();
-    Test3();
-    Test4();
-    Test5();
-    Test6();
-    Test7();
+//    Test1();
+//    Test2();
+//    Test3();
+//    Test4();
+//    Test5();
+//    Test6();
+    Test();
+    TestCPP();
     return 0;
 }

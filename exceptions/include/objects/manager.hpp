@@ -1,9 +1,8 @@
 #pragma once
 
-#include <functional>   // for function
 #include <stack>        // for stack
-#include <tuple>        // for tuple
 #include <type_traits>  // for is_destructible_v
+#include <utility>      // for pair
 #include <variant>      // for variant, monostate
 
 namespace except::detail {
@@ -16,39 +15,29 @@ class ObjectManager final {
     // not marked noexcept (even if they could be)
     template <typename T>
         requires std::is_destructible_v<T>
-    struct Destroyer {
-        // NOLINTNEXTLINE(fuchsia-overloaded-operator)
-        void operator()(void* ptr) const {
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            reinterpret_cast<T*>(ptr)->~T();
-        }
-    };
+    static void Destroy(void* ptr) {
+        static_cast<T*>(ptr)->~T();
+    }
 
-    // { destructor, instance }
-    using Destructible = std::tuple<std::function<void(void*)>, void*>;
-    using Checkpoint   = std::monostate;
+    using Destroyer = void(void*);
 
-    using Item = std::variant<Checkpoint, Destructible>;
-
-   private:
-    static bool TopIsCheckpoint();
-    static void DestroyTop();
+    // Checkpoint or destroyer with argument
+    using Item = std::variant<std::monostate, std::pair<Destroyer*, void*>>;
 
    public:
+    // static class
     ObjectManager() = delete;
 
     template <typename T>
+        requires std::is_destructible_v<T>
     static void RecordObject(T& instance) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        void* ptr = reinterpret_cast<void*>(&instance);
-        k_destroyers.emplace(std::make_tuple(Destroyer<T>(), ptr));
+        k_destroyers.emplace(std::make_pair(Destroy<T>, &instance));
     }
-
     static void RecordCheckpoint();
 
     // TODO: merge the following two methods
-    static void PopCheckpoint();
     static void PopDestructible();
+    static void PopCheckpoint();
 
     static void UnwindToCheckpoint();
 

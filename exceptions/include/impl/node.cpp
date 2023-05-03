@@ -14,10 +14,10 @@ int* Node::Buff() {
     return static_cast<int*>(buf);
 }
 
-void Node::Raise(Type type, std::source_location source_location) {
-    exception.type            = type;
-    exception.source_location = source_location;
-    raised                    = true;
+void Node::Raise(Data exc, std::source_location srcl) {
+    data            = std::move(exc);
+    source_location = srcl;
+    raised          = true;
 }
 
 }  // namespace except::detail
