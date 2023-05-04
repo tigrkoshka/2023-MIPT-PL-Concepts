@@ -26,7 +26,7 @@ struct Node {
     void Raise(Data, std::source_location);
 
     std::jmp_buf buf{};
-    bool raised = false;
+    bool raised{false};
     size_t depth;
 
     Data data;

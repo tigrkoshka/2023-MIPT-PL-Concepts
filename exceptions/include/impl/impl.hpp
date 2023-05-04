@@ -4,6 +4,7 @@
 #include <source_location>  // for source_location
 #include <stack>            // for stack
 #include <utility>          // for pair
+#include <vector>           // for vector
 
 #include "impl/node.hpp"
 #include "utils/concepts.hpp"
@@ -47,8 +48,14 @@ class Impl final {
     [[noreturn]] static void Rethrow();
 
    private:
-    static thread_local std::stack<Node> stack;
-    static thread_local std::stack<Node> caught;
+    // TODO: the second template argument is a workaround for a GCC bug,
+    //       which fails with SIGSEGV on trying to insert an element
+    //       in a thread_local std::deque (which is the default second
+    //       template parameter for std::stack)
+    //       once the bug is fixed, the second template parameter
+    //       can be removed
+    static thread_local std::stack<Node, std::vector<Node>> stack;
+    static thread_local std::stack<Node, std::vector<Node>> caught;
 };
 
 }  // namespace except::detail

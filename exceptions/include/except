@@ -9,7 +9,7 @@
 #define EXCEPT_DETAIL_CONCAT(a, b) EXCEPT_DETAIL_CONCAT_(a, b)
 
 #define EXCEPT_DETAIL_BUFF EXCEPT_DETAIL_CONCAT(except_detail_buff_, __LINE__)
-#define EXCEPT_DETAIL_ONCE EXCEPT_DETAIL_CONCAT(except_detail_buff_, __LINE__)
+#define EXCEPT_DETAIL_ONCE EXCEPT_DETAIL_CONCAT(except_detail_once_, __LINE__)
 
 #define TRY                                                          \
     for (int* EXCEPT_DETAIL_BUFF = except::detail::Impl::StartTry(); \

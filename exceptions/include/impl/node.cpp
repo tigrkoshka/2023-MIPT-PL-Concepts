@@ -9,8 +9,7 @@
 namespace except::detail {
 
 Node::Node(size_t depth)
-    : depth(depth) {
-}
+    : depth(depth) {}
 
 int* Node::Buff() {
     return static_cast<int*>(buf);

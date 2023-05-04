@@ -92,9 +92,12 @@ struct Data {
 
     template <utils::concepts::Throwable Value,
               utils::concepts::DecayedThrowable Decayed = std::decay_t<Value>,
-              // FIXME: this is workaround for a Clang bug, which cannot cope
-              //        with the following requires clause correctly,
-              //        track a similar issue here: https://clck.ru/34KUsG
+              // TODO: this is workaround for a Clang bug, which cannot cope
+              //       with the following requires clause correctly,
+              //       track a similar issue here: https://clck.ru/34KUsG,
+              //       once the bug has been fixed, this template parameter
+              //       can be removed in favour of the following requires
+              //       clause
               std::enable_if_t<!std::is_same_v<Decayed, Data>, bool> = true>
         requires(!std::same_as<Decayed, Data>)
     // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
