@@ -3,29 +3,13 @@
 #include <stack>    // for stack
 #include <variant>  // for get
 
-// TODO: delete
-#include <cassert>  // for assert
-
 namespace except::detail {
 
 void ObjectManager::RecordCheckpoint() {
     k_destroyers.emplace();
 }
 
-void ObjectManager::PopCheckpoint() {
-    // TODO: this line is for debug
-    //       (to throw an exception if anything unexpected happens)
-    //       delete it before submitting the task
-    assert(k_destroyers.top().index() == 0);
-    k_destroyers.pop();
-}
-
-
-void ObjectManager::PopDestructible() {
-    // TODO: this line is for debug
-    //       (to throw an exception if anything unexpected happens)
-    //       delete it before submitting the task
-    assert(k_destroyers.top().index() == 1);
+void ObjectManager::Pop() {
     k_destroyers.pop();
 }
 
@@ -38,10 +22,6 @@ void ObjectManager::UnwindToCheckpoint() {
         // calls k_destructors.pop() on destruction (see auto_object.hpp)
     }
 
-    // TODO: this line is for debug
-    //       (to throw an exception if anything unexpected happens)
-    //       delete it before submitting the task
-    assert(k_destroyers.top().index() == 0);
     k_destroyers.pop();
 }
 

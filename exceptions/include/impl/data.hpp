@@ -1,13 +1,11 @@
 #pragma once
 
-#include <any>
-#include <concepts>
-#include <iostream>
-#include <memory>
-#include <type_traits>
-#include <typeinfo>
+#include <concepts>     // for copy_constructible, ...
+#include <type_traits>  // for is_destructible_v, ...
+#include <typeinfo>     // for type_info
+#include <utility>      // for forward, exchange
 
-#include "exceptions/exception.hpp"
+#include "types/types.hpp"
 #include "utils/concepts.hpp"
 
 namespace except::detail {
@@ -20,31 +18,28 @@ struct Data {
     };
 
     struct TypeInfo {
-        const std::type_info* type_info;
+        const std::type_info* type_info{nullptr};
     };
 
-    template <utils::concepts::Decayed ValueType>
-        requires(std::copy_constructible<ValueType> &&
-                 std::is_destructible_v<ValueType>)
+    template <utils::concepts::DecayedThrowable Value>
     struct Manager {
-        using StoredType =
-            std::conditional_t<std::derived_from<ValueType, Exception>,
-                               Exception,
-                               ValueType>;
+        using Stored = std::conditional_t<std::derived_from<Value, Exception>,
+                                          Exception,
+                                          Value>;
 
         static void Manage(Operation operation,
                            const Data& data,
                            TypeInfo* ret) {
             switch (operation) {
                 case Operation::GET_TYPE_INFO:
-                    ret->type_info = &typeid(StoredType);
+                    ret->type_info = &typeid(Stored);
                     break;
 
                 case Operation::DESTROY:
-                    auto ptr = static_cast<StoredType*>(data.data_);
-                    if constexpr (std::derived_from<ValueType, Exception>) {
+                    auto ptr = static_cast<Stored*>(data.data_);
+                    if constexpr (std::derived_from<Value, Exception>) {
                         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-                        delete dynamic_cast<ValueType*>(ptr);
+                        delete dynamic_cast<Value*>(ptr);
                     } else {
                         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                         delete ptr;
@@ -54,33 +49,29 @@ struct Data {
         }
 
         template <typename... Args>
-            requires std::constructible_from<ValueType, Args...>
+            requires std::constructible_from<Value, Args...>
         static void Create(Data& data, Args&&... args) {
-            data.data_ = static_cast<StoredType*>(
+            data.data_ = static_cast<Stored*>(
                 // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-                new ValueType(std::forward<Args>(args)...));
+                new Value(std::forward<Args>(args)...));
         }
     };
 
-    template <utils::concepts::Decayed ValueType>
-        requires(std::copy_constructible<ValueType> &&
-                 std::is_destructible_v<ValueType>)
+    template <utils::concepts::DecayedThrowable Value>
     friend struct Manager;
 
    private:
-    template <utils::concepts::Decayed ValueType>
-        requires(utils::concepts::NonCVRef<ValueType> &&
-                 std::copy_constructible<ValueType> &&
-                 std::is_destructible_v<ValueType>)
-    [[nodiscard]] ValueType* DoGet() const {
+    template <utils::concepts::DecayedThrowable Value>
+        requires(utils::concepts::NonCVRef<Value>)
+    [[nodiscard]] Value* DoGet() const {
         const std::type_info& stored = Type();
 
-        if constexpr (std::derived_from<ValueType, Exception>) {
+        if constexpr (std::derived_from<Value, Exception>) {
             if (stored == typeid(Exception)) {
-                return dynamic_cast<ValueType*>(static_cast<Exception*>(data_));
+                return dynamic_cast<Value*>(static_cast<Exception*>(data_));
             }
-        } else if (stored == typeid(ValueType)) {
-            return static_cast<ValueType*>(data_);
+        } else if (stored == typeid(Value)) {
+            return static_cast<Value*>(data_);
         }
 
         return nullptr;
@@ -99,16 +90,17 @@ struct Data {
         : manage_(std::exchange(other.manage_, nullptr)),
           data_(std::exchange(other.data_, nullptr)) {}
 
-    template <typename ValueType>
-        requires(!std::same_as<std::decay_t<ValueType>, Data> &&
-                 std::copy_constructible<std::decay_t<ValueType>> &&
-                 std::is_destructible_v<std::decay_t<ValueType>>)
+    template <utils::concepts::Throwable Value,
+              utils::concepts::DecayedThrowable Decayed = std::decay_t<Value>,
+              // FIXME: this is workaround for a Clang bug, which cannot cope
+              //        with the following requires clause correctly,
+              //        track a similar issue here: https://clck.ru/34KUsG
+              std::enable_if_t<!std::is_same_v<Decayed, Data>, bool> = true>
+        requires(!std::same_as<Decayed, Data>)
     // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
-    explicit Data(ValueType&& value)
-        : manage_{&Manager<std::decay_t<ValueType>>::Manage} {
-        Manager<std::decay_t<ValueType>>::Create(
-            *this,
-            std::forward<ValueType>(value));
+    explicit Data(Value&& value)
+        : manage_{&Manager<Decayed>::Manage} {
+        Manager<Decayed>::Create(*this, std::forward<Value>(value));
     }
 
     // Destructor
@@ -132,13 +124,10 @@ struct Data {
         return *this;
     }
 
-    template <typename ValueType>
-        requires(!std::same_as<std::decay_t<ValueType>, Data> &&
-                 std::copy_constructible<std::decay_t<ValueType>> &&
-                 std::is_destructible_v<std::decay_t<ValueType>>)
+    template <typename Value>
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
-    Data& operator=(ValueType&& value) {
-        *this = Data(std::forward<ValueType>(value));
+    Data& operator=(Value&& value) {
+        *this = Data(std::forward<Value>(value));
         return *this;
     }
 
@@ -153,31 +142,19 @@ struct Data {
             return typeid(void);
         }
 
-        TypeInfo info;
+        TypeInfo info{};
         manage_(Operation::GET_TYPE_INFO, *this, &info);
         return *info.type_info;
     }
 
-    template <typename ValueType>
-        requires(utils::concepts::Decayed<std::remove_cvref_t<ValueType>> &&
-                 (std::is_reference_v<ValueType> ||
-                  std::copy_constructible<ValueType>) &&
-                 std::constructible_from<ValueType,
-                                         std::remove_cvref_t<ValueType>&> &&
-                 std::is_destructible_v<std::remove_cvref_t<ValueType>>)
-    [[nodiscard]] ValueType Get() {
-        return static_cast<ValueType>(*DoGet<std::remove_cvref_t<ValueType>>());
-    }
-
-    template <typename ValueType>
-        requires(utils::concepts::Decayed<std::remove_cvref_t<ValueType>> &&
-                 (std::is_reference_v<ValueType> ||
-                  std::copy_constructible<ValueType>) &&
-                 std::constructible_from<ValueType,
-                                         std::remove_cvref_t<ValueType>&> &&
-                 std::is_destructible_v<std::remove_cvref_t<ValueType>>)
+    template <utils::concepts::Catchable ValueType>
     [[nodiscard]] bool CanGet() {
         return DoGet<std::remove_cvref_t<ValueType>>() != nullptr;
+    }
+
+    template <utils::concepts::Catchable ValueType>
+    [[nodiscard]] ValueType Get() {
+        return static_cast<ValueType>(*DoGet<std::remove_cvref_t<ValueType>>());
     }
 
    private:

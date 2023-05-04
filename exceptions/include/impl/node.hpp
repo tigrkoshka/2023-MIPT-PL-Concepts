@@ -19,8 +19,8 @@ struct Node {
     Node& operator=(const Node&) = delete;
 
     // Movable
-    Node(Node&&) = default;
-    Node& operator=(Node&&) = default;
+    Node(Node&&) noexcept = default;
+    Node& operator=(Node&&) noexcept = default;
 
     int* Buff();
     void Raise(Data, std::source_location);

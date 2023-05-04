@@ -35,9 +35,7 @@ class ObjectManager final {
     }
     static void RecordCheckpoint();
 
-    // TODO: merge the following two methods
-    static void PopDestructible();
-    static void PopCheckpoint();
+    static void Pop();
 
     static void UnwindToCheckpoint();
 

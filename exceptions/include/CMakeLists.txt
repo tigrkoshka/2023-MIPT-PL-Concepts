@@ -30,19 +30,19 @@ endif ()
 # instead of by the relative path to the file where the inclusion happens
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
+# build OBJECT sub-libraries
+add_subdirectory(utils)
+add_subdirectory(objects)
+add_subdirectory(types)
+add_subdirectory(impl)
+
 # add the except STATIC library target
-add_library(
-        except STATIC
-        except
-        impl/stack.cpp
-        impl/node.cpp
-        exceptions/exception.cpp
-        impl/data.cpp
-        objects/auto.cpp
-        objects/manager.cpp
-        utils/concepts.cpp
-        utils/any.cpp
-)
+add_library(except STATIC except)
+
+# link the OBJECT sub-libraries to the except STATIC library
+# see https://cmake.org/pipermail/cmake/2018-September/068263.html
+# for explanation on combining several libraries into one
+target_link_libraries(except impl types objects utils)
 
 # place the resulting library archive in the except/lib directory
 # instead of in the build directory produced by cmake

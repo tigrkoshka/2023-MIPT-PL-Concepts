@@ -1,32 +1,35 @@
 #pragma once
 
-#include "exceptions/exception.hpp"
-#include "impl/stack.hpp"
+#include "impl/impl.hpp"
 #include "objects/auto.hpp"
+#include "types/types.hpp"
 
 #define EXCEPT_DETAIL_GET_MACRO(ZERO, ONE, TWO, MACRO, ...) MACRO
 #define EXCEPT_DETAIL_CONCAT_(a, b) a##b
 #define EXCEPT_DETAIL_CONCAT(a, b) EXCEPT_DETAIL_CONCAT_(a, b)
-#define EXCEPT_DETAIL_NAME(name) EXCEPT_DETAIL_CONCAT(name, __LINE__)
+
+#define EXCEPT_DETAIL_BUFF EXCEPT_DETAIL_CONCAT(except_detail_buff_, __LINE__)
+#define EXCEPT_DETAIL_ONCE EXCEPT_DETAIL_CONCAT(except_detail_buff_, __LINE__)
+
+#define TRY                                                          \
+    for (int* EXCEPT_DETAIL_BUFF = except::detail::Impl::StartTry(); \
+         EXCEPT_DETAIL_BUFF != nullptr;                              \
+         except::detail::Impl::FinishTry(),                          \
+              std::exchange(EXCEPT_DETAIL_BUFF, nullptr))            \
+        if (setjmp(EXCEPT_DETAIL_BUFF) == 0)
 
 // clang-format off
-#define EXCEPT_DETAIL_CATCH_IMPL_WITH_VAR(Type, name)  \
-    else if (except::detail::CanCatch<Type>)           \
-        if (Type name = except::detail::Catch<Type>(); true)
+#define EXCEPT_DETAIL_CATCH_IMPL_WITH_VAR(Type, name) \
+    else if (except::detail::Impl::CanCatch<Type>())  \
+        for (auto [name, EXCEPT_DETAIL_ONCE] =        \
+                 except::detail::Impl::Catch<Type>(); \
+             std::exchange(EXCEPT_DETAIL_ONCE, false);)
 // clang-format on
 
 #define EXCEPT_DETAIL_CATCH_IMPL(Type) \
-    else if (except::detail::MaybeCatch<Type>())
+    else if (except::detail::Impl::MaybeCatch<Type>())
 
-#define EXCEPT_DETAIL_CATCH_ALL else if (except::detail::CatchAll())
-
-#define TRY                                                            \
-    for (auto [EXCEPT_DETAIL_NAME(except_detail_once),                 \
-               EXCEPT_DETAIL_NAME(except_detail_buff)] =               \
-             except::detail::StartTry();                               \
-         std::exchange(EXCEPT_DETAIL_NAME(except_detail_once), false); \
-         except::detail::FinishTry())                                  \
-        if (setjmp(EXCEPT_DETAIL_NAME(except_detail_buff)) == 0)
+#define EXCEPT_DETAIL_CATCH_ALL else if (except::detail::Impl::CatchAll())
 
 #define CATCH(...)                                             \
     EXCEPT_DETAIL_GET_MACRO(ZERO __VA_OPT__(, )##__VA_ARGS__,  \
@@ -35,14 +38,17 @@
                             EXCEPT_DETAIL_CATCH_ALL)           \
     __VA_OPT__((__VA_ARGS__))
 
-template <typename Exception>
+template <except::detail::utils::concepts::Throwable Exception>
 [[noreturn]] void Throw(
     Exception exception,
     std::source_location source_location = std::source_location::current()) {
-    except::detail::DoThrow(except::detail::Data{exception}, source_location);
+    except::detail::Impl::Throw(except::detail::Data{exception},
+                                source_location);
 }
 
-using except::detail::Rethrow;
+[[noreturn]] void Throw() {
+    except::detail::Impl::Rethrow();
+}
 
 template <typename T>
 using AutoObject = except::detail::AutoObject<T>;

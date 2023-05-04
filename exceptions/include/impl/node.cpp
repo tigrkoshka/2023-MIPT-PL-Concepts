@@ -2,13 +2,15 @@
 
 #include <cstddef>          // for size_t
 #include <source_location>  // for source_location
+#include <utility>          // for move
 
-#include "exceptions/exception.hpp"
+#include "impl/data.hpp"
 
 namespace except::detail {
 
 Node::Node(size_t depth)
-    : depth(depth) {}
+    : depth(depth) {
+}
 
 int* Node::Buff() {
     return static_cast<int*>(buf);

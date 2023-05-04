@@ -529,26 +529,40 @@ struct B : A, C {};
 void Test() {
     TRY {
         TRY {
-            Throw(B{});
-        } CATCH (const A&) {
-            std::cout << "caught 1" << std::endl;
-            Rethrow();
+            Throw(size_t(5));
+        } CATCH (int&, aaa) {
+            std::cout << "(1): caught int: " << aaa << std::endl;
+            aaa = 10;
+            Throw();
+        } CATCH(size_t&, aaa) {
+            std::cout << "(1): caught size_t: " << aaa << std::endl;
+            aaa = 10;
+            Throw();
         }
-    } CATCH(A&) {
-        std::cout << "caught 2" << std::endl;
-    };
+    } CATCH (int&, aaa) {
+        std::cout << "(2): caught int: " << aaa << std::endl;
+    } CATCH(size_t&, aaa) {
+        std::cout << "(2): caught size_t: " << aaa << std::endl;
+    }
 }
 
 void TestCPP() {
     try {
         try {
-            throw B{};
-        } catch (const A&) {
-            std::cout << "caught 1" << std::endl;
+            throw size_t(5);
+        } catch (int& aaa) {
+            std::cout << "(1): caught int: " << aaa << std::endl;
+            aaa = 10;
+            throw;
+        } catch (size_t& aaa) {
+            std::cout << "(1): caught size_t: " << aaa << std::endl;
+            aaa = 10;
             throw;
         }
-    } catch (A&) {
-        std::cout << "caught 2" << std::endl;
+    } catch (int& aaa) {
+        std::cout << "(2): caught int: " << aaa << std::endl;
+    } catch (size_t& aaa) {
+        std::cout << "(2): caught size_t: " << aaa << std::endl;
     }
 }
 

@@ -1,11 +1,12 @@
-#include "stack.hpp"
+#include "impl.hpp"
 
 #include <csetjmp>          // for longjmp
+#include <exception>        // for terminate
 #include <iostream>         // for cerr, endl
-#include <optional>         // for optional, nullopt
 #include <source_location>  // for source_location
-#include <stack>            // for stack
+#include <utility>          // for move
 
+#include "impl/data.hpp"
 #include "impl/node.hpp"
 #include "objects/manager.hpp"
 
@@ -238,16 +239,13 @@
 
 namespace except::detail {
 
-thread_local std::stack<Node> stack;
-thread_local std::stack<Node> caught;
-
-std::pair<bool, int*> StartTry() {
+int* Impl::StartTry() {
     stack.emplace(stack.size());
     ObjectManager::RecordCheckpoint();
-    return {true, stack.top().Buff()};
+    return stack.top().Buff();
 }
 
-void FinishTry() {
+void Impl::FinishTry() {
     if (stack.empty()) {
         caught.pop();
         return;
@@ -259,24 +257,28 @@ void FinishTry() {
         Node thrown = std::move(stack.top());
         stack.pop();
 
-        DoThrow(std::move(thrown.data), thrown.source_location);
+        Throw(std::move(thrown.data), thrown.source_location);
     }
 
     if (!caught.empty() && stack.top().depth < caught.top().depth) {
         caught.pop();
     } else {
-        ObjectManager::PopCheckpoint();
+        ObjectManager::Pop();
         stack.pop();
     }
 }
 
-bool CatchAll() {
+void Impl::DoCatch() {
     caught.push(std::move(stack.top()));
     stack.pop();
-    return true;
-};
+}
 
-void DoThrow(Data data, std::source_location source_location) {
+bool Impl::CatchAll() {
+    DoCatch();
+    return true;
+}
+
+void Impl::Throw(Data data, std::source_location source_location) {
     if (stack.empty()) {
         std::cerr << "uncaught exception at line " << source_location.line()
                   << " of file " << source_location.file_name() << std::endl;
@@ -292,8 +294,11 @@ void DoThrow(Data data, std::source_location source_location) {
     std::longjmp(stack.top().Buff(), 1);  // NOLINT(cert-err52-cpp)
 }
 
-void Rethrow() {
-    DoThrow(std::move(caught.top().data), caught.top().source_location);
+void Impl::Rethrow() {
+    Throw(std::move(caught.top().data), caught.top().source_location);
 }
+
+thread_local std::stack<Node> Impl::stack;
+thread_local std::stack<Node> Impl::caught;
 
 }  // namespace except::detail
