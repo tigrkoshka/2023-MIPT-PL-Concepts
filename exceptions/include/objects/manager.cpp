@@ -9,7 +9,7 @@ void ObjectManager::RecordCheckpoint() {
     k_destroyers.emplace();
 }
 
-void ObjectManager::Pop() {
+void ObjectManager::Pop() noexcept {
     k_destroyers.pop();
 }
 

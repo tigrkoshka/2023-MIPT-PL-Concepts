@@ -30,12 +30,12 @@ class ObjectManager final {
 
     template <typename T>
         requires std::is_destructible_v<T>
-    static void RecordObject(T& instance) {
+    static void RecordObject(T& instance) noexcept {
         k_destroyers.emplace(std::make_pair(Destroy<T>, &instance));
     }
     static void RecordCheckpoint();
 
-    static void Pop();
+    static void Pop() noexcept;
 
     static void UnwindToCheckpoint();
 

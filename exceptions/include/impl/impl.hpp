@@ -52,6 +52,7 @@ class Impl final {
     //       which fails with SIGSEGV on trying to insert an element
     //       in a thread_local std::deque (which is the default second
     //       template parameter for std::stack)
+    //       track a similar issue here: https://clck.ru/34Ld6E
     //       once the bug is fixed, the second template parameter
     //       can be removed
     static thread_local std::stack<Node, std::vector<Node>> stack;

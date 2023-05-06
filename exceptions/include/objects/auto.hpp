@@ -1,6 +1,5 @@
 #pragma once
 
-#include <concepts>          // for constructible_from, ...
 #include <initializer_list>  // for initializer_list
 #include <type_traits>       // for is_destructible_v, ...
 #include <utility>           // for forward
@@ -15,20 +14,17 @@ template <typename T>
              utils::concepts::NonCVRef<T>)
 struct AutoObject final {
    private:
-    static constexpr bool kObjectManagerEnabled = std::is_destructible_v<T>;
-
-   private:
     void Register() noexcept {}
     void Unregister() noexcept {}
 
-    void Register()
-        requires kObjectManagerEnabled
+    void Register() noexcept
+        requires std::is_destructible_v<T>
     {
         except::detail::ObjectManager::RecordObject<AutoObject<T>>(*this);
     }
 
-    void Unregister()
-        requires kObjectManagerEnabled
+    void Unregister() noexcept
+        requires std::is_destructible_v<T>
     {
         except::detail::ObjectManager::Pop();
     }
@@ -37,12 +33,11 @@ struct AutoObject final {
     // general form constructors
 
     template <typename... From>
-        requires std::constructible_from<T, From...>
+        requires std::is_constructible_v<T, From...>
     explicit(!utils::concepts::ImplicitlyConstructibleFrom<T, From...>)
         // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
         AutoObject(From&&... from)  //
-        noexcept(std::is_nothrow_constructible_v<T, From...> &&
-                 !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_constructible_v<T, From...>)
         : instance_(std::forward<From>(from)...) {
         Register();
     }
@@ -50,14 +45,13 @@ struct AutoObject final {
     // initializer list constructor
 
     template <typename List>
-        requires std::constructible_from<T, std::initializer_list<List>&>
+        requires std::is_constructible_v<T, std::initializer_list<List>&>
     explicit(!utils::concepts::ImplicitlyConstructibleFrom<
              T,
              std::initializer_list<List>&>)
         AutoObject(std::initializer_list<List> list)  //
         noexcept(
-            std::is_nothrow_constructible_v<T, std::initializer_list<List>> &&
-            !kObjectManagerEnabled)
+            std::is_nothrow_constructible_v<T, std::initializer_list<List>>)
         : instance_(list) {
         Register();
     }
@@ -66,7 +60,7 @@ struct AutoObject final {
 
     template <typename List, typename... Args>
         requires std::
-            constructible_from<T, std::initializer_list<List>&, Args...>
+            is_constructible_v<T, std::initializer_list<List>&, Args...>
         explicit(!utils::concepts::ImplicitlyConstructibleFrom<
                  T,
                  std::initializer_list<List>&,
@@ -74,8 +68,7 @@ struct AutoObject final {
             AutoObject(std::initializer_list<List> list, Args... args)  //
         noexcept(std::is_nothrow_constructible_v<T,
                                                  std::initializer_list<List>&,
-                                                 Args...> &&
-                 !kObjectManagerEnabled)
+                                                 Args...>)
         : instance_(list, std::forward<Args>(args)...) {
         Register();
     }
@@ -84,8 +77,7 @@ struct AutoObject final {
 
     explicit(!utils::concepts::ImplicitlyConstructibleFrom<T, const T&>)
         AutoObject(const AutoObject& other)  //
-        noexcept(std::is_nothrow_copy_constructible_v<T> &
-                 !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_copy_constructible_v<T>)
         requires(std::is_copy_constructible_v<T> &&
                  !std::is_constructible_v<T, const AutoObject&>)
         : instance_(static_cast<const T&>(other)) {
@@ -96,8 +88,7 @@ struct AutoObject final {
 
     explicit(!utils::concepts::ImplicitlyConstructibleFrom<T, T&&>)
         AutoObject(AutoObject&& other)  //
-        noexcept(std::is_nothrow_move_constructible_v<T> &&
-                 !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_move_constructible_v<T>)
         requires(std::is_move_constructible_v<T> &&
                  !std::is_constructible_v<T, AutoObject &&>)
         : instance_(static_cast<T&&>(other)) {
@@ -105,25 +96,21 @@ struct AutoObject final {
     }
 
     // destructor
-    //
-    //   [NOTE]: the destructor in this case is never noexcept,
-    //           because even if T is nothrow destructible, then we
-    //           perform actions with the Manager's stack, which
-    //           may throw
-    ~AutoObject() noexcept(false) {
+
+    ~AutoObject() noexcept(std::is_nothrow_destructible_v<T>) {
         Unregister();
     }
 
     // copy assignment (if T supports it)
 
     AutoObject& operator=(const AutoObject&)  //
-        noexcept(std::is_nothrow_copy_assignable_v<T> && !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_copy_assignable_v<T>)
         requires std::is_copy_assignable_v<T>
     = default;
 
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     AutoObject& operator=(const T& other)  //
-        noexcept(std::is_nothrow_copy_assignable_v<T> && !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_copy_assignable_v<T>)
         requires std::is_copy_assignable_v<T>
     {
         instance_ = other;
@@ -133,13 +120,13 @@ struct AutoObject final {
     // move assignment (if T supports it)
 
     AutoObject& operator=(AutoObject&&)  //
-        noexcept(std::is_nothrow_move_assignable_v<T> && !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_move_assignable_v<T>)
         requires std::is_move_assignable_v<T>
     = default;
 
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     AutoObject& operator=(T&& other)  //
-        noexcept(std::is_nothrow_move_assignable_v<T> && !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_move_assignable_v<T>)
         requires std::is_move_assignable_v<T>
     {
         instance_ = std::move(other);
@@ -176,20 +163,17 @@ template <typename T>
              !std::is_final_v<T>)
 struct AutoObject<T> final : T {
    private:
-    static constexpr bool kObjectManagerEnabled = std::is_destructible_v<T>;
-
-   private:
     void Register() noexcept {}
     void Unregister() noexcept {}
 
-    void Register()
-        requires kObjectManagerEnabled
+    void Register() noexcept
+        requires std::is_destructible_v<T>
     {
         except::detail::ObjectManager::RecordObject<AutoObject<T>>(*this);
     }
 
-    void Unregister()
-        requires kObjectManagerEnabled
+    void Unregister() noexcept
+        requires std::is_destructible_v<T>
     {
         except::detail::ObjectManager::Pop();
     }
@@ -198,12 +182,11 @@ struct AutoObject<T> final : T {
     // general form constructors
 
     template <typename... From>
-        requires std::constructible_from<T, From...>
+        requires std::is_constructible_v<T, From...>
     explicit(!utils::concepts::ImplicitlyConstructibleFrom<T, From...>)
         // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
         AutoObject(From&&... from)  //
-        noexcept(std::is_nothrow_constructible_v<T, From...> &&
-                 !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_constructible_v<T, From...>)
         : T(std::forward<From>(from)...) {
         Register();
     }
@@ -211,14 +194,13 @@ struct AutoObject<T> final : T {
     // initializer list constructor
 
     template <typename List>
-        requires std::constructible_from<T, std::initializer_list<List>&>
+        requires std::is_constructible_v<T, std::initializer_list<List>&>
     explicit(!utils::concepts::ImplicitlyConstructibleFrom<
              T,
              std::initializer_list<List>&>)
         AutoObject(std::initializer_list<List> list)  //
         noexcept(
-            std::is_nothrow_constructible_v<T, std::initializer_list<List>> &&
-            !kObjectManagerEnabled)
+            std::is_nothrow_constructible_v<T, std::initializer_list<List>>)
         : T(list) {
         Register();
     }
@@ -227,7 +209,7 @@ struct AutoObject<T> final : T {
 
     template <typename List, typename... Args>
         requires std::
-            constructible_from<T, std::initializer_list<List>&, Args...>
+            is_constructible_v<T, std::initializer_list<List>&, Args...>
         explicit(!utils::concepts::ImplicitlyConstructibleFrom<
                  T,
                  std::initializer_list<List>&,
@@ -235,8 +217,7 @@ struct AutoObject<T> final : T {
             AutoObject(std::initializer_list<List> list, Args... args)  //
         noexcept(std::is_nothrow_constructible_v<T,
                                                  std::initializer_list<List>&,
-                                                 Args...> &&
-                 !kObjectManagerEnabled)
+                                                 Args...>)
         : T(list, std::forward<Args>(args)...) {
         Register();
     }
@@ -245,8 +226,7 @@ struct AutoObject<T> final : T {
 
     explicit(!utils::concepts::ImplicitlyConstructibleFrom<T, const T&>)
         AutoObject(const AutoObject& other)  //
-        noexcept(std::is_nothrow_copy_constructible_v<T> &
-                 !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_copy_constructible_v<T>)
         requires(std::is_copy_constructible_v<T> &&
                  !std::is_constructible_v<T, const AutoObject&>)
         : T(static_cast<const T&>(other)) {
@@ -257,8 +237,7 @@ struct AutoObject<T> final : T {
 
     explicit(!utils::concepts::ImplicitlyConstructibleFrom<T, T&&>)
         AutoObject(AutoObject&& other)  //
-        noexcept(std::is_nothrow_move_constructible_v<T> &&
-                 !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_move_constructible_v<T>)
         requires(std::is_move_constructible_v<T> &&
                  !std::is_constructible_v<T, AutoObject &&>)
         : T(static_cast<T&&>(other)) {
@@ -266,25 +245,21 @@ struct AutoObject<T> final : T {
     }
 
     // destructor
-    //
-    //   [NOTE]: the destructor in this case is never noexcept,
-    //           because even if T is nothrow destructible, then we
-    //           perform actions with the Manager's stack, which
-    //           may throw
-    ~AutoObject() noexcept(false) {
+
+    ~AutoObject() noexcept(std::is_nothrow_destructible_v<T>) {
         Unregister();
     }
 
     // copy assignment (if T supports it)
 
     AutoObject& operator=(const AutoObject&)  //
-        noexcept(std::is_nothrow_copy_assignable_v<T> && !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_copy_assignable_v<T>)
         requires std::is_copy_assignable_v<T>
     = default;
 
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     AutoObject& operator=(const T& other)  //
-        noexcept(std::is_nothrow_copy_assignable_v<T> && !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_copy_assignable_v<T>)
         requires std::is_copy_assignable_v<T>
     {
         static_cast<T*>(this)->operator=(other);
@@ -294,13 +269,13 @@ struct AutoObject<T> final : T {
     // move assignment (if T supports it)
 
     AutoObject& operator=(AutoObject&&)  //
-        noexcept(std::is_nothrow_move_assignable_v<T> && !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_move_assignable_v<T>)
         requires std::is_move_assignable_v<T>
     = default;
 
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     AutoObject& operator=(T&& other)  //
-        noexcept(std::is_nothrow_move_assignable_v<T> && !kObjectManagerEnabled)
+        noexcept(std::is_nothrow_move_assignable_v<T>)
         requires std::is_move_assignable_v<T>
     {
         static_cast<T*>(this)->operator=(std::move(other));

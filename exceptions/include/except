@@ -50,5 +50,4 @@ template <except::detail::utils::concepts::Throwable Exception>
     except::detail::Impl::Rethrow();
 }
 
-template <typename T>
-using AutoObject = except::detail::AutoObject<T>;
+using except::detail::AutoObject;
