@@ -10,10 +10,11 @@ add_executable(
         suits/04_conversion.cpp
         suits/05_operators.cpp
         suits/06_methods.cpp
+        suits/07_usage.cpp
         suits/fixture.cpp
         utils/sample_class.cpp
         utils/stats.cpp
         utils/concepts.cpp
-        suits/07_usage.cpp)
+)
 target_link_libraries(objects_test GTest::gtest GTest::gtest_main objects)
 add_test(objects objects_test)

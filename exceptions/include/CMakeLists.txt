@@ -50,3 +50,5 @@ set_target_properties(
         except
         PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../lib"
 )
+
+add_subdirectory(tests)

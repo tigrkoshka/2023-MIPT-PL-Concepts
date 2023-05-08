@@ -45,7 +45,7 @@ class Impl final {
     static bool CatchAll();
 
     [[noreturn]] static void Throw(Data, std::source_location);
-    [[noreturn]] static void Rethrow();
+    [[noreturn]] static void Throw();
 
    private:
     // TODO: the second template argument is a workaround for a GCC bug,
@@ -55,8 +55,8 @@ class Impl final {
     //       track a similar issue here: https://clck.ru/34Ld6E
     //       once the bug is fixed, the second template parameter
     //       can be removed
-    static thread_local std::stack<Node, std::vector<Node>> stack;
-    static thread_local std::stack<Node, std::vector<Node>> caught;
+    static std::stack<Node, std::vector<Node>> stack;
+    static std::stack<Node, std::vector<Node>> caught;
 };
 
 }  // namespace except::detail

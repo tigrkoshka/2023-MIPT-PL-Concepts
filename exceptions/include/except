@@ -46,6 +46,6 @@ template <except::detail::utils::concepts::Throwable Exception>
                                 source_location);
 }
 
-[[noreturn]] void Throw() {
-    except::detail::Impl::Rethrow();
+[[noreturn]] inline void Throw() {
+    except::detail::Impl::Throw();
 }

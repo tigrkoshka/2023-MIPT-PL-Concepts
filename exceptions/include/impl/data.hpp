@@ -14,11 +14,13 @@ struct Data {
    private:
     enum class Operation {
         GET_TYPE_INFO,
+        COPY,
         DESTROY,
     };
 
-    struct TypeInfo {
+    struct Return {
         const std::type_info* type_info{nullptr};
+        void* copy{nullptr};
     };
 
     template <utils::concepts::DecayedThrowable Value>
@@ -27,23 +29,28 @@ struct Data {
                                           Exception,
                                           Value>;
 
-        static void Manage(Operation operation,
-                           const Data& data,
-                           TypeInfo* ret) {
+        static void Manage(Operation operation, const Data& data, Return* ret) {
+            auto simple_ptr = static_cast<Stored*>(data.data_);
+            Value* ptr{nullptr};
+            if constexpr (std::same_as<Stored, Exception>) {
+                ptr = dynamic_cast<Value*>(simple_ptr);
+            } else {
+                ptr = simple_ptr;
+            }
+
             switch (operation) {
                 case Operation::GET_TYPE_INFO:
                     ret->type_info = &typeid(Stored);
                     break;
 
+                case Operation::COPY:
+                    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+                    ret->copy = static_cast<Stored*>(new Value(*ptr));
+                    break;
+
                 case Operation::DESTROY:
-                    auto ptr = static_cast<Stored*>(data.data_);
-                    if constexpr (std::derived_from<Value, Exception>) {
-                        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-                        delete dynamic_cast<Value*>(ptr);
-                    } else {
-                        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-                        delete ptr;
-                    }
+                    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+                    delete ptr;
                     break;
             }
         }
@@ -82,8 +89,13 @@ struct Data {
 
     Data() = default;
 
-    // Non-copyable
-    Data(const Data&) = delete;
+    // Copyable
+    Data(const Data& other)
+        : manage_(other.manage_) {
+        Return info{};
+        other.manage_(Operation::COPY, other, &info);
+        data_ = info.copy;
+    }
 
     // Movable
     Data(Data&& other) noexcept
@@ -116,8 +128,20 @@ struct Data {
 
     // Assignment operators
 
-    // Non-copyable
-    Data& operator=(const Data&) = delete;
+    // Copyable
+    Data& operator=(const Data& other) {
+        if (this == &other) {
+            return *this;
+        }
+
+        manage_ = other.manage_;
+
+        Return info{};
+        other.manage_(Operation::COPY, other, &info);
+        data_ = info.copy;
+
+        return *this;
+    }
 
     // Movable
     Data& operator=(Data&& other) noexcept {
@@ -145,7 +169,7 @@ struct Data {
             return typeid(void);
         }
 
-        TypeInfo info{};
+        Return info{};
         manage_(Operation::GET_TYPE_INFO, *this, &info);
         return *info.type_info;
     }
@@ -161,7 +185,7 @@ struct Data {
     }
 
    private:
-    void (*manage_)(Operation, const Data&, TypeInfo*){nullptr};
+    void (*manage_)(Operation, const Data&, Return*){nullptr};
     void* data_{nullptr};
 };
 

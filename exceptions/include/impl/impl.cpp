@@ -69,11 +69,16 @@ void Impl::Throw(Data data, std::source_location source_location) {
     std::longjmp(stack.top().Buff(), 1);  // NOLINT(cert-err52-cpp)
 }
 
-void Impl::Rethrow() {
-    Throw(std::move(caught.top().data), caught.top().source_location);
+void Impl::Throw() {
+    if (caught.empty()) {
+        std::terminate();
+    }
+
+    // copy data, because this exception might be reused later
+    Throw(caught.top().data, caught.top().source_location);
 }
 
-thread_local std::stack<Node, std::vector<Node>> Impl::stack;
-thread_local std::stack<Node, std::vector<Node>> Impl::caught;
+std::stack<Node, std::vector<Node>> Impl::stack;
+std::stack<Node, std::vector<Node>> Impl::caught;
 
 }  // namespace except::detail

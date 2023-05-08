@@ -1,6 +1,5 @@
 #pragma once
 
-#include <concepts>     // for constructible_from
 #include <type_traits>  // for is_class_v, remove_cvref_t, decay_t
 #include <utility>      // for declval
 
@@ -10,13 +9,13 @@ template <typename T>
 concept Class = std::is_class_v<T>;
 
 template <typename T>
-concept NonCV = std::same_as<T, std::remove_cv_t<T>>;
+concept NonCV = std::is_same_v<T, std::remove_cv_t<T>>;
 
 template <typename T>
-concept NonCVRef = std::same_as<T, std::remove_cvref_t<T>>;
+concept NonCVRef = std::is_same_v<T, std::remove_cvref_t<T>>;
 
 template <typename T>
-concept Decayed = std::same_as<T, std::decay_t<T>>;
+concept Decayed = std::is_same_v<T, std::decay_t<T>>;
 
 namespace detail {
 
@@ -31,13 +30,14 @@ concept ImplicitlyConstructibleFrom = requires {
 };
 
 template <typename T, typename U = std::decay_t<T>>
-concept Throwable = std::copy_constructible<U> && std::is_destructible_v<U>;
+concept Throwable = std::is_copy_constructible_v<U> &&  //
+                    std::is_destructible_v<U>;
 
 template <typename T>
 concept DecayedThrowable = Throwable<T> && Decayed<T>;
 
 template <typename T, typename UnCVRef = std::remove_cvref_t<T>>
-concept Catchable = (std::is_reference_v<T> || std::copy_constructible<T>)&&  //
-                    utils::concepts::DecayedThrowable<UnCVRef>;
+concept Catchable = DecayedThrowable<UnCVRef> &&  //
+                    (std::is_reference_v<T> || std::is_copy_constructible_v<T>);
 
 }  // namespace except::detail::utils::concepts

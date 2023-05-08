@@ -199,8 +199,7 @@
 namespace except::detail {
 
 template <typename T>
-    requires(utils::concepts::Class<T> &&  //
-             utils::concepts::NonCV<T>)
+    requires utils::concepts::Class<T> && utils::concepts::NonCV<T>
 struct AutoObject final {
    private:
     inline void Register() noexcept {}
@@ -744,7 +743,8 @@ struct AutoObject<T> final : T {
         requires std::is_move_assignable_v<T>
     = default;
 
-    // NOLINTNEXTLINE(fuchsia-overloaded-operator)
+    // NOLINTBEGIN(fuchsia-overloaded-operator)
+
     AutoObject& operator=(T&& other)  //
         noexcept(std::is_nothrow_move_assignable_v<T>)
         requires std::is_move_assignable_v<T>
@@ -760,11 +760,12 @@ struct AutoObject<T> final : T {
     const T* operator->() const noexcept {
         return this;
     }
+
+    // NOLINTEND(fuchsia-overloaded-operator)
 };
 
 template <typename T>
-    requires(utils::concepts::Class<T> &&  //
-             utils::concepts::NonCV<T>)
+    requires utils::concepts::Class<T> && utils::concepts::NonCV<T>
 AutoObject(T) -> AutoObject<T>;
 
 }  // namespace except::detail
