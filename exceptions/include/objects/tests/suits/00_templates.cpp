@@ -6,16 +6,14 @@
 
 #include "objects/auto.hpp"
 #include "objects/tests/utils/concepts.hpp"
-#include "objects/tests/utils/sample_class.hpp"
-#include "objects/tests/utils/stats.hpp"
 
 namespace except::test::objects {
 
-struct A {};
+struct SomeStruct {};
 
 TEST(Template, Concept) {
     static_assert(                           //
-        CanAutoObject<A> &&                  //
+        CanAutoObject<SomeStruct> &&         //
         CanAutoObject<std::string> &&        //
         CanAutoObject<std::vector<int>> &&   //
         CanAutoObject<decltype([](int) {})>  // lambda is a class
@@ -34,14 +32,14 @@ TEST(Template, Concept) {
         not CanAutoObject<void (*)(double)> &&   // not a class
         not CanAutoObject<void(std::string)> &&  // not a class
 
-        not CanAutoObject<A*> &&           // not a class
-        not CanAutoObject<const A****> &&  // not a class
-        not CanAutoObject<A&> &&           // not a class
-        not CanAutoObject<A&&> &&          // not a class
+        not CanAutoObject<SomeStruct*> &&           // not a class
+        not CanAutoObject<const SomeStruct****> &&  // not a class
+        not CanAutoObject<SomeStruct&> &&           // not a class
+        not CanAutoObject<SomeStruct&&> &&          // not a class
 
-        not CanAutoObject<const A> &&           // cv-qualified
-        not CanAutoObject<volatile A> &&        // cv-qualified
-        not CanAutoObject<const volatile A> &&  // cv-qualified
+        not CanAutoObject<const SomeStruct> &&           // cv-qualified
+        not CanAutoObject<volatile SomeStruct> &&        // cv-qualified
+        not CanAutoObject<const volatile SomeStruct> &&  // cv-qualified
 
         not CanAutoObject<const std::string> &&        // cv-qualified
         not CanAutoObject<volatile std::string> &&     // cv-qualified

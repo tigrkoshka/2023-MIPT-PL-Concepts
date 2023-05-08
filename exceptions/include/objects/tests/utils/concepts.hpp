@@ -23,12 +23,12 @@ concept CanAutoObject = requires { typename AutoObject<T>; };
 
 template <typename T>
 concept CanIndex = requires {
-    { std::declval<T>().Index() };
+    { std::declval<T>()->Index() };
 };
 
 template <typename T>
 concept CanIncrementIndex = requires {
-    { std::declval<T>().IncrementIndex() };
+    { std::declval<T>()->IncrementIndex() };
 };
 
 }  // namespace except::test::objects

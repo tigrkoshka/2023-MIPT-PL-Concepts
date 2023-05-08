@@ -8,21 +8,18 @@
 #include <vector>       // for vector
 
 #include "objects/auto.hpp"
+#include "objects/tests/suits/fixture.hpp"
 #include "objects/tests/utils/concepts.hpp"
 #include "objects/tests/utils/sample_class.hpp"
 #include "objects/tests/utils/stats.hpp"
 
-#ifdef FINAL
-#define DOT ->
-#define ns final
-#else
-#define DOT .
-#define ns simple
-#endif
+namespace except::test::objects {
 
-namespace except::test::objects::ns {
+TYPED_TEST(AutoTest, DefaultConstructor) {
+    using Plain    = TestFixture::Plain;
+    using Explicit = TestFixture::Explicit;
+    using Noexcept = TestFixture::Noexcept;
 
-TEST(Constructors, Default) {
     ResetStats();
 
     // explicit call
@@ -58,7 +55,11 @@ TEST(Constructors, Default) {
         std::is_nothrow_default_constructible_v<AutoObject<Noexcept>>);
 }
 
-TEST(Constructors, SingleArgument) {
+TYPED_TEST(AutoTest, SingleArgumentConstructors) {
+    using Plain    = TestFixture::Plain;
+    using Explicit = TestFixture::Explicit;
+    using Noexcept = TestFixture::Noexcept;
+
     ResetStats();
 
     // explicit call
@@ -108,7 +109,11 @@ TEST(Constructors, SingleArgument) {
         not std::is_nothrow_constructible_v<std::string, const char*>);
 }
 
-TEST(Constructors, MultiArgument) {
+TYPED_TEST(AutoTest, MultiArgumentConstructors) {
+    using Plain    = TestFixture::Plain;
+    using Explicit = TestFixture::Explicit;
+    using Noexcept = TestFixture::Noexcept;
+
     ResetStats();
 
     // explicit call
@@ -162,7 +167,7 @@ TEST(Constructors, MultiArgument) {
         not std::is_nothrow_constructible_v<std::string, const char*>);
 }
 
-TEST(Constructors, InitList) {
+TYPED_TEST(AutoTest, InitListConstructors) {
     const AutoObject<std::vector<int>> sample_1 = {1, 2, 3};
     const AutoObject<std::vector<int>> sample_2{1, 2, 3};
 
@@ -177,7 +182,11 @@ TEST(Constructors, InitList) {
     };
 }
 
-TEST(Constructors, Copy) {
+TYPED_TEST(AutoTest, CopyConstructors) {
+    using Plain    = TestFixture::Plain;
+    using Explicit = TestFixture::Explicit;
+    using Noexcept = TestFixture::Noexcept;
+
     ResetStats();
 
     const AutoObject<Plain> plain_1;
@@ -221,7 +230,11 @@ TEST(Constructors, Copy) {
     static_assert(std::is_nothrow_copy_constructible_v<AutoObject<Noexcept>>);
 }
 
-TEST(Constructors, Move) {
+TYPED_TEST(AutoTest, MoveConstructors) {
+    using Plain    = TestFixture::Plain;
+    using Explicit = TestFixture::Explicit;
+    using Noexcept = TestFixture::Noexcept;
+
     ResetStats();
 
     AutoObject<Plain> plain_1;
@@ -261,7 +274,4 @@ TEST(Constructors, Move) {
     static_assert(std::is_nothrow_move_constructible_v<AutoObject<Noexcept>>);
 }
 
-}  // namespace except::test::objects::ns
-
-#undef DOT
-#undef ns
+}  // namespace except::test::objects

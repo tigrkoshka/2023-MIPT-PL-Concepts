@@ -3,20 +3,17 @@
 #include <type_traits>  // for is_destructible_v, ...
 
 #include "objects/auto.hpp"
+#include "objects/tests/suits/fixture.hpp"
 #include "objects/tests/utils/sample_class.hpp"
 #include "objects/tests/utils/stats.hpp"
 
-#ifdef FINAL
-#define DOT ->
-#define ns final
-#else
-#define DOT .
-#define ns simple
-#endif
+namespace except::test::objects {
 
-namespace except::test::objects::ns {
+TYPED_TEST(AutoTest, Destructor) {
+    using Plain    = TestFixture::Plain;
+    using Explicit = TestFixture::Explicit;
+    using Noexcept = TestFixture::Noexcept;
 
-TEST(Destructor, Simple) {
     ResetStats();
 
     {
@@ -48,7 +45,4 @@ TEST(Destructor, Simple) {
     static_assert(std::is_nothrow_destructible_v<AutoObject<Noexcept>>);
 }
 
-}  // namespace except::test::objects::ns
-
-#undef DOT
-#undef ns
+}  // namespace except::test::objects

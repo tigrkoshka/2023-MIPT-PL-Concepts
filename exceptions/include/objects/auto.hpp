@@ -752,6 +752,14 @@ struct AutoObject<T> final : T {
         static_cast<T*>(this)->operator=(std::move(other));
         return *this;
     };
+
+    T* operator->() noexcept {
+        return this;
+    }
+
+    const T* operator->() const noexcept {
+        return this;
+    }
 };
 
 template <typename T>

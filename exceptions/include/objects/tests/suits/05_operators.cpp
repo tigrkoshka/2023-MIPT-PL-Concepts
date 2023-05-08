@@ -1,25 +1,22 @@
 #include <gtest/gtest.h>
 
-#include <concepts>     // for three_way_comparable
+#include <compare>      // for three_way_comparable
 #include <string>       // for string
 #include <type_traits>  // for is_constructible_v, ...
 #include <utility>      // for declval
 
 #include "objects/auto.hpp"
+#include "objects/tests/suits/fixture.hpp"
 #include "objects/tests/utils/sample_class.hpp"
 #include "objects/tests/utils/stats.hpp"
 
-#ifdef FINAL
-#define DOT ->
-#define ns final
-#else
-#define DOT .
-#define ns simple
-#endif
+namespace except::test::objects {
 
-namespace except::test::objects::ns {
+TYPED_TEST(AutoTest, Comparison) {
+    using Plain    = TestFixture::Plain;
+    using Explicit = TestFixture::Explicit;
+    using Noexcept = TestFixture::Noexcept;
 
-TEST(Operators, Comparison) {
     // NOLINTNEXTLINE(misc-const-correctness)
     AutoObject<Plain> sample             = "plain";
     const AutoObject<Plain> const_sample = "const plain";
@@ -47,19 +44,22 @@ TEST(Operators, Comparison) {
         noexcept(std::declval<Noexcept>() <=> std::declval<Noexcept>()));
 }
 
-TEST(Operators, Increment) {
+TYPED_TEST(AutoTest, Increment) {
+    using Plain    = TestFixture::Plain;
+    using Noexcept = TestFixture::Noexcept;
+
     const std::string value = "plain";
 
     AutoObject<Plain> sample = value;
-    ASSERT_EQ(sample DOT index, value.size());
+    ASSERT_EQ(sample->index, value.size());
 
     const AutoObject post_incremented = sample++;
-    ASSERT_EQ(sample DOT index, value.size() + 1);
-    ASSERT_EQ(post_incremented DOT index, value.size());
+    ASSERT_EQ(sample->index, value.size() + 1);
+    ASSERT_EQ(post_incremented->index, value.size());
 
     const AutoObject<Plain> pre_incremented = ++sample;
-    ASSERT_EQ(sample DOT index, value.size() + 2);
-    ASSERT_EQ(pre_incremented DOT index, value.size() + 2);
+    ASSERT_EQ(sample->index, value.size() + 2);
+    ASSERT_EQ(pre_incremented->index, value.size() + 2);
 
     // do not wrap in AutoObject, because no object is created here,
     // so no destructor must be recorded, to avoid accidentally writing
@@ -77,7 +77,4 @@ TEST(Operators, Increment) {
     static_assert(noexcept(++std::declval<AutoObject<Noexcept>&>()));
 }
 
-}  // namespace except::test::objects::ns
-
-#undef DOT
-#undef ns
+}  // namespace except::test::objects
