@@ -10,6 +10,7 @@ struct Stats {
     struct Constructors {
         // NOLINTNEXTLINE(fuchsia-overloaded-operator)
         std::strong_ordering operator<=>(const Constructors&) const = default;
+        Constructors& operator+=(const Constructors&);
 
         size_t default_{0};
         size_t copy{0};
@@ -21,6 +22,7 @@ struct Stats {
     struct Assignments {
         // NOLINTNEXTLINE(fuchsia-overloaded-operator)
         std::strong_ordering operator<=>(const Assignments&) const = default;
+        Assignments& operator+=(const Assignments&);
 
         size_t copy{0};
         size_t move{0};
@@ -28,6 +30,7 @@ struct Stats {
 
     // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     std::strong_ordering operator<=>(const Stats&) const = default;
+    Stats& operator+=(const Stats&);
 
     Constructors ctor;
     Assignments assign;

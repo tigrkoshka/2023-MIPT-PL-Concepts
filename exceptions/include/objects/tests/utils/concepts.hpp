@@ -31,4 +31,7 @@ concept CanIncrementIndex = requires {
     { std::declval<T>()->IncrementIndex() };
 };
 
+template <typename T, typename... Options>
+concept OneOf = (std::is_same_v<T, Options> || ...);
+
 }  // namespace except::test::objects

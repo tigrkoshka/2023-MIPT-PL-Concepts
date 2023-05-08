@@ -7,6 +7,32 @@
 
 namespace except::test::objects {
 
+auto Stats::Constructors::operator+=(const Constructors& other)
+    -> Constructors& {
+    default_ += other.default_;
+    copy += other.copy;
+    move += other.move;
+    single_argument += other.single_argument;
+    multi_argument += other.multi_argument;
+
+    return *this;
+}
+
+auto Stats::Assignments::operator+=(const Assignments& other) -> Assignments& {
+    copy += other.copy;
+    move += other.move;
+
+    return *this;
+}
+
+auto Stats::operator+=(const Stats& other) -> Stats& {
+    ctor += other.ctor;
+    assign += other.assign;
+    dtor += other.dtor;
+
+    return *this;
+}
+
 // NOLINTNEXTLINE(fuchsia-overloaded-operator)
 std::ostream& operator<<(std::ostream& out, const Stats::Constructors& ctor) {
     return out << "    default:_________" << ctor.default_ << std::endl

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <concepts>     // for same_as
+#include <string>       // for string
 #include <type_traits>  // for conditional_t
 
 #include "objects/tests/utils/sample_class.hpp"
@@ -29,5 +30,11 @@ class AutoTest : public ::testing::Test {
 
 using TestTypes = ::testing::Types<MakeSimple, MakeFinal>;
 TYPED_TEST_SUITE(AutoTest, TestTypes);
+
+static const char* value_c       = "value";
+static const char* const_value_c = "const value";
+static std::string value_s       = value_c;
+static std::string const_value_s = const_value_c;
+static size_t value_sz           = 239ull;
 
 }  // namespace except::test::objects

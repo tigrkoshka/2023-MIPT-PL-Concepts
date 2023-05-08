@@ -41,7 +41,8 @@ TYPED_TEST(AutoTest, DefaultConstructor) {
 
     // static checks
 
-    static_assert(From<AutoObject<Plain>>);
+    // same as From<AutoObject<Plain>>
+    static_assert(std::is_default_constructible_v<AutoObject<Plain>>);
     static_assert(ImplicitFrom<AutoObject<Plain>>);
 
     static_assert(From<AutoObject<Explicit>>);
@@ -64,17 +65,17 @@ TYPED_TEST(AutoTest, SingleArgumentConstructors) {
 
     // explicit call
 
-    const AutoObject<Plain> sample_1{std::string("test")};
-    const AutoObject<Plain> sample_2{"test"};
-    const AutoObject<Explicit> sample_3{std::string("test")};
-    const AutoObject<Explicit> sample_4{"test"};
+    const AutoObject<Plain> sample_1{value_s};
+    const AutoObject<Plain> sample_2{value_c};
+    const AutoObject<Explicit> sample_3{value_s};
+    const AutoObject<Explicit> sample_4{value_c};
 
     // implicit call
 
-    const AutoObject<Plain> sample_5 = {std::string("test")};
-    const AutoObject<Plain> sample_6 = {"test"};
-    // const AutoObject<Explicit> fail_1 = {std::string("test")};
-    // const AutoObject<Explicit> fail_2 = {"test"};
+    const AutoObject<Plain> sample_5 = {value_s};
+    const AutoObject<Plain> sample_6 = {value_c};
+    // const AutoObject<Explicit> fail_1 = {value_s};
+    // const AutoObject<Explicit> fail_2 = {value_c};
 
     // stats checks
 
@@ -93,7 +94,7 @@ TYPED_TEST(AutoTest, SingleArgumentConstructors) {
     static_assert(not ImplicitFrom<AutoObject<Explicit>, std::string>);
     static_assert(not ImplicitFrom<AutoObject<Explicit>, const char*>);
 
-    // check noexcept
+    // noexcept checks
 
     static_assert(
         not std::is_nothrow_constructible_v<AutoObject<Plain>, std::string>);
@@ -118,17 +119,17 @@ TYPED_TEST(AutoTest, MultiArgumentConstructors) {
 
     // explicit call
 
-    const AutoObject<Plain> sample_1{239ull, std::string("test")};
-    const AutoObject<Plain> sample_2{239ull, "test"};
-    const AutoObject<Explicit> sample_3{239ull, std::string("test")};
-    const AutoObject<Explicit> sample_4{239ull, "test"};
+    const AutoObject<Plain> sample_1{value_sz, value_s};
+    const AutoObject<Plain> sample_2{value_sz, value_c};
+    const AutoObject<Explicit> sample_3{value_sz, value_s};
+    const AutoObject<Explicit> sample_4{value_sz, value_c};
 
     // implicit call
 
-    const AutoObject<Plain> sample_5 = {239ull, std::string("test")};
-    const AutoObject<Plain> sample_6 = {239ull, "test"};
-    // const AutoObject<Explicit> fail_1 = {239ull, std::string("test")};
-    // const AutoObject<Explicit> fail_2 = {239ull, "test"};
+    const AutoObject<Plain> sample_5 = {value_sz, value_s};
+    const AutoObject<Plain> sample_6 = {value_sz, value_c};
+    // const AutoObject<Explicit> fail_1 = {value_sz, value_s};
+    // const AutoObject<Explicit> fail_2 = {value_sz, value_c};
 
     // stats checks
 
@@ -147,7 +148,7 @@ TYPED_TEST(AutoTest, MultiArgumentConstructors) {
     static_assert(not ImplicitFrom<AutoObject<Explicit>, size_t, std::string>);
     static_assert(not ImplicitFrom<AutoObject<Explicit>, size_t, const char*>);
 
-    // check noexcept
+    // noexcept checks
 
     static_assert(not std::is_nothrow_constructible_v<AutoObject<Plain>,
                                                       size_t,
@@ -218,8 +219,7 @@ TYPED_TEST(AutoTest, CopyConstructors) {
     static_assert(std::is_copy_constructible_v<AutoObject<Plain>>);
     static_assert(ImplicitFrom<AutoObject<Plain>, const AutoObject<Plain>&>);
 
-    // same as From<AutoObject<Explicit>, const
-    // AutoObject<Explicit>&>
+    // same as From<AutoObject<Explicit>, const AutoObject<Explicit>&>
     static_assert(std::is_copy_constructible_v<AutoObject<Explicit>>);
     static_assert(
         not ImplicitFrom<AutoObject<Explicit>, const AutoObject<Explicit>&>);
@@ -272,6 +272,11 @@ TYPED_TEST(AutoTest, MoveConstructors) {
 
     static_assert(not std::is_nothrow_move_constructible_v<AutoObject<Plain>>);
     static_assert(std::is_nothrow_move_constructible_v<AutoObject<Noexcept>>);
+}
+
+TYPED_TEST(AutoTest, NonDefinedConstructors) {
+    using Plain = TestFixture::Plain;
+    static_assert(not From<AutoObject<Plain>, std::vector<int>>);
 }
 
 }  // namespace except::test::objects

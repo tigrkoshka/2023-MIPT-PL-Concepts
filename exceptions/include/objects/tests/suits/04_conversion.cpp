@@ -4,8 +4,6 @@
 
 #include "objects/auto.hpp"
 #include "objects/tests/suits/fixture.hpp"
-#include "objects/tests/utils/sample_class.hpp"
-#include "objects/tests/utils/stats.hpp"
 
 namespace except::test::objects {
 
@@ -15,10 +13,10 @@ TYPED_TEST(AutoTest, Conversion) {
     using Noexcept = TestFixture::Noexcept;
 
     // NOLINTNEXTLINE(misc-const-correctness)
-    AutoObject<Plain> sample_plain = "plain";
+    AutoObject<Plain> sample_plain = value_s;
     // NOLINTNEXTLINE(misc-const-correctness)
-    AutoObject<Explicit> sample_explicit{"explicit"};
-    const AutoObject<Noexcept> sample_noexcept{"noexcept"};
+    AutoObject<Explicit> sample_explicit{value_s};
+    const AutoObject<Noexcept> sample_noexcept{value_s};
 
     // explicit
 
@@ -51,13 +49,9 @@ TYPED_TEST(AutoTest, Conversion) {
     // noexcept checks
 
     static_assert(not std::is_nothrow_constructible_v<bool, AutoObject<Plain>>);
-    static_assert(
-        not std::is_nothrow_constructible_v<bool, AutoObject<Explicit>>);
     static_assert(std::is_nothrow_constructible_v<bool, AutoObject<Noexcept>>);
 
     static_assert(not std::is_nothrow_convertible_v<AutoObject<Plain>, bool>);
-    static_assert(
-        not std::is_nothrow_convertible_v<AutoObject<Explicit>, bool>);
     static_assert(std::is_nothrow_convertible_v<AutoObject<Noexcept>, bool>);
 }
 

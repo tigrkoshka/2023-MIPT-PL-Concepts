@@ -14,6 +14,6 @@ add_executable(
         utils/sample_class.cpp
         utils/stats.cpp
         utils/concepts.cpp
-)
+        suits/07_usage.cpp)
 target_link_libraries(objects_test GTest::gtest GTest::gtest_main objects)
 add_test(objects objects_test)
