@@ -96,7 +96,7 @@
     size_t index{0};                                                        \
     static Stats stats;
 
-namespace except::test::objects::detail {
+namespace except::test::objects {
 
 template <bool Explicit, bool Noexcept>
 struct Simple {
@@ -122,6 +122,22 @@ using FinalPlain    = Final<false, false>;
 using FinalExplicit = Final<true, false>;
 using FinalNoexcept = Final<false, true>;
 
-}  // namespace except::test::objects::detail
+namespace simple {
+
+using Plain    = SimplePlain;
+using Explicit = SimpleExplicit;
+using Noexcept = SimpleNoexcept;
+
+}  // namespace simple
+
+namespace final {
+
+using Plain    = FinalPlain;
+using Explicit = FinalExplicit;
+using Noexcept = FinalNoexcept;
+
+}  // namespace final
+
+}  // namespace except::test::objects
 
 #undef EXCEPT_OBJECTS_TEST_CLASS_CONTENT

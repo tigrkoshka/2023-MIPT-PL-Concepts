@@ -5,7 +5,7 @@
 
 #include "objects/auto.hpp"
 
-namespace except::test::objects::detail {
+namespace except::test::objects {
 
 template <typename T>
 void TestImplicitConstruction(T);  // not defined
@@ -19,7 +19,7 @@ concept ImplicitFrom = requires {
 };
 
 template <typename T>
-concept CanAutoObject = requires { typename except::detail::AutoObject<T>; };
+concept CanAutoObject = requires { typename AutoObject<T>; };
 
 template <typename T>
 concept CanIndex = requires {
@@ -31,4 +31,4 @@ concept CanIncrementIndex = requires {
     { std::declval<T>().IncrementIndex() };
 };
 
-}  // namespace except::test::objects::detail
+}  // namespace except::test::objects

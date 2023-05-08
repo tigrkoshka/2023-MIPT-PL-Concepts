@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <ostream>
 
-namespace except::test::objects::detail {
+namespace except::test::objects {
 
 struct Stats {
     struct Constructors {
@@ -45,4 +45,4 @@ std::ostream& operator<<(std::ostream& out, const Stats& stats);
 
 void ResetStats();
 
-}  // namespace except::test::objects::detail
+}  // namespace except::test::objects

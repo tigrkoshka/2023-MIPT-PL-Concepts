@@ -1,3 +1,27 @@
+#include <gtest/gtest.h>
+
+#include <cstddef>      // for size_t
+#include <memory>       // for allocator
+#include <string>       // for string
+#include <type_traits>  // for is_default_constructible_v, ...
+#include <utility>      // for move
+#include <vector>       // for vector
+
+#include "objects/auto.hpp"
+#include "objects/tests/utils/concepts.hpp"
+#include "objects/tests/utils/sample_class.hpp"
+#include "objects/tests/utils/stats.hpp"
+
+#ifdef FINAL
+#define DOT ->
+#define ns final
+#else
+#define DOT .
+#define ns simple
+#endif
+
+namespace except::test::objects::ns {
+
 TEST(Constructors, Default) {
     ResetStats();
 
@@ -70,17 +94,16 @@ TEST(Constructors, SingleArgument) {
 
     // check noexcept
 
-    static_assert(not std::is_nothrow_constructible_v<AutoObject<Plain>,
-                                                      std::string>);
-    static_assert(not std::is_nothrow_constructible_v<AutoObject<Plain>,
-                                                      const char*>);
+    static_assert(
+        not std::is_nothrow_constructible_v<AutoObject<Plain>, std::string>);
+    static_assert(
+        not std::is_nothrow_constructible_v<AutoObject<Plain>, const char*>);
 
-    static_assert(std::is_nothrow_constructible_v<AutoObject<Noexcept>,
-                                                  std::string>);
+    static_assert(
+        std::is_nothrow_constructible_v<AutoObject<Noexcept>, std::string>);
     // because const char* -> std::string is not noexcept (see below)
     static_assert(
-        not std::is_nothrow_constructible_v<AutoObject<Noexcept>,
-                                            const char*>);
+        not std::is_nothrow_constructible_v<AutoObject<Noexcept>, const char*>);
     static_assert(
         not std::is_nothrow_constructible_v<std::string, const char*>);
 }
@@ -116,10 +139,8 @@ TEST(Constructors, MultiArgument) {
 
     static_assert(From<AutoObject<Explicit>, size_t, std::string>);
     static_assert(From<AutoObject<Explicit>, size_t, const char*>);
-    static_assert(
-        not ImplicitFrom<AutoObject<Explicit>, size_t, std::string>);
-    static_assert(
-        not ImplicitFrom<AutoObject<Explicit>, size_t, const char*>);
+    static_assert(not ImplicitFrom<AutoObject<Explicit>, size_t, std::string>);
+    static_assert(not ImplicitFrom<AutoObject<Explicit>, size_t, const char*>);
 
     // check noexcept
 
@@ -134,10 +155,9 @@ TEST(Constructors, MultiArgument) {
                                                   size_t,
                                                   std::string>);
     // because const char* -> std::string is not noexcept (see below)
-    static_assert(
-        not std::is_nothrow_constructible_v<AutoObject<Noexcept>,
-                                            size_t,
-                                            const char*>);
+    static_assert(not std::is_nothrow_constructible_v<AutoObject<Noexcept>,
+                                                      size_t,
+                                                      const char*>);
     static_assert(
         not std::is_nothrow_constructible_v<std::string, const char*>);
 }
@@ -187,21 +207,18 @@ TEST(Constructors, Copy) {
 
     // same as From<AutoObject<Plain>, const AutoObject<Plain>&>
     static_assert(std::is_copy_constructible_v<AutoObject<Plain>>);
-    static_assert(
-        ImplicitFrom<AutoObject<Plain>, const AutoObject<Plain>&>);
+    static_assert(ImplicitFrom<AutoObject<Plain>, const AutoObject<Plain>&>);
 
     // same as From<AutoObject<Explicit>, const
     // AutoObject<Explicit>&>
     static_assert(std::is_copy_constructible_v<AutoObject<Explicit>>);
-    static_assert(not ImplicitFrom<AutoObject<Explicit>,
-                                   const AutoObject<Explicit>&>);
+    static_assert(
+        not ImplicitFrom<AutoObject<Explicit>, const AutoObject<Explicit>&>);
 
     // noexcept checks
 
-    static_assert(
-        not std::is_nothrow_copy_constructible_v<AutoObject<Plain>>);
-    static_assert(
-        std::is_nothrow_copy_constructible_v<AutoObject<Noexcept>>);
+    static_assert(not std::is_nothrow_copy_constructible_v<AutoObject<Plain>>);
+    static_assert(std::is_nothrow_copy_constructible_v<AutoObject<Noexcept>>);
 }
 
 TEST(Constructors, Move) {
@@ -231,18 +248,20 @@ TEST(Constructors, Move) {
 
     // same as From<AutoObject<Explicit>, AutoObject<Explicit>&&>
     static_assert(std::is_move_constructible_v<AutoObject<Plain>>);
-    static_assert(
-        ImplicitFrom<AutoObject<Plain>, AutoObject<Plain>&&>);
+    static_assert(ImplicitFrom<AutoObject<Plain>, AutoObject<Plain>&&>);
 
     // same as From<AutoObject<Explicit>, AutoObject<Explicit>&&>
     static_assert(std::is_move_constructible_v<AutoObject<Explicit>>);
-    static_assert(not ImplicitFrom<AutoObject<Explicit>,
-                                   AutoObject<Explicit>&&>);
+    static_assert(
+        not ImplicitFrom<AutoObject<Explicit>, AutoObject<Explicit>&&>);
 
     // noexcept checks
 
-    static_assert(
-        not std::is_nothrow_move_constructible_v<AutoObject<Plain>>);
-    static_assert(
-        std::is_nothrow_move_constructible_v<AutoObject<Noexcept>>);
+    static_assert(not std::is_nothrow_move_constructible_v<AutoObject<Plain>>);
+    static_assert(std::is_nothrow_move_constructible_v<AutoObject<Noexcept>>);
 }
+
+}  // namespace except::test::objects::ns
+
+#undef DOT
+#undef ns

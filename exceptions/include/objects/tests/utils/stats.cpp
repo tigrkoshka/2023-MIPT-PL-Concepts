@@ -3,9 +3,9 @@
 #include <cstddef>
 #include <ostream>
 
-#include "objects/tests/utils/non_trivial.hpp"
+#include "objects/tests/utils/sample_class.hpp"
 
-namespace except::test::objects::detail {
+namespace except::test::objects {
 
 // NOLINTNEXTLINE(fuchsia-overloaded-operator)
 std::ostream& operator<<(std::ostream& out, const Stats::Constructors& ctor) {
@@ -41,4 +41,4 @@ void ResetStats() {
     FinalNoexcept::stats = Stats{};
 }
 
-}  // namespace except::test::objects::detail
+}  // namespace except::test::objects

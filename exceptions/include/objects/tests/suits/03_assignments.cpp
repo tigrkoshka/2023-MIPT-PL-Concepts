@@ -1,3 +1,24 @@
+#include <gtest/gtest.h>
+
+#include <string>       // for string
+#include <type_traits>  // for is_copy_assignable_v, ...
+#include <utility>      // for move
+
+#include "objects/auto.hpp"
+#include "objects/tests/utils/concepts.hpp"
+#include "objects/tests/utils/sample_class.hpp"
+#include "objects/tests/utils/stats.hpp"
+
+#ifdef FINAL
+#define DOT ->
+#define ns final
+#else
+#define DOT .
+#define ns simple
+#endif
+
+namespace except::test::objects::ns {
+
 TEST(Assignments, Simple) {
     ResetStats();
 
@@ -112,3 +133,8 @@ TEST(Assignments, Simple) {
     static_assert(std::is_nothrow_assignable_v<AutoObject<Noexcept>,  //
                                                Noexcept>);
 }
+
+}  // namespace except::test::objects::ns
+
+#undef DOT
+#undef ns

@@ -1,3 +1,24 @@
+#include <gtest/gtest.h>
+
+#include <concepts>     // for three_way_comparable
+#include <string>       // for string
+#include <type_traits>  // for is_constructible_v, ...
+#include <utility>      // for declval
+
+#include "objects/auto.hpp"
+#include "objects/tests/utils/sample_class.hpp"
+#include "objects/tests/utils/stats.hpp"
+
+#ifdef FINAL
+#define DOT ->
+#define ns final
+#else
+#define DOT .
+#define ns simple
+#endif
+
+namespace except::test::objects::ns {
+
 TEST(Operators, Comparison) {
     // NOLINTNEXTLINE(misc-const-correctness)
     AutoObject<Plain> sample             = "plain";
@@ -55,3 +76,8 @@ TEST(Operators, Increment) {
     static_assert(noexcept(std::declval<AutoObject<Noexcept>&>()++));
     static_assert(noexcept(++std::declval<AutoObject<Noexcept>&>()));
 }
+
+}  // namespace except::test::objects::ns
+
+#undef DOT
+#undef ns

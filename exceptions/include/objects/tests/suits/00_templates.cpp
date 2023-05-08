@@ -1,3 +1,16 @@
+#include <gtest/gtest.h>
+
+#include <concepts>  // for same_as, ...
+#include <string>    // for string
+#include <vector>    // for vector
+
+#include "objects/auto.hpp"
+#include "objects/tests/utils/concepts.hpp"
+#include "objects/tests/utils/sample_class.hpp"
+#include "objects/tests/utils/stats.hpp"
+
+namespace except::test::objects {
+
 struct A {};
 
 TEST(Template, Concept) {
@@ -69,3 +82,5 @@ TEST(Template, Deduction) {
     static_assert(std::same_as<decltype(sample_4),  //
                                const AutoObject<decltype(lambda_2)>>);
 }
+
+}  // namespace except::test::objects
