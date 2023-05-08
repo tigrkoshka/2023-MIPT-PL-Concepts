@@ -10,6 +10,9 @@ template <typename T>
 concept Class = std::is_class_v<T>;
 
 template <typename T>
+concept NonCV = std::same_as<T, std::remove_cv_t<T>>;
+
+template <typename T>
 concept NonCVRef = std::same_as<T, std::remove_cvref_t<T>>;
 
 template <typename T>

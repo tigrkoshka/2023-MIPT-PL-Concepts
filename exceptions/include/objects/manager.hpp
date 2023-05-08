@@ -19,10 +19,10 @@ class ObjectManager final {
         static_cast<T*>(ptr)->~T();
     }
 
-    using Destroyer = void(void*);
+    using Destroyer = void(*)(void*);
 
     // Checkpoint or destroyer with argument
-    using Item = std::variant<std::monostate, std::pair<Destroyer*, void*>>;
+    using Item = std::variant<std::monostate, std::pair<Destroyer, void*>>;
 
    public:
     // static class
@@ -42,5 +42,19 @@ class ObjectManager final {
    private:
     static std::stack<Item> k_destroyers;
 };
+
+template <typename T>
+void MaybeRecordObject(const T& instance) {
+    if constexpr (std::is_destructible_v<T>) {
+        ObjectManager::RecordObject(instance);
+    }
+}
+
+template <typename T>
+void MaybePopObject() {
+    if constexpr (std::is_destructible_v<T>) {
+        ObjectManager::Pop();
+    }
+}
 
 }  // namespace except::detail

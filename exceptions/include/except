@@ -49,5 +49,3 @@ template <except::detail::utils::concepts::Throwable Exception>
 [[noreturn]] void Throw() {
     except::detail::Impl::Rethrow();
 }
-
-using except::detail::AutoObject;
