@@ -27,7 +27,7 @@ concept Decayed = std::is_same_v<T, std::decay_t<T>>;
 namespace detail {
 
 template <typename T>
-void TestImplicitConstruction(T) {}
+void TestImplicitConstruction(T); // not defined
 
 }  // namespace detail
 

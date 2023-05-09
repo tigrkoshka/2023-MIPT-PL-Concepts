@@ -41,6 +41,10 @@ run the following command from this directory:
 chmod +x build.sh && ./build.sh
 ```
 
+Both the *except* library and the playground are compiled with
+the `-fno-exceptions` flag (supported by both Clang and GCC) to ensure
+that the C++ native exceptions are not used.
+
 To specify the compiler to be used (for the list of the tested compilers
 see [below](#compilers)) one should set the environment variable `COMPILER`.
 This can be done with the following command:
@@ -60,6 +64,12 @@ Additionally, a `lib` directory will appear. It will contain a single file
 
 In the [playground directory](playground) an `except_play` executable file will
 appear, which is the binary of the playground program.
+
+Additionally, if the Google Test framework is installed, the testing binaries
+will appear in the directories containing the *except* library
+[tests](include/tests) and the `AutoObject` class template
+[tests](include/objects/tests). For more details on installing the Google Test
+framework and running the tests please refer to those directories README files.
 
 ### Compilers
 

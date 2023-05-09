@@ -16,6 +16,7 @@ ${CMAKE_CXX_FLAGS} \
 -Wsign-conversion \
 -Wfloat-conversion \
 -fsanitize=undefined \
+-fno-exceptions \
 ")
 
 # find the archived library

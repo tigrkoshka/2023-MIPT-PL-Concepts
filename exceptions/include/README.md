@@ -241,7 +241,7 @@ possible to the usage of the instance stored inside of it:
 > for `AutoObject<T>`, which forces the overload accepting `T&&`.
 > 
 > For a sample of such a case and the `Move()` method usage please refer to
-> the last section of [this test](objects/tests/suits/07_usage.cpp).
+> the last section of [this test](objects/tests/suits/usage.cpp).
 
 For more details on `AutoObject` implementation and usage please refer to
 the objects directory [README](objects/README.md).

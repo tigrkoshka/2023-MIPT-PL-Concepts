@@ -16,6 +16,7 @@ ${CMAKE_CXX_FLAGS} \
 -Wsign-conversion \
 -Wfloat-conversion \
 -fsanitize=undefined \
+-fno-exceptions \
 ")
 
 # llvm-ranlib does not have -no_warning_for_no_symbols option

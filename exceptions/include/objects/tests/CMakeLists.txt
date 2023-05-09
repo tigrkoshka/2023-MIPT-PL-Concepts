@@ -6,14 +6,14 @@ if (${GTest_FOUND})
 
     add_executable(
             objects_test
-            suits/00_templates.cpp
-            suits/01_constructors.cpp
-            suits/02_destructor.cpp
-            suits/03_assignment.cpp
-            suits/04_conversion.cpp
-            suits/05_operators.cpp
-            suits/06_methods.cpp
-            suits/07_usage.cpp
+            suits/templates.cpp
+            suits/constructors.cpp
+            suits/destructor.cpp
+            suits/assignment.cpp
+            suits/conversion.cpp
+            suits/operators.cpp
+            suits/methods.cpp
+            suits/usage.cpp
             suits/fixture.cpp
             utils/sample_class.cpp
             utils/stats.cpp
