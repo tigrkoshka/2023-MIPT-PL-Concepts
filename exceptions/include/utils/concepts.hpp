@@ -5,6 +5,9 @@
 
 namespace except::detail::utils::concepts {
 
+// the following concepts provide simple convenient
+// wrappers for C++ type traits
+
 template <typename T>
 concept Class = std::is_class_v<T>;
 
@@ -17,6 +20,10 @@ concept NonCVRef = std::is_same_v<T, std::remove_cvref_t<T>>;
 template <typename T>
 concept Decayed = std::is_same_v<T, std::decay_t<T>>;
 
+// the ImplicitlyConstructibleFrom concept is a more generic
+// variant of std::is_convertible_v in that it can accept
+// multiple template arguments as From
+
 namespace detail {
 
 template <typename T>
@@ -28,6 +35,9 @@ template <typename T, typename... From>
 concept ImplicitlyConstructibleFrom = requires {
     { detail::TestImplicitConstruction<T>({std::declval<From>()...}) };
 };
+
+// the following concepts are directly related to the exception
+// throwing business logics
 
 template <typename T, typename U = std::decay_t<T>>
 concept Throwable = std::is_copy_constructible_v<U> &&  //

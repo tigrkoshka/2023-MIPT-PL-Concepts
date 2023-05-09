@@ -8,7 +8,16 @@
 # After the execution the except playground executable "except_play" can be found
 # in the current directory
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
-cmake -S "${SCRIPT_DIR}" -B "${SCRIPT_DIR}/build" &&
-cmake --build "${SCRIPT_DIR}/build"
+CMAKE_ARGS=(
+  -S "${SCRIPT_DIR}"
+  -B "${SCRIPT_DIR}/build"
+)
+
+if [[ -n ${COMPILER+x} ]]; then
+  CMAKE_ARGS+=(-DCMAKE_CXX_COMPILER="${COMPILER}")
+fi
+
+cmake "${CMAKE_ARGS[@]}" &&
+  cmake --build "${SCRIPT_DIR}/build"

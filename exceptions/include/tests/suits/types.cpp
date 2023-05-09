@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <string>  // for string
+#include <cstddef>  // for size_t
+#include <string>   // for string
 
 //
 #include <except>
@@ -11,121 +12,205 @@ namespace except::test::impl {
 
 // NOLINTBEGIN(readability-function-cognitive-complexity)
 
-TEST(Catch, ByValue) {
+TEST(Types, NonException1) {
     TRY {
-        TRY {
-            Throw(std::string("Exception"));
-        }
-        CATCH(std::string, exception) {
-            exception = "Other exception";
-            Throw();
-        }
+        Throw(size_t{0});
     }
-    CATCH(std::string, exception) {
-        ASSERT_EQ(exception, "Exception");
+    CATCH(int) {
+        // should not enter
+        ASSERT_TRUE(false);
+    }
+    CATCH(size_t) {
+        // OK
     }
 }
 
-TEST(Catch, ConstByValue) {
-    const std::string value = "Exception";
+TEST(Types, NonException2) {
+    size_t caught = 0;
 
     TRY {
         TRY {
-            Throw(value);  // a copy occurs here, so const-ness is lost
+            Throw(std::string{"Exception!"});
         }
-        CATCH(std::string, exception) {
-            exception = "Other exception";
+        CATCH(const std::string&) {
+            ++caught;
+
+            TRY {
+                Throw(size_t{0});
+            }
+            CATCH(int&) {
+                // should not enter
+                ASSERT_TRUE(false);
+            }
+            CATCH(size_t&) {
+                ++caught;
+            }
+
             Throw();
         }
     }
-    CATCH(std::string, exception) {
-        ASSERT_EQ(exception, "Exception");
+    CATCH(std::string) {
+        ++caught;
+    }
+
+    ASSERT_EQ(caught, 3);
+}
+
+TEST(Types, NonException3) {
+    TRY {
+        Throw("Hello!");
+    }
+    CATCH(std::string) {
+        // should not enter
+        ASSERT_TRUE(false);
+    }
+    CATCH(const std::string&) {
+        // should not enter
+        ASSERT_TRUE(false);
+    }
+    CATCH(char*) {
+        // should not enter
+        ASSERT_TRUE(false);
+    }
+    CATCH(const char*) {
+        // OK
     }
 }
 
-TEST(Catch, ByReference) {
+TEST(Types, ExceptionSimple) {
     TRY {
-        TRY {
-            Throw(std::string("Exception"));
-        }
-        CATCH(std::string&, exception) {
-            exception = "Other exception";
-            Throw();
-        }
+        Throw(Exception{});
     }
-    CATCH(std::string, exception) {
-        ASSERT_EQ(exception, "Other exception");
+    CATCH(RuntimeError) {
+        // should not enter
+        ASSERT_TRUE(false);
+    }
+    CATCH(LogicError) {
+        // should not enter
+        ASSERT_TRUE(false);
+    }
+    CATCH(Exception) {
+        // OK
     }
 }
 
-TEST(Catch, ConstByReference) {
-    const std::string value = "Exception";
-
+TEST(Types, ExceptionSibling) {
     TRY {
-        TRY {
-            Throw(value);  // a copy occurs here, so const-ness is lost
-        }
-        CATCH(std::string&, exception) {
-            exception = "Other exception";
-            Throw();
-        }
+        Throw(RuntimeError{});
     }
-    CATCH(std::string, exception) {
-        ASSERT_EQ(exception, "Other exception");
+    CATCH(LogicError) {
+        // should not enter
+        ASSERT_TRUE(false);
+    }
+    CATCH(const RuntimeError) {
+        // OK
     }
 }
 
-TEST(Catch, CustomByReference) {
+TEST(Types, ExceptionChild) {
     TRY {
-        TRY {
-            Throw(CustomExceptionChild{"Exception"});
-        }
-        CATCH(CustomExceptionChild&, exception) {
-            exception.message = "Other exception";
-            Throw();
-        }
+        Throw(RuntimeError{});
     }
-    CATCH(CustomExceptionChild, exception) {
-        ASSERT_EQ(exception.message, "Other exception");
+    CATCH(RangeError) {
+        // should not enter
+        ASSERT_TRUE(false);
+    }
+    CATCH(Exception&) {
+        // OK
     }
 }
 
-TEST(Catch, CustomByReferenceToParent) {
+TEST(Types, ExceptionParent) {
     TRY {
-        TRY {
-            Throw(CustomExceptionChild{"Exception"});
-        }
-        CATCH(CustomExceptionParent&, exception) {
-            exception.message = "Other exception";
-            Throw();
-        }
+        Throw(RuntimeError{});
     }
-    CATCH(CustomExceptionChild&, exception) {
-        ASSERT_EQ(exception.message, "Other exception");
+    CATCH(Exception) {
+        // OK
     }
 }
 
-TEST(Catch, CatchAll) {
+TEST(Types, ExceptionGrandParent) {
     TRY {
-        Throw(std::string("Exception"));
+        Throw(RangeError{});
+    }
+    CATCH(const Exception&) {
+        // OK
+    }
+}
+
+TEST(Types, ExceptionCustomOther) {
+    TRY {
+        Throw(CustomExceptionParent{"Exception"});
     }
     CATCH(CustomExceptionChild) {
         // should not enter
         ASSERT_TRUE(false);
     }
-    CATCH(CustomExceptionParent) {
+    CATCH(CustomExceptionOther) {
         // should not enter
         ASSERT_TRUE(false);
+    }
+    CATCH(CustomExceptionParent) {
+        // OK
+    }
+}
+
+TEST(Types, ExceptionCustomToException) {
+    TRY {
+        Throw(CustomExceptionParent{"Exception"});
     }
     CATCH(Exception) {
-        // should not enter
-        ASSERT_TRUE(false);
+        // OK
     }
-    CATCH(const char*) {
-        // should not enter
-        ASSERT_TRUE(false);
+}
+
+TEST(Types, ExceptionCustomParent) {
+    TRY {
+        Throw(CustomExceptionChild{"Exception"});
     }
-    CATCH() {
+    CATCH(CustomExceptionParent) {
+        // OK
+    }
+}
+
+TEST(Types, ExceptionCustomGrandParent) {
+    TRY {
+        Throw(CustomExceptionChild{"Exception"});
+    }
+    CATCH(Exception) {
+        // OK
+    }
+}
+
+TEST(Types, ExceptionCustomSelf) {
+    TRY {
+        Throw(CustomExceptionParent{"Exception"});
+    }
+    CATCH(const CustomExceptionParent&, exception) {
+        ASSERT_EQ(exception.message, "Exception");
+    }
+}
+
+TEST(Types, ExceptionCustomParentPreservesValue) {
+    TRY {
+        Throw(CustomExceptionChild{"Exception"});
+    }
+    CATCH(const CustomExceptionParent&, exception) {
+        ASSERT_EQ(exception.message, "Exception");
+    }
+}
+
+TEST(Types, ExceptionCustomParentAfterRethrow) {
+    TRY {
+        TRY {
+            Throw(CustomExceptionChild{"Exception"});
+        }
+        CATCH(const CustomExceptionParent&) {
+            Throw();
+        }
+    }
+    // catches even though we caught CustomExceptionParent before rethrowing
+    CATCH(const CustomExceptionChild&) {
         // OK
     }
 }
@@ -134,7 +219,7 @@ TEST(Catch, CatchAll) {
 // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
-TEST(Catch, WeirdTypesUnboundedArray) {
+TEST(Types, WeirdUnboundedArray) {
     char value[] = "Hello";
 
     ////////////////////////////////////////////////////////////////////////////
@@ -261,7 +346,7 @@ TEST(Catch, WeirdTypesUnboundedArray) {
     */
 }
 
-TEST(Catch, WeirdTypesBoundedArray) {
+TEST(Types, WeirdBoundedArray) {
     char value[6] = "Hello";
 
     ////////////////////////////////////////////////////////////////////////////
