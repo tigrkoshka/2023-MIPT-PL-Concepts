@@ -22,7 +22,7 @@ syscall\s+r\d{1,2}\s+10[^5]
 ```
 
 This pattern search produces some results for codes 100 (`SCANINT`) and
-101 (`SCANDOUBLE`), but only inside the [playgrounds](playgrounds) directory,
+101 (`SCANDOUBLE`), but only inside the [playgrounds directory](playgrounds),
 where they are used to create interactive testing programs for the printing
 library.
 

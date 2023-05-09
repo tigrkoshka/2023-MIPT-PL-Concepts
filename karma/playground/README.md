@@ -6,7 +6,7 @@ the [*karma* library](../include).
 ## Programs
 
 The Karma assembler programs to be compiled and executed can be found in
-the [programs](../programs) directory. Alternatively, one can write their own
+the [programs directory](../programs). Alternatively, one can write their own
 Karma assembler program and test the [*karma* library](../include) on it.
 
 ## Produced files

@@ -18,14 +18,14 @@ given below in the preferred order of their exploration.
 
 ### Docs
 
-The [docs](docs) directory contains a document [Karma.pdf](docs/Karma.pdf),
+The [docs directory](docs) contains a document [Karma.pdf](docs/Karma.pdf),
 which describes the implemented Von Neumann architecture computer (Karma) and
 an associated assembler language. It also contains the source files from which
 the document was compiled.
 
 ### Include
 
-The [include](include) directory contains the implementations of the *karma*
+The [include directory](include) contains the implementations of the *karma*
 library, which mainly consists of a compiler, executor and disassembler for
 the Karma assembler and executable files creation and usage.
 
@@ -34,7 +34,7 @@ the [README](include/README.md) in this directory.
 
 ### Programs
 
-The [programs](programs) directory contains programs written in the Karma
+The [programs directory](programs) contains programs written in the Karma
 assembler language.
 
 For details on the contents of this directory please refer to its
@@ -42,7 +42,7 @@ For details on the contents of this directory please refer to its
 
 ### Playground
 
-The [playground](playground) directory contains a simple C++ program utilizing
+The [playground directory](playground) contains a simple C++ program utilizing
 the *karma* library.
 
 For details on the usage of the code from this directory please refer to its
