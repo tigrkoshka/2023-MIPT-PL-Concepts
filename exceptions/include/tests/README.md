@@ -4,8 +4,8 @@
 
 This directory provides the tests for the *except* library's main features.
 
-The [utils](utils) directory provides tools used for testing the *except*
-library and the [suits](suits) directory provides the tests themselves.
+The [utils directory](utils) provides tools used for testing the *except*
+library and the [suits directory](suits) provides the tests themselves.
 
 The tests aim to be samples of the *except* library usage and are considered
 a part of the documentation.

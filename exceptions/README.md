@@ -17,7 +17,7 @@ given below in the preferred order of their exploration.
 
 ### Include
 
-The [include](include) directory contains the implementations of the *except*
+The [include directory](include) contains the implementations of the *except*
 library, the main parts of which are the automatic object lifetime manager
 and the implementations of the exceptions throwing/catching algorithm.
 
@@ -26,7 +26,7 @@ the [README](include/README.md) in this directory.
 
 ### Playground
 
-The [playground](playground) directory contains a simple C++ program utilizing
+The [playground directory](playground) contains a simple C++ program utilizing
 the *except* library.
 
 For details on the usage of the code from this directory please refer to its

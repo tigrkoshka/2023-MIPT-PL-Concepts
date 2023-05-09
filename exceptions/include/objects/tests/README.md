@@ -5,8 +5,8 @@
 This directory provides the tests for the `AutoObject` class template's
 main features.
 
-The [utils](utils) directory provides tools used for testing the `AutoObject`
-class template and the [suits](suits) directory provides the tests themselves.
+The [utils directory](utils) provides tools used for testing the `AutoObject`
+class template and the [suits directory](suits) provides the tests themselves.
 
 The tests aim to be samples of the `AutoObject` class template usage and
 are considered a part of the documentation.

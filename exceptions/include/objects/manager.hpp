@@ -5,6 +5,8 @@
 #include <utility>      // for pair
 #include <variant>      // for variant, monostate
 
+#include "utils/concepts.hpp"
+
 namespace except::detail {
 
 class ObjectManager final {
@@ -14,22 +16,25 @@ class ObjectManager final {
     // since in user-defined classes destructors are often
     // not marked noexcept (even if they could be)
     template <typename T>
-        requires std::is_destructible_v<T>
+        requires utils::concepts::Class<T> &&  //
+                 utils::concepts::NonCV<T> &&  //
+                 std::is_destructible_v<T>
     static void Destroy(void* ptr) {
         static_cast<T*>(ptr)->~T();
     }
 
-    using Destroyer = void(*)(void*);
-
     // Checkpoint or destroyer with argument
-    using Item = std::variant<std::monostate, std::pair<Destroyer, void*>>;
+    using Item =
+        std::variant<std::monostate, std::pair<void (*)(void*), void*>>;
 
    public:
     // static class
     ObjectManager() = delete;
 
     template <typename T>
-        requires std::is_destructible_v<T>
+        requires utils::concepts::Class<T> &&  //
+                 utils::concepts::NonCV<T> &&  //
+                 std::is_destructible_v<T>
     // NOLINTNEXTLINE(bugprone-exception-escape)
     static void RecordObject(T& instance) noexcept {
         k_destroyers.emplace(std::make_pair(Destroy<T>, &instance));

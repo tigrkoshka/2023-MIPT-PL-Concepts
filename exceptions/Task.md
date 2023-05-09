@@ -6,7 +6,7 @@ the formal task to avoid any misunderstanding.
 ### Destructors
 
 The stack unwinding feature's main business logics is implemented inside
-the [objects](include/objects) directory. The stack unwinding testing can
+the [objects directory](include/objects). The stack unwinding testing can
 be found in [this](include/tests/suits/destructors.cpp) test file.
 
 ### Exceptions types

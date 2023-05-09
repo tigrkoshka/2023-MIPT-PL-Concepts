@@ -538,7 +538,9 @@ struct AutoObject final {
 
     OVERLOAD_BINARY_OPERATOR(->*)
 
-    // operator-> gets chained, so we can simply return T*
+    // operator-> gets chained up to the point when it returns a raw pointer,
+    // so if T defines an operator->, we need to chain with that, so we return
+    // [const] T&, otherwise return [const] T* to access the members of T
 
     T* operator->() noexcept {
         return &instance_;
@@ -546,6 +548,24 @@ struct AutoObject final {
 
     const T* operator->() const noexcept {
         return &instance_;
+    }
+
+    // will choose this if possible, because it is more constrained
+    T& operator->() noexcept
+        requires(requires(T instance) {
+            { instance.operator->() };
+        })
+    {
+        return instance_;
+    }
+
+    // will choose this if possible, because it is more constrained
+    const T& operator->() const noexcept
+        requires(requires(const T instance) {
+            { instance.operator->() };
+        })
+    {
+        return instance_;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -737,7 +757,6 @@ struct AutoObject<T> final : T {
         requires std::is_move_assignable_v<T>
     = default;
 
-
     AutoObject& operator=(T&& other)  //
         noexcept(std::is_nothrow_move_assignable_v<T>)
         requires std::is_move_assignable_v<T>
@@ -745,6 +764,10 @@ struct AutoObject<T> final : T {
         static_cast<T*>(this)->operator=(std::move(other));
         return *this;
     };
+
+    // operator-> gets chained up to the point when it returns a raw pointer,
+    // so if T defines an operator->, we need to chain with that, so we return
+    // [const] T&, otherwise return [const] T* to access the members of T
 
     T* operator->() noexcept {
         return this;
@@ -754,6 +777,23 @@ struct AutoObject<T> final : T {
         return this;
     }
 
+    // will choose this if possible, because it is more constrained
+    T& operator->() noexcept
+        requires(requires(T instance) {
+            { instance.operator->() };
+        })
+    {
+        return *this;
+    }
+
+    // will choose this if possible, because it is more constrained
+    const T& operator->() const noexcept
+        requires(requires(const T instance) {
+            { instance.operator->() };
+        })
+    {
+        return *this;
+    }
 };
 
 // NOLINTEND(cert-dcl21-cpp)

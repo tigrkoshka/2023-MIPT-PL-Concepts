@@ -5,7 +5,7 @@ This directory provides tools used for testing the `AutoObject` class template.
 Specifically it provides:
 
 * concepts used for static feature testing, which sometimes repeat the concepts
-  from the *except* library [utils](../../../utils) directory to avoid
+  from the *except* library [utils directory](../../../utils) to avoid
   unnecessary dependencies
 
 * the `Stats` struct used to keep track of the number and types of objects

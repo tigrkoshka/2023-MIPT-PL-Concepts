@@ -33,5 +33,6 @@ except::detail::utils::
 ### Internal
 
 ```cpp
-except::detail::utils::concepts::TestImplicitConstruction
+except::detail::utils::concepts::
+        TestImplicitConstruction
 ```
