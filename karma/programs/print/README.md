@@ -6,7 +6,7 @@ This files of this directory implement the printing library.
 
 This library proves that the Karma assembler language no way more 'magical'
 than the real-world assembler languages, i.e. that it does not abuse the fact
-that it is being emulated by a C++ code and only uses some the higher-level
+that it is being emulated by a C++ code and only uses some of the higher-level
 language features, such as arbitrary type formatting, purely for convenience
 and not out of necessity.
 
