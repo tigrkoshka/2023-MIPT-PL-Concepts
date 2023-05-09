@@ -8,6 +8,8 @@
 # After the execution the karma playground executable "karma_play" can be found
 # in the current directory
 
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+
 CMAKE_ARGS=(
   -S "${SCRIPT_DIR}"
   -B "${SCRIPT_DIR}/build"
@@ -18,4 +20,4 @@ if [[ -n ${COMPILER+x} ]]; then
 fi
 
 cmake "${CMAKE_ARGS[@]}" &&
-  cmake --build "${SCRIPT_DIR}/build"
+  cmake --build "${SCRIPT_DIR}/build" -j 9
