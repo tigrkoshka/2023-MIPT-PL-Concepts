@@ -9,6 +9,8 @@
 
 namespace except::test::objects {
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+
 TYPED_TEST(AutoTest, Destructor) {
     using Plain    = TestFixture::Plain;
     using Explicit = TestFixture::Explicit;
@@ -44,5 +46,7 @@ TYPED_TEST(AutoTest, Destructor) {
     static_assert(not std::is_nothrow_destructible_v<AutoObject<Explicit>>);
     static_assert(std::is_nothrow_destructible_v<AutoObject<Noexcept>>);
 }
+
+// NOLINTEND(readability-function-cognitive-complexity)
 
 }  // namespace except::test::objects

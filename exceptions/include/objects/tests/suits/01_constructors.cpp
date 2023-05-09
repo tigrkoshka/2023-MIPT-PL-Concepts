@@ -15,6 +15,8 @@
 
 namespace except::test::objects {
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+
 TYPED_TEST(AutoTest, DefaultConstructor) {
     using Plain    = TestFixture::Plain;
     using Explicit = TestFixture::Explicit;
@@ -65,14 +67,14 @@ TYPED_TEST(AutoTest, SingleArgumentConstructors) {
 
     // explicit call
 
-    const AutoObject<Plain> sample_1{value_s};
+    const AutoObject<Plain> sample_1{kValueS};
     const AutoObject<Plain> sample_2{value_c};
-    const AutoObject<Explicit> sample_3{value_s};
+    const AutoObject<Explicit> sample_3{kValueS};
     const AutoObject<Explicit> sample_4{value_c};
 
     // implicit call
 
-    const AutoObject<Plain> sample_5 = {value_s};
+    const AutoObject<Plain> sample_5 = {kValueS};
     const AutoObject<Plain> sample_6 = {value_c};
     // const AutoObject<Explicit> fail_1 = {value_s};
     // const AutoObject<Explicit> fail_2 = {value_c};
@@ -119,15 +121,15 @@ TYPED_TEST(AutoTest, MultiArgumentConstructors) {
 
     // explicit call
 
-    const AutoObject<Plain> sample_1{value_sz, value_s};
-    const AutoObject<Plain> sample_2{value_sz, value_c};
-    const AutoObject<Explicit> sample_3{value_sz, value_s};
-    const AutoObject<Explicit> sample_4{value_sz, value_c};
+    const AutoObject<Plain> sample_1{kValueSZ, kValueS};
+    const AutoObject<Plain> sample_2{kValueSZ, value_c};
+    const AutoObject<Explicit> sample_3{kValueSZ, kValueS};
+    const AutoObject<Explicit> sample_4{kValueSZ, value_c};
 
     // implicit call
 
-    const AutoObject<Plain> sample_5 = {value_sz, value_s};
-    const AutoObject<Plain> sample_6 = {value_sz, value_c};
+    const AutoObject<Plain> sample_5 = {kValueSZ, kValueS};
+    const AutoObject<Plain> sample_6 = {kValueSZ, value_c};
     // const AutoObject<Explicit> fail_1 = {value_sz, value_s};
     // const AutoObject<Explicit> fail_2 = {value_sz, value_c};
 
@@ -278,5 +280,7 @@ TYPED_TEST(AutoTest, NonDefinedConstructors) {
     using Plain = TestFixture::Plain;
     static_assert(not From<AutoObject<Plain>, std::vector<int>>);
 }
+
+// NOLINTEND(readability-function-cognitive-complexity)
 
 }  // namespace except::test::objects

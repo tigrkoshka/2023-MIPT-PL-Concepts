@@ -7,16 +7,18 @@
 
 namespace except::test::objects {
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+
 TYPED_TEST(AutoTest, Conversion) {
     using Plain    = TestFixture::Plain;
     using Explicit = TestFixture::Explicit;
     using Noexcept = TestFixture::Noexcept;
 
     // NOLINTNEXTLINE(misc-const-correctness)
-    AutoObject<Plain> sample_plain = value_s;
+    AutoObject<Plain> sample_plain = kValueS;
     // NOLINTNEXTLINE(misc-const-correctness)
-    AutoObject<Explicit> sample_explicit{value_s};
-    const AutoObject<Noexcept> sample_noexcept{value_s};
+    AutoObject<Explicit> sample_explicit{kValueS};
+    const AutoObject<Noexcept> sample_noexcept{kValueS};
 
     // explicit
 
@@ -54,5 +56,7 @@ TYPED_TEST(AutoTest, Conversion) {
     static_assert(not std::is_nothrow_convertible_v<AutoObject<Plain>, bool>);
     static_assert(std::is_nothrow_convertible_v<AutoObject<Noexcept>, bool>);
 }
+
+// NOLINTEND(readability-function-cognitive-complexity)
 
 }  // namespace except::test::objects

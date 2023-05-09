@@ -11,6 +11,8 @@
 
 namespace except::test::objects {
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+
 TYPED_TEST(AutoTest, Assignments) {
     using Plain    = TestFixture::Plain;
     using Explicit = TestFixture::Explicit;
@@ -18,64 +20,64 @@ TYPED_TEST(AutoTest, Assignments) {
 
     ResetStats();
 
-    AutoObject<Plain> sample_1{value_s};
-    AutoObject<Plain> sample_2{const_value_s};
+    AutoObject<Plain> sample_1{kValueS};
+    AutoObject<Plain> sample_2{kConstValueS};
     AutoObject<Plain> sample_3;
-    Plain sample_4{value_s};
+    Plain sample_4{kValueS};
     Plain sample_5;
 
-    ASSERT_EQ(sample_1->index, value_s.size());
-    ASSERT_EQ(sample_2->index, const_value_s.size());
+    ASSERT_EQ(sample_1->index, kValueS.size());
+    ASSERT_EQ(sample_2->index, kConstValueS.size());
     ASSERT_EQ(sample_3->index, 0);
-    ASSERT_EQ(sample_4.index, value_s.size());
+    ASSERT_EQ(sample_4.index, kValueS.size());
     ASSERT_EQ(sample_5.index, 0);
 
     // AutoObject = AutoObject
 
     sample_1 = sample_2;
-    ASSERT_EQ(sample_2->index, const_value_s.size());
-    ASSERT_EQ(sample_1->index, const_value_s.size());
+    ASSERT_EQ(sample_2->index, kConstValueS.size());
+    ASSERT_EQ(sample_1->index, kConstValueS.size());
 
     sample_3 = std::move(sample_2);
-    ASSERT_EQ(sample_3->index, const_value_s.size());
+    ASSERT_EQ(sample_3->index, kConstValueS.size());
 
     // AutoObject = Plain
 
     sample_2 = sample_4;
-    ASSERT_EQ(sample_4.index, value_s.size());
-    ASSERT_EQ(sample_2->index, value_s.size());
+    ASSERT_EQ(sample_4.index, kValueS.size());
+    ASSERT_EQ(sample_2->index, kValueS.size());
 
     sample_1 = std::move(sample_4);
-    ASSERT_EQ(sample_1->index, value_s.size());
+    ASSERT_EQ(sample_1->index, kValueS.size());
 
     // Plain = AutoObject
 
     sample_4 = sample_2;
-    ASSERT_EQ(sample_2->index, value_s.size());
-    ASSERT_EQ(sample_4.index, value_s.size());
+    ASSERT_EQ(sample_2->index, kValueS.size());
+    ASSERT_EQ(sample_4.index, kValueS.size());
 
     if constexpr (std::same_as<Plain, SimplePlain>) {
         sample_5 = std::move(sample_3);
     } else {
         sample_5 = std::move(sample_3).Move();
     }
-    ASSERT_EQ(sample_5.index, const_value_s.size());
+    ASSERT_EQ(sample_5.index, kConstValueS.size());
 
     // With const AutoObject (std::move does not do anything with const values)
 
-    const AutoObject<Plain> sample_const{value_s};
+    const AutoObject<Plain> sample_const{kValueS};
     sample_1 = sample_const;
     sample_4 = sample_const;
-    ASSERT_EQ(sample_const->index, value_s.size());
-    ASSERT_EQ(sample_1->index, value_s.size());
-    ASSERT_EQ(sample_4.index, value_s.size());
+    ASSERT_EQ(sample_const->index, kValueS.size());
+    ASSERT_EQ(sample_1->index, kValueS.size());
+    ASSERT_EQ(sample_4.index, kValueS.size());
 
     // With const Plain (std::move does not do anything with const values)
 
-    const Plain sample_const_plain{value_s};
+    const Plain sample_const_plain{kValueS};
     sample_1 = sample_const_plain;
-    ASSERT_EQ(sample_const_plain.index, value_s.size());
-    ASSERT_EQ(sample_1->index, value_s.size());
+    ASSERT_EQ(sample_const_plain.index, kValueS.size());
+    ASSERT_EQ(sample_1->index, kValueS.size());
 
     // clang-format off
     const Stats expected{
@@ -135,5 +137,7 @@ TYPED_TEST(AutoTest, Assignments) {
     static_assert(std::is_nothrow_assignable_v<AutoObject<Noexcept>,  //
                                                Noexcept>);
 }
+
+// NOLINTEND(readability-function-cognitive-complexity)
 
 }  // namespace except::test::objects

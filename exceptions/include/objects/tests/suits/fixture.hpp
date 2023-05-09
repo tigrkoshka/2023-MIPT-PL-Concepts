@@ -31,10 +31,10 @@ class AutoTest : public ::testing::Test {
 using TestTypes = ::testing::Types<MakeSimple, MakeFinal>;
 TYPED_TEST_SUITE(AutoTest, TestTypes);
 
-static const char* value_c       = "value";
-static const char* const_value_c = "const value";
-static std::string value_s       = value_c;
-static std::string const_value_s = const_value_c;
-static size_t value_sz           = 239ull;
+static const char* value_c            = "value";
+static const char* const_value_c      = "const value";
+static const std::string kValueS      = value_c;
+static const std::string kConstValueS = const_value_c;
+static const size_t kValueSZ          = 239ull;
 
 }  // namespace except::test::objects

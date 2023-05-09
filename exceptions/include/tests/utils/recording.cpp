@@ -5,7 +5,8 @@ namespace except::test::impl {
 Recording::Recording()
     : index_(index++) {}
 
-Recording::~Recording() {
+// NOLINTNEXTLINE(bugprone-exception-escape)
+Recording::~Recording() noexcept {
     destructors.push_back(index_);
 }
 

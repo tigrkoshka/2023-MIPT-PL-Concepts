@@ -198,6 +198,14 @@
 
 namespace except::detail {
 
+// NOLINTBEGIN(google-explicit-constructor,hicpp-explicit-conversions)
+// NOLINTBEGIN(hicpp-noexcept-move,performance-noexcept-move-constructor)
+// NOLINTBEGIN(bugprone-exception-escape)
+// NOLINTBEGIN(fuchsia-overloaded-operator)
+// NOLINTBEGIN(cppcoreguidelines-c-copy-assignment-signature)
+// NOLINTBEGIN(misc-unconventional-assign-operator)
+// NOLINTBEGIN(cert-dcl21-cpp)
+
 template <typename T>
     requires utils::concepts::Class<T> && utils::concepts::NonCV<T>
 struct AutoObject final {
@@ -227,7 +235,6 @@ struct AutoObject final {
     template <typename... From>
         requires std::is_constructible_v<T, From...>
     explicit(!utils::concepts::ImplicitlyConstructibleFrom<T, From...>)
-        // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
         AutoObject(From&&... from)  //
         noexcept(std::is_nothrow_constructible_v<T, From...>)
         : instance_(std::forward<From>(from)...) {
@@ -298,8 +305,6 @@ struct AutoObject final {
     ////////////////////////////////////////////////////////////////////////////
     ///                            Assignments                               ///
     ////////////////////////////////////////////////////////////////////////////
-
-    // NOLINTBEGIN(fuchsia-overloaded-operator)
 
     // General form
 
@@ -407,7 +412,7 @@ struct AutoObject final {
     OVERLOAD_UNARY_OPERATOR(--)
 
     // postfix
-    decltype(auto) operator++(int)  // NOLINT(cert-dcl21-cpp)
+    decltype(auto) operator++(int)  //
         noexcept(noexcept(instance_.operator++(0)))
         requires requires(T instance) {
             { instance.operator++(0) };
@@ -416,7 +421,7 @@ struct AutoObject final {
         return instance_.operator++(0);
     }
 
-    decltype(auto) operator++(int) const  // NOLINT(cert-dcl21-cpp)
+    decltype(auto) operator++(int) const
         noexcept(noexcept(instance_.operator++(0)))
         requires requires(const T instance) {
             { instance.operator++(0) };
@@ -425,7 +430,7 @@ struct AutoObject final {
         return instance_.operator++(0);
     }
 
-    decltype(auto) operator--(int)  // NOLINT(cert-dcl21-cpp)
+    decltype(auto) operator--(int)  //
         noexcept(noexcept(instance_.operator--(0)))
         requires requires(T instance) {
             { instance.operator--(0) };
@@ -434,7 +439,7 @@ struct AutoObject final {
         return instance_.operator--(0);
     }
 
-    decltype(auto) operator--(int) const  // NOLINT(cert-dcl21-cpp)
+    decltype(auto) operator--(int) const
         noexcept(noexcept(instance_.operator--(0)))
         requires requires(const T instance) {
             { instance.operator--(0) };
@@ -553,8 +558,6 @@ struct AutoObject final {
     ///                            Conversions                               ///
     ////////////////////////////////////////////////////////////////////////////
 
-    // NOLINTBEGIN(google-explicit-constructor,hicpp-explicit-conversions)
-
     template <typename U>
         requires(std::is_constructible_v<U, T> &&
                  !std::is_same_v<T, std::remove_cvref_t<U>>)
@@ -575,14 +578,9 @@ struct AutoObject final {
         return static_cast<U>(instance_);
     }
 
-    // NOLINTEND(google-explicit-constructor,hicpp-explicit-conversions)
-    // NOLINTEND(fuchsia-overloaded-operator)
-
     ////////////////////////////////////////////////////////////////////////////
     ///                           Direct access                              ///
     ////////////////////////////////////////////////////////////////////////////
-
-    // NOLINTBEGIN(fuchsia-overloaded-operator,google-explicit-constructor,hicpp-explicit-conversions)
 
     operator T&() & {
         return instance_;
@@ -596,13 +594,11 @@ struct AutoObject final {
         return std::move(instance_);
     }
 
-    // NOLINTEND(fuchsia-overloaded-operator,google-explicit-constructor,hicpp-explicit-conversions)
-
-    T& Get() & {
+    [[nodiscard]] T& Get() & {
         return instance_;
     }
 
-    const T& Get() const& {
+    [[nodiscard]] const T& Get() const& {
         return instance_;
     }
 
@@ -613,7 +609,7 @@ struct AutoObject final {
     //
     // Usage:
     //     std::move(object).Move() // this always gives have T&&
-    T&& Move() && {
+    [[nodiscard]] T&& Move() && {
         return std::move(instance_);
     }
 
@@ -654,7 +650,6 @@ struct AutoObject<T> final : T {
     template <typename... From>
         requires std::is_constructible_v<T, From...>
     explicit(!utils::concepts::ImplicitlyConstructibleFrom<T, From...>)
-        // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
         AutoObject(From&&... from)  //
         noexcept(std::is_nothrow_constructible_v<T, From...>)
         : T(std::forward<From>(from)...) {
@@ -727,7 +722,6 @@ struct AutoObject<T> final : T {
         requires std::is_copy_assignable_v<T>
     = default;
 
-    // NOLINTNEXTLINE(fuchsia-overloaded-operator)
     AutoObject& operator=(const T& other)  //
         noexcept(std::is_nothrow_copy_assignable_v<T>)
         requires std::is_copy_assignable_v<T>
@@ -743,7 +737,6 @@ struct AutoObject<T> final : T {
         requires std::is_move_assignable_v<T>
     = default;
 
-    // NOLINTBEGIN(fuchsia-overloaded-operator)
 
     AutoObject& operator=(T&& other)  //
         noexcept(std::is_nothrow_move_assignable_v<T>)
@@ -761,8 +754,15 @@ struct AutoObject<T> final : T {
         return this;
     }
 
-    // NOLINTEND(fuchsia-overloaded-operator)
 };
+
+// NOLINTEND(cert-dcl21-cpp)
+// NOLINTEND(misc-unconventional-assign-operator)
+// NOLINTEND(cppcoreguidelines-c-copy-assignment-signature)
+// NOLINTEND(fuchsia-overloaded-operator)
+// NOLINTEND(bugprone-exception-escape)
+// NOLINTEND(hicpp-noexcept-move,performance-noexcept-move-constructor)
+// NOLINTEND(google-explicit-constructor,hicpp-explicit-conversions)
 
 template <typename T>
     requires utils::concepts::Class<T> && utils::concepts::NonCV<T>
@@ -770,4 +770,5 @@ AutoObject(T) -> AutoObject<T>;
 
 }  // namespace except::detail
 
+// NOLINTNEXTLINE(google-global-names-in-headers)
 using except::detail::AutoObject;

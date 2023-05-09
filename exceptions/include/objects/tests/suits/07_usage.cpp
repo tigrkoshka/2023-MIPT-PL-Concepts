@@ -46,7 +46,7 @@ void AutoAmbiguous(const AutoObject<SimplePlain>&) {}
 void AutoAmbiguous(AutoObject<FinalPlain>&&) {}
 void AutoAmbiguous(const AutoObject<FinalPlain>&) {}
 
-// NOLINTBEGIN(bugprone-use-after-move,hicpp-invalid-access-moved)
+// NOLINTBEGIN(bugprone-use-after-move,hicpp-invalid-access-moved,readability-function-cognitive-complexity)
 TYPED_TEST(AutoTest, Usage) {
     using Plain = TestFixture::Plain;
 
@@ -98,8 +98,11 @@ TYPED_TEST(AutoTest, Usage) {
     PlainConstValue(const_plain);
     PlainConstValue(const_object);
 
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     expected += Stats{.ctor{.copy = 16}};
     expected += Stats{.dtor = 16};  // function arguments get destroyed
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+
     ASSERT_EQ(Plain::stats, expected);
 
     ////////////////////////////////////////////////////////////////////////////
@@ -268,6 +271,6 @@ TYPED_TEST(AutoTest, Usage) {
 
     renew();
 }
-// NOLINTEND(bugprone-use-after-move,hicpp-invalid-access-moved)
+// NOLINTEND(bugprone-use-after-move,hicpp-invalid-access-moved,readability-function-cognitive-complexity)
 
 }  // namespace except::test::objects

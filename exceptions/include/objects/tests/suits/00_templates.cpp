@@ -11,6 +11,8 @@ namespace except::test::objects {
 
 struct SomeStruct {};
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+
 TEST(Template, Concept) {
     static_assert(                           //
         CanAutoObject<SomeStruct> &&         //
@@ -80,5 +82,7 @@ TEST(Template, Deduction) {
     static_assert(std::same_as<decltype(sample_4),  //
                                const AutoObject<decltype(lambda_2)>>);
 }
+
+// NOLINTEND(readability-function-cognitive-complexity)
 
 }  // namespace except::test::objects

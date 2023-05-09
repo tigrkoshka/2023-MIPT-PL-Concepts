@@ -6,6 +6,7 @@
 
 #include "objects/tests/utils/stats.hpp"
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define EXCEPT_OBJECTS_TEST_CLASS_CONTENT(ClassName)                         \
     /* Constructors */                                                       \
                                                                              \
@@ -120,12 +121,21 @@
                                                                              \
     size_t index{0};                                                         \
     static Stats stats;
+// NOLINTEND(bugprone-macro-parentheses)
 
 namespace except::test::objects {
 
 template <bool Explicit, bool Noexcept>
 struct Simple {
+    // NOLINTBEGIN(fuchsia-overloaded-operator)
+    // NOLINTBEGIN(cert-dcl21-cpp)
+    // NOLINTBEGIN(google-explicit-constructor,hicpp-explicit-conversions)
+    // NOLINTBEGIN(hicpp-noexcept-move,performance-noexcept-move-constructor)
     EXCEPT_OBJECTS_TEST_CLASS_CONTENT(Simple)
+    // NOLINTEND(hicpp-noexcept-move,performance-noexcept-move-constructor)
+    // NOLINTEND(google-explicit-constructor,hicpp-explicit-conversions)
+    // NOLINTEND(cert-dcl21-cpp)
+    // NOLINTEND(fuchsia-overloaded-operator)
 };
 
 template <bool Explicit, bool Noexcept>
@@ -137,7 +147,15 @@ using SimpleNoexcept = Simple<false, true>;
 
 template <bool Explicit, bool Noexcept>
 struct Final final {
+    // NOLINTBEGIN(fuchsia-overloaded-operator)
+    // NOLINTBEGIN(cert-dcl21-cpp)
+    // NOLINTBEGIN(google-explicit-constructor,hicpp-explicit-conversions)
+    // NOLINTBEGIN(hicpp-noexcept-move,performance-noexcept-move-constructor)
     EXCEPT_OBJECTS_TEST_CLASS_CONTENT(Final)
+    // NOLINTEND(hicpp-noexcept-move,performance-noexcept-move-constructor)
+    // NOLINTEND(google-explicit-constructor,hicpp-explicit-conversions)
+    // NOLINTEND(cert-dcl21-cpp)
+    // NOLINTEND(fuchsia-overloaded-operator)
 };
 
 template <bool Explicit, bool Noexcept>

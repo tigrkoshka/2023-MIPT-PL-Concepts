@@ -5,9 +5,11 @@
 
 namespace except::test::impl {
 
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
 struct Recording {
     Recording();
-    ~Recording();
+    // NOLINTNEXTLINE(bugprone-exception-escape)
+    ~Recording() noexcept;
 
     static void Reset();
 

@@ -3,6 +3,7 @@
 #include "impl/impl.hpp"
 #include "objects/auto.hpp"
 #include "types/types.hpp"
+#include "utils/types.hpp"
 
 #define EXCEPT_DETAIL_GET_MACRO(ZERO, ONE, TWO, MACRO, ...) MACRO
 #define EXCEPT_DETAIL_CONCAT_(a, b) a##b
@@ -19,15 +20,18 @@
         if (setjmp(EXCEPT_DETAIL_BUFF) == 0)
 
 // clang-format off
-#define EXCEPT_DETAIL_CATCH_IMPL_WITH_VAR(Type, name) \
-    else if (except::detail::Impl::CanCatch<Type>())  \
-        for (auto [name, EXCEPT_DETAIL_ONCE] =        \
-                 except::detail::Impl::Catch<Type>(); \
+#define EXCEPT_DETAIL_CATCH_IMPL_WITH_VAR(Type, name)                        \
+    else if (except::detail::Impl::CanCatch<                                 \
+                 except::detail::utils::type_traits::CatchType<Type>>())     \
+        for (auto [name, EXCEPT_DETAIL_ONCE] =                               \
+                 except::detail::Impl::Catch<                                \
+                     except::detail::utils::type_traits::CatchType<Type>>(); \
              std::exchange(EXCEPT_DETAIL_ONCE, false);)
 // clang-format on
 
-#define EXCEPT_DETAIL_CATCH_IMPL(Type) \
-    else if (except::detail::Impl::MaybeCatch<Type>())
+#define EXCEPT_DETAIL_CATCH_IMPL(Type)         \
+    else if (except::detail::Impl::MaybeCatch< \
+                 except::detail::utils::type_traits::CatchType<Type>>())
 
 #define EXCEPT_DETAIL_CATCH_ALL else if (except::detail::Impl::CatchAll())
 

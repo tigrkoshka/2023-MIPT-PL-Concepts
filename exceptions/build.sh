@@ -8,6 +8,10 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+# make sure the necessary scripts are executable
+chmod +x "${SCRIPT_DIR}/include/build.sh" &&
+chmod +x "${SCRIPT_DIR}/playground/build.sh" &&
+
 # build the except library and place the archive
 # "libexcept.a" in the lib directory
 "${SCRIPT_DIR}/include/build.sh" &&

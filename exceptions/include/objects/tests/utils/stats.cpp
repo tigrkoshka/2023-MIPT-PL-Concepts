@@ -7,6 +7,8 @@
 
 namespace except::test::objects {
 
+// NOLINTBEGIN(fuchsia-overloaded-operator,fuchsia-trailing-return)
+
 auto Stats::Constructors::operator+=(const Constructors& other)
     -> Constructors& {
     default_ += other.default_;
@@ -33,7 +35,6 @@ auto Stats::operator+=(const Stats& other) -> Stats& {
     return *this;
 }
 
-// NOLINTNEXTLINE(fuchsia-overloaded-operator)
 std::ostream& operator<<(std::ostream& out, const Stats::Constructors& ctor) {
     return out << "    default:_________" << ctor.default_ << std::endl
                << "    copy:____________" << ctor.copy << std::endl
@@ -42,13 +43,11 @@ std::ostream& operator<<(std::ostream& out, const Stats::Constructors& ctor) {
                << "    multi_argument:__" << ctor.multi_argument;
 }
 
-// NOLINTNEXTLINE(fuchsia-overloaded-operator)
 std::ostream& operator<<(std::ostream& out, const Stats::Assignments& assign) {
     return out << "    copy:____________" << assign.copy << std::endl
                << "    move:____________" << assign.move;
 }
 
-// NOLINTNEXTLINE(fuchsia-overloaded-operator)
 std::ostream& operator<<(std::ostream& out, const Stats& stats) {
     return out << "constructors:" << std::endl
                << stats.ctor << std::endl
@@ -56,6 +55,8 @@ std::ostream& operator<<(std::ostream& out, const Stats& stats) {
                << stats.assign << std::endl
                << "destructors: " << stats.dtor;
 }
+
+// NOLINTEND(fuchsia-overloaded-operator,fuchsia-trailing-return)
 
 void ResetStats() {
     SimplePlain::stats    = Stats{};

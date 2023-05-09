@@ -30,6 +30,7 @@ class ObjectManager final {
 
     template <typename T>
         requires std::is_destructible_v<T>
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     static void RecordObject(T& instance) noexcept {
         k_destroyers.emplace(std::make_pair(Destroy<T>, &instance));
     }

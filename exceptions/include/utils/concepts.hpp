@@ -36,8 +36,10 @@ concept Throwable = std::is_copy_constructible_v<U> &&  //
 template <typename T>
 concept DecayedThrowable = Throwable<T> && Decayed<T>;
 
-template <typename T, typename UnCVRef = std::remove_cvref_t<T>>
-concept Catchable = DecayedThrowable<UnCVRef> &&  //
+template <typename T, typename Decayed = std::decay_t<T>>
+concept Catchable = !std::is_abstract_v<Decayed> &&    //
+                    !std::is_rvalue_reference_v<T> &&  //
+                    Throwable<Decayed> &&              //
                     (std::is_reference_v<T> || std::is_copy_constructible_v<T>);
 
 }  // namespace except::detail::utils::concepts

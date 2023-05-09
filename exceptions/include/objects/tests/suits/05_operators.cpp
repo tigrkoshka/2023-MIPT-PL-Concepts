@@ -9,14 +9,16 @@
 
 namespace except::test::objects {
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+
 TYPED_TEST(AutoTest, Comparison) {
     using Plain    = TestFixture::Plain;
     using Explicit = TestFixture::Explicit;
     using Noexcept = TestFixture::Noexcept;
 
     // NOLINTNEXTLINE(misc-const-correctness)
-    AutoObject<Plain> sample             = value_s;
-    const AutoObject<Plain> const_sample = const_value_s;
+    AutoObject<Plain> sample             = kValueS;
+    const AutoObject<Plain> const_sample = kConstValueS;
 
     ASSERT_EQ(sample, sample);
     ASSERT_EQ(const_sample, const_sample);
@@ -45,16 +47,16 @@ TYPED_TEST(AutoTest, Increment) {
     using Plain    = TestFixture::Plain;
     using Noexcept = TestFixture::Noexcept;
 
-    AutoObject<Plain> sample = value_s;
-    ASSERT_EQ(sample->index, value_s.size());
+    AutoObject<Plain> sample = kValueS;
+    ASSERT_EQ(sample->index, kValueS.size());
 
     const AutoObject post_incremented = sample++;
-    ASSERT_EQ(sample->index, value_s.size() + 1);
-    ASSERT_EQ(post_incremented->index, value_s.size());
+    ASSERT_EQ(sample->index, kValueS.size() + 1);
+    ASSERT_EQ(post_incremented->index, kValueS.size());
 
     const AutoObject<Plain> pre_incremented = ++sample;
-    ASSERT_EQ(sample->index, value_s.size() + 2);
-    ASSERT_EQ(pre_incremented->index, value_s.size() + 2);
+    ASSERT_EQ(sample->index, kValueS.size() + 2);
+    ASSERT_EQ(pre_incremented->index, kValueS.size() + 2);
 
     // do not wrap in AutoObject, because no object is created here,
     // so no destructor must be recorded, to avoid accidentally writing
@@ -85,13 +87,13 @@ TYPED_TEST(AutoTest, Arithmetic) {
     using Plain    = TestFixture::Plain;
     using Noexcept = TestFixture::Noexcept;
 
-    AutoObject<Plain> sample_1 = value_s;
-    AutoObject<Plain> sample_2 = value_s;
-    ASSERT_EQ(sample_1->index, value_s.size());
-    ASSERT_EQ(sample_2->index, value_s.size());
+    AutoObject<Plain> sample_1 = kValueS;
+    AutoObject<Plain> sample_2 = kValueS;
+    ASSERT_EQ(sample_1->index, kValueS.size());
+    ASSERT_EQ(sample_2->index, kValueS.size());
 
     const AutoObject<Plain> added = sample_1 + sample_2;
-    ASSERT_EQ(added->index, value_s.size() * 2);
+    ASSERT_EQ(added->index, kValueS.size() * 2);
 
     const AutoObject<Plain> subtracted = sample_1 - sample_2;
     ASSERT_EQ(subtracted->index, 0);
@@ -103,20 +105,20 @@ TYPED_TEST(AutoTest, Arithmetic) {
 
     // NOLINTNEXTLINE(misc-const-correctness)
     Plain& added_again = sample_1 += sample_2;
-    ASSERT_EQ(added_again.index, 2 * value_s.size());
-    ASSERT_EQ(sample_1->index, 2 * value_s.size());
+    ASSERT_EQ(added_again.index, 2 * kValueS.size());
+    ASSERT_EQ(sample_1->index, 2 * kValueS.size());
 
     // it is the same object as the one stored in sample_1
-    added_again.index = value_sz;
-    ASSERT_EQ(sample_1->index, value_sz);
+    added_again.index = kValueSZ;
+    ASSERT_EQ(sample_1->index, kValueSZ);
 
     Plain& subtracted_again = sample_1 -= sample_2;
-    ASSERT_EQ(subtracted_again.index, value_sz - value_s.size());
-    ASSERT_EQ(sample_1->index, value_sz - value_s.size());
+    ASSERT_EQ(subtracted_again.index, kValueSZ - kValueS.size());
+    ASSERT_EQ(sample_1->index, kValueSZ - kValueS.size());
 
     // it is the same object as the one stored in sample_1
-    subtracted_again.index = value_sz;
-    ASSERT_EQ(sample_1->index, value_sz);
+    subtracted_again.index = kValueSZ;
+    ASSERT_EQ(sample_1->index, kValueSZ);
 
     // noexcept checks
 
@@ -136,5 +138,7 @@ TYPED_TEST(AutoTest, Arithmetic) {
         { object_1 *= object_2 };
     });
 }
+
+// NOLINTEND(readability-function-cognitive-complexity)
 
 }  // namespace except::test::objects

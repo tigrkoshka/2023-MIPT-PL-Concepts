@@ -23,6 +23,7 @@ struct Data {
         void* copy{nullptr};
     };
 
+    // NOLINTBEGIN(cppcoreguidelines-owning-memory)
     template <utils::concepts::DecayedThrowable Value>
     struct Manager {
         using Stored = std::conditional_t<std::derived_from<Value, Exception>,
@@ -44,12 +45,10 @@ struct Data {
                     break;
 
                 case Operation::COPY:
-                    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                     ret->copy = static_cast<Stored*>(new Value(*ptr));
                     break;
 
                 case Operation::DESTROY:
-                    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                     delete ptr;
                     break;
             }
@@ -59,10 +58,10 @@ struct Data {
             requires std::constructible_from<Value, Args...>
         static void Create(Data& data, Args&&... args) {
             data.data_ = static_cast<Stored*>(
-                // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                 new Value(std::forward<Args>(args)...));
         }
     };
+    // NOLINTEND(cppcoreguidelines-owning-memory)
 
     template <utils::concepts::DecayedThrowable Value>
     friend struct Manager;
@@ -176,12 +175,12 @@ struct Data {
 
     template <utils::concepts::Catchable ValueType>
     [[nodiscard]] bool CanGet() {
-        return DoGet<std::remove_cvref_t<ValueType>>() != nullptr;
+        return DoGet<std::decay_t<ValueType>>() != nullptr;
     }
 
     template <utils::concepts::Catchable ValueType>
     [[nodiscard]] ValueType Get() {
-        return static_cast<ValueType>(*DoGet<std::remove_cvref_t<ValueType>>());
+        return static_cast<ValueType>(*DoGet<std::decay_t<ValueType>>());
     }
 
    private:
