@@ -59,6 +59,32 @@ TEST(Death, Hard) {
     }
 }
 
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
+struct ThrowingDestructor {
+    ~ThrowingDestructor() {
+        Throw(RuntimeError{});
+    }
+};
+
+TEST(Death, DuringUnwinding) {
+    TRY {
+        const AutoObject<ThrowingDestructor> object;
+
+        TRY {
+            // this is OK, the object is not affected by stack unwinding
+            Throw(Exception{});
+        }
+        CATCH() {
+            // OK
+        }
+
+        // this results in std::terminate since the stack unwinding attempts
+        // to destroy the object, whose destructor throws another exception
+        ASSERT_DEATH(Throw(Exception{}), "");
+    }
+    CATCH() {}
+}
+
 // NOLINTEND(readability-function-cognitive-complexity)
 
 }  // namespace except::test::impl

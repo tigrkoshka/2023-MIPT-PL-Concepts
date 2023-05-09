@@ -55,8 +55,9 @@ class Impl final {
     //       track a similar issue here: https://clck.ru/34Ld6E
     //       once the bug is fixed, the second template parameter
     //       can be removed
-    static std::stack<Node, std::vector<Node>> stack;
-    static std::stack<Node, std::vector<Node>> caught;
+    static thread_local std::stack<Node, std::vector<Node>> stack;
+    static thread_local std::stack<Node, std::vector<Node>> caught;
+    static thread_local bool unwinding_in_progress;
 };
 
 }  // namespace except::detail
