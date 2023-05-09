@@ -205,6 +205,10 @@ That includes the function local variables and arguments that were passed
 by value for all the functions on the stack between the call to `Throw` and
 the most narrow enclosing `TRY` block.
 
+If any of the destructors called during stack unwinding in term throw
+an exception, `std::terminate` is called. In this case it is unspecified if
+any other destructors (after the one that threw the exception) are called.
+
 #### AutoObject
 
 For the stack unwinding to work correctly, all objects created on the stack
