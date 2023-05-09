@@ -52,7 +52,7 @@ For details on the usage of the code from this directory please refer to its
 
 ### Automatic build
 
-To automatically build of the *karma* library and the playground executable,
+To automatically build the *karma* library and the playground executable,
 run the following command from this directory:
 
 ```shell

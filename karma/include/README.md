@@ -198,7 +198,7 @@ try {
                                  karma_executable_file_path);
     
     karma::Executor executor;
-    auto _ /* return_code*/ = executor.MustExecute(karma_executable_file_path);
+    auto _ /* return_code */ = executor.MustExecute(karma_executable_file_path);
     
     karma::Disassembler::MustDisassemble(karma_executable_file_path,
                                          karma_disassembled_file_path)
