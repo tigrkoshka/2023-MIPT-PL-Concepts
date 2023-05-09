@@ -59,6 +59,14 @@ run the following command from this directory:
 chmod +x build.sh && ./build.sh
 ```
 
+To specify the compiler to be used (for the list of the tested compilers
+see [below](#compilers)) one should set the environment variable `COMPILER`.
+This can be done with the following command:
+
+```bash
+export COMPILER="<absolute_path_to_the_compiler>"
+```
+
 ### Results
 
 After the command is executed, several new `build` directories will appear
