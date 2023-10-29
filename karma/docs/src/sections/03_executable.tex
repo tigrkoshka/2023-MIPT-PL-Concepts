@@ -28,7 +28,7 @@ The format of the executable file is described in
             28..31 & Initial stack pointer value           \\
             32..35 & ID of the target processor            \\
             512..  & Code segment                          \\
-            & Constants segment                     \\
+            & Constants segment                            \\
             \hline
         \end{tabular}
     \end{table}
@@ -40,7 +40,7 @@ Notes:
     \item The \St{ASCII} string at the beginning of the executable file contains
     15 explicit characters and an implicit `\textbackslash 0' at the end
 
-    \item The code, constants and data segments sizes are denoted in bytes
+    \item The code and constants segments sizes are denoted in bytes
     (as opposed to in machine words)
 
     \item The execution of the program starts from the instruction whose address
@@ -53,7 +53,7 @@ Notes:
     \item A \St{Karma} executable file can run on only one processor
     -- that with ID 239
 
-    \item The code, constants and data segments are loaded into the \St{Karma}
+    \item The code and constants segments are loaded into the \St{Karma}
     computer consecutively, starting from the very first memory cell
     (i.e.\ the one with the 0 address)
 \end{itemize}
