@@ -30,33 +30,37 @@ void Compiler::Labels::CheckNotSeen(const std::string& label,
 void Compiler::Labels::Merge(Labels&& other,
                              size_t code_shift,
                              size_t constants_shift) {
-    for (const auto& [label, definition] : other.commands_labels_) {
+    // move the whole parameter to avoid invalid state
+    // (this is mandated by cppcoreguidelines)
+    Labels used{std::move(other)};
+
+    for (const auto& [label, definition] : used.commands_labels_) {
         RecordCommandLabel(label,
                            definition.first + code_shift,
                            definition.second);
     }
 
-    for (const auto& [label, definition] : other.constants_labels_) {
+    for (const auto& [label, definition] : used.constants_labels_) {
         RecordConstantLabel(label,
                             definition.first + constants_shift,
                             definition.second);
     }
 
-    if (other.entrypoint_label_) {
+    if (used.entrypoint_label_) {
         // is both this->entrypoint_label_ and other.entrypoint_label_,
         // that can only mean that there were at least two entrypoints
         // in the program, the respective error will be thrown when merging
         // entrypoints, so there is no need to throw it here
-        entrypoint_label_ = other.entrypoint_label_;
+        entrypoint_label_ = used.entrypoint_label_;
     }
 
-    for (const auto& [label, usages] : other.usages_) {
+    for (const auto& [label, usages] : used.usages_) {
         for (const size_t usage : usages) {
             usages_[label].push_back(usage + code_shift);
         }
     }
 
-    for (const auto& [label, usage_sample] : other.usage_samples_) {
+    for (const auto& [label, usage_sample] : used.usage_samples_) {
         if (!usage_samples_.contains(label)) {
             usage_samples_[label] = usage_sample;
         }

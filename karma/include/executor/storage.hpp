@@ -18,9 +18,7 @@ namespace karma {
 class Executor::Storage : detail::utils::traits::NonCopyableMovable {
    private:
     using ExecutionError = errors::executor::ExecutionError::Builder;
-
-    using Config = Executor::Config;
-    using Word   = detail::specs::arch::Word;
+    using Word           = detail::specs::arch::Word;
 
    public:
     explicit Storage(Config config)
@@ -30,7 +28,7 @@ class Executor::Storage : detail::utils::traits::NonCopyableMovable {
                              const Config& config,
                              std::ostream& log);
 
-    void CheckPushAllowed();
+    void CheckPushAllowed() const;
 
     [[nodiscard]] Word RReg(detail::specs::arch::Register,
                             bool internal_usage = false) const;

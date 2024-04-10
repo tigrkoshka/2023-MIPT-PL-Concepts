@@ -12,20 +12,24 @@ namespace karma {
 namespace arch = detail::specs::arch;
 
 void Compiler::Entrypoint::Merge(Entrypoint&& other) {
-    if (address_ && other.address_) {
-        if (!pos_ || !other.pos_) {
+    // move the whole parameter to avoid invalid state
+    // (this is mandated by cppcoreguidelines)
+    Entrypoint used{std::move(other)};
+
+    if (address_ && used.address_) {
+        if (!pos_ || !used.pos_) {
             throw InternalError::EntrypointHasAddressButNotPos();
         }
 
-        throw CompileError::SecondEntrypoint(*other.pos_, *pos_);
+        throw CompileError::SecondEntrypoint(*used.pos_, *pos_);
     }
 
-    if (!other.address_) {
+    if (!used.address_) {
         return;
     }
 
-    address_ = other.address_;
-    pos_     = std::move(other.pos_);
+    address_ = used.address_;
+    pos_     = std::move(used.pos_);
 }
 
 void Compiler::Entrypoint::Record(arch::Address address,

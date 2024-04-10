@@ -17,8 +17,7 @@ void Executor::Storage::PrepareForExecution(const Exec::Data& exec_data,
                                             std::ostream& log) {
     curr_config_ = base_config_ & config;
 
-    log << "[executor]: current execution config:" << std::endl
-        << curr_config_ << std::endl;
+    log << "[executor]: current execution config:\n" << curr_config_ << '\n';
 
     utils::vector::CopyToBegin(memory_, exec_data.code, exec_data.constants);
     curr_code_end_      = exec_data.code.size();
@@ -29,7 +28,7 @@ void Executor::Storage::PrepareForExecution(const Exec::Data& exec_data,
     registers_.at(arch::kInstructionRegister) = exec_data.entrypoint;
 }
 
-void Executor::Storage::CheckPushAllowed() {
+void Executor::Storage::CheckPushAllowed() const {
     const arch::Address curr_stack_address =
         registers_.at(arch::kStackRegister);
 

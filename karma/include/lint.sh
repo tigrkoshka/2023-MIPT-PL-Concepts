@@ -9,7 +9,7 @@
 
 set -e
 
-LLVM="/usr/local/Cellar/llvm/16.0.0"
+LLVM="/opt/homebrew/opt/llvm"
 LLVM_BIN="${LLVM}/bin"
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )

@@ -100,8 +100,6 @@ bool Compiler::File::GetToken(std::string& token) {
     return static_cast<bool>(curr_line_ >> token);
 }
 
-// TODO: seems like a bug in clang-tidy
-// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 std::string Compiler::File::WhereNoLine() const {
     auto files    = ToRoot();
     auto get_path = [](const File* file) -> std::string {
@@ -115,9 +113,6 @@ std::string Compiler::File::WhereNoLine() const {
     //       that does exactly what is needed, but we do not
     //       want to use experimental features, so here is a workaround
 
-    // TODO: seems like a bug in clang-tidy,
-    //       cannot declare const, because then an iterator cannot be created
-    // NOLINTNEXTLINE(misc-const-correctness)
     std::ostringstream where;
     std::ranges::copy(
         pipeline,

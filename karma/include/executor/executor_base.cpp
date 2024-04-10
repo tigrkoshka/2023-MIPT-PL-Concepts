@@ -8,7 +8,7 @@ namespace karma {
 namespace arch = detail::specs::arch;
 
 void Executor::ExecutorBase::CheckPushAllowed() {
-    return storage_->CheckPushAllowed();
+    storage_->CheckPushAllowed();
 }
 
 arch::Word Executor::ExecutorBase::RReg(arch::Register reg,

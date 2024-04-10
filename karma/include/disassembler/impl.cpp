@@ -195,7 +195,7 @@ void Disassembler::Impl::DisassembleConstants(const Segment& constants,
         }
 
         out << current_label << syntax::kLabelEnd << ' '
-            << consts::kTypeToName.at(type) << ' ' << value << std::endl;
+            << consts::kTypeToName.at(type) << ' ' << value << '\n';
     }
 }
 
@@ -311,14 +311,13 @@ void Disassembler::Impl::DisassembleCode(const Segment& code,
         auto curr_address = static_cast<arch::Address>(command_num);
         if (std::optional<std::string> label =
                 labels.TryGetLabel(curr_address)) {
-            out << std::endl << *label << syntax::kLabelEnd << std::endl;
+            out << '\n' << *label << syntax::kLabelEnd << '\n';
         }
 
-        out << "    " << GetCommandString(code[command_num], labels)
-            << std::endl;
+        out << "    " << GetCommandString(code[command_num], labels) << '\n';
     }
 
-    out << "end " << Labels::MainLabel() << std::endl;
+    out << "end " << Labels::MainLabel() << '\n';
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -328,34 +327,34 @@ void Disassembler::Impl::DisassembleCode(const Segment& code,
 void Disassembler::Impl::DisassembleImpl(const std::string& src,
                                          std::ostream& out,
                                          std::ostream& log) {
-    log << "[disassembler]: reading the executable file" << std::endl;
+    log << "[disassembler]: reading the executable file\n";
 
     const Exec::Data data = Exec::Read(src);
 
-    log << "[disassembler]: successfully read the executable file" << std::endl;
+    log << "[disassembler]: successfully read the executable file\n";
 
     Labels labels;
 
-    log << "[disassembler]: disassembling constants" << std::endl;
+    log << "[disassembler]: disassembling constants\n";
 
     DisassembleConstants(data.constants, out, labels, data.code.size());
 
-    log << "[disassembler]: successfully disassembled constants" << std::endl;
+    log << "[disassembler]: successfully disassembled constants\n";
 
     // newline between constants and code
-    out << std::endl;
+    out << '\n';
 
-    log << "[disassembler]: preparing commands labels" << std::endl;
+    log << "[disassembler]: preparing commands labels\n";
 
     labels.PrepareCommandLabels(data);
 
-    log << "[disassembler]: successfully prepared commands labels" << std::endl;
+    log << "[disassembler]: successfully prepared commands labels\n";
 
-    log << "[disassembler]: disassembling commands" << std::endl;
+    log << "[disassembler]: disassembling commands\n";
 
     DisassembleCode(data.code, out, labels);
 
-    log << "[disassembler]: successfully disassembled commands" << std::endl;
+    log << "[disassembler]: successfully disassembled commands\n";
 }
 
 void Disassembler::Impl::MustDisassemble(const std::string& src,
@@ -366,21 +365,20 @@ void Disassembler::Impl::MustDisassemble(const std::string& src,
     try {
         DisassembleImpl(src, out, log);
     } catch (const errors::disassembler::Error& e) {
-        log << "[disassembler]: error: " << e.what() << std::endl;
-        throw e;
+        log << "[disassembler]: error: " << e.what() << '\n';
+        throw;
     } catch (const errors::Error& e) {
-        log << "[disassembler]: error: " << e.what() << std::endl;
+        log << "[disassembler]: error: " << e.what() << '\n';
         throw errors::disassembler::Error(
             "error during disassembling process "
             "(not directly related to the disassembling itself): "s +
             e.what());
     } catch (const std::exception& e) {
-        log << "[disassembler]: unexpected exception: " << e.what()
-            << std::endl;
+        log << "[disassembler]: unexpected exception: " << e.what() << '\n';
         throw errors::disassembler::Error(
             "unexpected exception in disassembler: "s + e.what());
     } catch (...) {
-        log << "[disassembler]: unexpected exception" << std::endl;
+        log << "[disassembler]: unexpected exception\n";
         throw errors::disassembler::Error(
             "unexpected exception in disassembler "
             "(no additional info can be provided)");
@@ -393,7 +391,7 @@ void Disassembler::Impl::Disassemble(const std::string& src,
     try {
         MustDisassemble(src, out, log);
     } catch (const errors::Error& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << '\n';
     }
 }
 
@@ -419,7 +417,7 @@ void Disassembler::Impl::DisassembleImpl(const std::string& src,
         throw InternalError::FailedToOpen(real_dst);
     }
 
-    return DisassembleImpl(src, out, log);
+    DisassembleImpl(src, out, log);
 }
 
 void Disassembler::Impl::MustDisassemble(const std::string& src,
@@ -430,21 +428,20 @@ void Disassembler::Impl::MustDisassemble(const std::string& src,
     try {
         DisassembleImpl(src, dst, log);
     } catch (const errors::disassembler::Error& e) {
-        log << "[disassembler]: error: " << e.what() << std::endl;
-        throw e;
+        log << "[disassembler]: error: " << e.what() << '\n';
+        throw;
     } catch (const errors::Error& e) {
-        log << "[disassembler]: error: " << e.what() << std::endl;
+        log << "[disassembler]: error: " << e.what() << '\n';
         throw errors::disassembler::Error(
             "error during disassembling process: "
             "(not directly related to the disassembling itself): "s +
             e.what());
     } catch (const std::exception& e) {
-        log << "[disassembler]: unexpected exception: " << e.what()
-            << std::endl;
+        log << "[disassembler]: unexpected exception: " << e.what() << '\n';
         throw errors::disassembler::Error(
             "unexpected exception in disassembler: "s + e.what());
     } catch (...) {
-        log << "[disassembler]: unexpected exception" << std::endl;
+        log << "[disassembler]: unexpected exception\n";
         throw errors::disassembler::Error(
             "unexpected exception in disassembler "
             "(no additional info can be provided)");
@@ -457,7 +454,7 @@ void Disassembler::Impl::Disassemble(const std::string& src,
     try {
         MustDisassemble(src, dst, log);
     } catch (const errors::Error& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << '\n';
     }
 }
 

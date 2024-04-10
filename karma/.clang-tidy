@@ -25,18 +25,25 @@ Checks: >
   
   -readability-named-parameter,
   -hicpp-named-parameter,
+  
+  -misc-no-recursion,
+  -misc-include-cleaner,
 
   -llvm-header-guard,
 
   -llvmlibc-callee-namespace,
   -llvmlibc-implementation-in-namespace,
   -llvmlibc-restrict-system-libc-headers,
+  
+  -llvmlibc-inline-function-decl
 
   -modernize-use-trailing-return-type,
   -readability-redundant-access-specifiers,
 
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-avoid-const-or-ref-data-members,
+
+  -performance-enum-size,
 
 HeaderFilterRegex: '\.hpp$'
 
@@ -64,6 +71,6 @@ CheckOptions:
   readability-identifier-naming.ConstexprVariablePrefix: k
   readability-identifier-naming.TypeTemplateParameterCase: CamelCase
   readability-identifier-naming.TypeTemplateParameterIgnoredRegexp: expr-type
-  readability-identifier-length.IgnoredVariableNames: ^ss$
+  readability-identifier-length.IgnoredVariableNames: ^ss$ # stringstream
   readability-simplify-boolean-expr.ChainedConditionalReturn: true
   readability-simplify-boolean-expr.ChainedConditionalAssignment: true

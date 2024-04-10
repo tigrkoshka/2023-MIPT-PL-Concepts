@@ -37,7 +37,7 @@ void Disassembler::MustDisassemble(const std::string& src, Logger log) {
 }
 
 void Disassembler::Disassemble(const std::string& src, Logger log) {
-    MustDisassemble(src, "", log);
+    Disassemble(src, "", log);
 }
 
 }  // namespace karma

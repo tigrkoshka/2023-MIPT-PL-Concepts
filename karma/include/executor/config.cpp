@@ -225,26 +225,25 @@ std::ostream& operator<<(std::ostream& out, const Config& config) {
         out << "}";
     };
 
-    out << "registers blocks:" << std::endl;
+    out << "registers blocks:\n";
 
     out << "    write:      ";
     print_registers(config.write_.blocked_registers_);
-    out << std::endl;
+    out << '\n';
 
     out << "    read-write: ";
     print_registers(config.read_write_.blocked_registers_);
-    out << std::endl;
+    out << '\n';
 
     // remember formatting flags before setting boolalpha
     const std::ios_base::fmtflags old = out.setf(std::ios_base::boolalpha);
 
-    out << "code segment blocks:" << std::endl
-        << "    write: " << config.CodeSegmentIsWriteBlocked() << std::endl
-        << "    read:  " << config.CodeSegmentIsReadWriteBlocked() << std::endl
-        << "constants segment blocks:" << std::endl
-        << "    write: " << config.ConstantsSegmentIsWriteBlocked() << std::endl
-        << "    read:  " << config.ConstantsSegmentIsReadWriteBlocked()
-        << std::endl;
+    out << "code segment blocks:" << '\n'
+        << "    write: " << config.CodeSegmentIsWriteBlocked() << '\n'
+        << "    read:  " << config.CodeSegmentIsReadWriteBlocked() << '\n'
+        << "constants segment blocks:" << '\n'
+        << "    write: " << config.ConstantsSegmentIsWriteBlocked() << '\n'
+        << "    read:  " << config.ConstantsSegmentIsReadWriteBlocked() << '\n';
 
     // restore flags
     out.flags(old);
@@ -253,7 +252,7 @@ std::ostream& operator<<(std::ostream& out, const Config& config) {
     if (!config.max_stack_size_) {
         out << "unbounded";
     } else {
-        out << std::endl << "    max size: " << *config.max_stack_size_;
+        out << "\n    max size: " << *config.max_stack_size_;
     }
 
     return out;

@@ -26,7 +26,7 @@ int main() {
     karma::Executor executor(karma::Executor::Config::Strict());
     const uint32_t ret_code = executor.Execute(Exec(filepath), std::cerr);
 
-    std::cout << "executable returned code " << ret_code << std::endl;
+    std::cout << "executable returned code " << ret_code << '\n';
 
     karma::Disassembler::Disassemble(Exec(filepath), karma::Logger(std::cerr));
 

@@ -67,19 +67,19 @@ Executor::MaybeReturnCode Executor::Impl::ExecuteCmd(cmd::Bin command) {
 Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec_path,
                                                  const Config& config,
                                                  std::ostream& log) {
-    log << "[executor]: reading the executable file" << std::endl;
+    log << "[executor]: reading the executable file\n";
 
     const Exec::Data data = Exec::Read(exec_path);
 
-    log << "[executor]: successfully read the executable file" << std::endl;
+    log << "[executor]: successfully read the executable file\n";
 
-    log << "[executor]: preparing for execution" << std::endl;
+    log << "[executor]: preparing for execution\n";
 
     storage_->PrepareForExecution(data, config, log);
 
-    log << "[executor]: successfully prepared for execution" << std::endl;
+    log << "[executor]: successfully prepared for execution\n";
 
-    log << "[executor]: executing the program" << std::endl;
+    log << "[executor]: executing the program\n";
 
     while (true) {
         const arch::Address curr_address =
@@ -98,7 +98,7 @@ Executor::ReturnCode Executor::Impl::ExecuteImpl(const std::string& exec_path,
         if (MaybeReturnCode return_code =
                 ExecuteCmd(storage_->RMem(curr_address, true))) {
             log << "[executor]: the program finished execution with code "
-                << *return_code << std::endl;
+                << *return_code << '\n';
             return *return_code;
         }
     }
@@ -112,20 +112,20 @@ Executor::ReturnCode Executor::Impl::MustExecute(const std::string& exec_path,
     try {
         return ExecuteImpl(exec_path, config, log);
     } catch (const errors::executor::Error& e) {
-        log << "[executor]: error: " << e.what() << std::endl;
-        throw e;
+        log << "[executor]: error: " << e.what() << '\n';
+        throw;
     } catch (const errors::Error& e) {
-        log << "[executor]: error: " << e.what() << std::endl;
+        log << "[executor]: error: " << e.what() << '\n';
         throw errors::executor::Error(
             "error during execution process "
             "(not directly related to the execution itself): "s +
             e.what());
     } catch (const std::exception& e) {
-        log << "[executor]: unexpected exception: " << e.what() << std::endl;
+        log << "[executor]: unexpected exception: " << e.what() << '\n';
         throw errors::executor::Error("unexpected exception in executor: "s +
                                       e.what());
     } catch (...) {
-        log << "[executor]: unexpected exception" << std::endl;
+        log << "[executor]: unexpected exception\n";
         throw errors::executor::Error(
             "unexpected exception in executor "
             "(no additional info can be provided)");
@@ -138,7 +138,7 @@ Executor::ReturnCode Executor::Impl::Execute(const std::string& exec_path,
     try {
         return MustExecute(exec_path, config, log);
     } catch (const errors::Error& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << '\n';
         return 1;
     }
 }

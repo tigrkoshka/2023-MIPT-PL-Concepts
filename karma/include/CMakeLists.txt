@@ -15,8 +15,12 @@ ${CMAKE_CXX_FLAGS} \
 -Wconversion \
 -Wsign-conversion \
 -Wfloat-conversion \
--fsanitize=undefined \
 ")
+
+# GCC has problems with the address sanitizer and the undefined sanitizer in MacOS with Apple Silicon
+if (NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined")
+endif ()
 
 # llvm-ranlib does not have -no_warning_for_no_symbols option
 if (NOT CMAKE_RANLIB MATCHES "llvm")

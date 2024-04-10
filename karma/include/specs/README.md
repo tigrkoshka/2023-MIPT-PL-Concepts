@@ -95,7 +95,6 @@ karma::
                         |       UInt64
                         |       Double
                         |       Char
-                        |       String
                         |       kTypeToName
                         |       kNameToType
                         |   

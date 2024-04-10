@@ -27,8 +27,8 @@ class Compiler::IncludesManager : detail::utils::traits::NonCopyableMovable {
     std::vector<std::unique_ptr<File>> GetFiles(const std::string& root) &&;
 
    private:
-    std::unordered_set<std::string> all_includes_{};
-    std::vector<std::unique_ptr<File>> files_{};
+    std::unordered_set<std::string> all_includes_;
+    std::vector<std::unique_ptr<File>> files_;
 };
 
 }  // namespace karma

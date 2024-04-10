@@ -32,13 +32,14 @@ class Generator {
     // for the Generator class to be subject to the 'coroutine magic', it should
     // publicly define a struct named exactly promise_type by the C++ standard
 
+    // NOLINTNEXTLINE(readability-identifier-naming)
     struct promise_type;
     using Handle = std::coroutine_handle<promise_type>;
 
     // NOLINTNEXTLINE(readability-identifier-naming)
     struct promise_type {
        private:
-        friend class Generator<T>;
+        friend class Generator;
 
        public:
         // the function names of this section provide coroutine functionality,

@@ -16,9 +16,6 @@ namespace syntax = detail::specs::syntax;
 std::vector<std::filesystem::path> Compiler::IncludesManager::GetIncludes(
     const std::unique_ptr<File>& file) {
     std::string token;
-
-    // TODO: seems like a bug in clang-tidy
-    // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
     std::vector<std::filesystem::path> includes;
 
     file->Open();

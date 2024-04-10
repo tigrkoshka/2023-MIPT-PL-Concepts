@@ -1,5 +1,6 @@
 #include "impl.hpp"
 
+#include <algorithm>   // for min
 #include <exception>   // for exception
 #include <filesystem>  // for path
 #include <iostream>    // for ostream, cerr
@@ -28,9 +29,6 @@ namespace exec = detail::specs::exec;
 ///                                Prepare data                              ///
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO: seems like a bug in clang-tidy
-//       (this function is declared static in .hpp)
-// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 void Compiler::Impl::CompileRoutine(std::span<const std::unique_ptr<File>> src,
                                     std::span<Data> dst,
                                     std::ostream& log) {
@@ -45,30 +43,24 @@ void Compiler::Impl::CompileRoutine(std::span<const std::unique_ptr<File>> src,
 #endif
 
     for (size_t idx = 0; idx < src.size(); ++idx) {
-        synced_log << "[compiler]: compiling " << src[idx]->Path() << std::endl;
+        synced_log << "[compiler]: compiling " << src[idx]->Path() << '\n';
 
         dst[idx] = FileCompiler(src[idx]).PrepareData();
 
         synced_log << "[compiler]: successfully compiled " << src[idx]->Path()
-                   << std::endl;
+                   << '\n';
     }
 }
 
 Exec::Data Compiler::Impl::PrepareExecData(const Files& files,
                                            size_t n_workers,
                                            std::ostream& log) {
-    if (files.size() < n_workers) {
-        n_workers = files.size();
-    }
+    n_workers = std::min(n_workers, files.size());
 
-    log << "[compiler]: compiling with " << n_workers << " workers"
-        << std::endl;
+    log << "[compiler]: compiling with " << n_workers << " workers\n";
 
-    // TODO: seems like a bug in clang-tidy
-    // NOLINTBEGIN(cppcoreguidelines-init-variables)
     std::vector<Data> files_data(files.size());
     std::vector<std::thread> workers;
-    // NOLINTEND(cppcoreguidelines-init-variables)
 
     const size_t rough_n_files_per_worker = files.size() / n_workers;
     const size_t n_workers_more_files     = files.size() % n_workers;
@@ -109,12 +101,12 @@ void Compiler::Impl::CompileImpl(const std::string& src,
                                  const std::string& dst,
                                  size_t n_workers,
                                  std::ostream& log) {
-    log << "[compiler]: parsing includes" << std::endl;
+    log << "[compiler]: parsing includes\n";
 
     const Files files = IncludesManager().GetFiles(src);
 
     log << "[compiler]: successfully parsed includes, obtained " << files.size()
-        << " files" << std::endl;
+        << " files\n";
 
     const Exec::Data data = PrepareExecData(files, n_workers, log);
 
@@ -128,11 +120,11 @@ void Compiler::Impl::CompileImpl(const std::string& src,
         exec_path = dst_path.string();
     }
 
-    log << "[compiler]: writing exec data to file" << std::endl;
+    log << "[compiler]: writing exec data to file\n";
 
     Exec::Write(data, exec_path);
 
-    log << "[compiler]: successfully written exec data to file" << std::endl;
+    log << "[compiler]: successfully written exec data to file\n";
 }
 
 void Compiler::Impl::MustCompile(const std::string& src,
@@ -144,20 +136,20 @@ void Compiler::Impl::MustCompile(const std::string& src,
     try {
         CompileImpl(src, dst, n_workers, log);
     } catch (const errors::compiler::Error& e) {
-        log << "[compiler]: error: " << e.what() << std::endl;
+        log << "[compiler]: error: " << e.what() << '\n';
         throw e;
     } catch (const errors::Error& e) {
-        log << "[compiler]: error: " << e.what() << std::endl;
+        log << "[compiler]: error: " << e.what() << '\n';
         throw errors::compiler::Error(
             "error during compilation process "
             "(not directly related to the compilation itself): "s +
             e.what());
     } catch (const std::exception& e) {
-        log << "[compiler]: unexpected exception: " << e.what() << std::endl;
+        log << "[compiler]: unexpected exception: " << e.what() << '\n';
         throw errors::compiler::Error("unexpected exception in compiler: "s +
                                       e.what());
     } catch (...) {
-        log << "[compiler]: unexpected exception" << std::endl;
+        std::cout << "[compiler]: unexpected exception\n";
         throw errors::compiler::Error(
             "unexpected exception in compiler "
             "(no additional info can be provided)");
@@ -171,7 +163,7 @@ void Compiler::Impl::Compile(const std::string& src,
     try {
         MustCompile(src, dst, n_workers, log);
     } catch (const errors::Error& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << '\n';
     }
 }
 

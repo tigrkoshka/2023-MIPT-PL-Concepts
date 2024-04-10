@@ -19,8 +19,6 @@ class Compiler::FileCompiler : detail::utils::traits::NonCopyableMovable {
     using InternalError = errors::compiler::InternalError::Builder;
     using CompileError  = errors::compiler::CompileError::Builder;
 
-    using Segment = std::vector<detail::specs::arch::Word>;
-
    private:
     [[nodiscard]] std::string Where() const;
 

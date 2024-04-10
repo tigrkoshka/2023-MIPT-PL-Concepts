@@ -27,7 +27,6 @@ using UInt32 = arch::Word;
 using UInt64 = arch::TwoWords;
 using Double = arch::Double;
 using Char   = char;
-using String = std::string;
 
 ////////////////////////////////////////////////////////////////////////////////
 ///                                Type specs                                ///

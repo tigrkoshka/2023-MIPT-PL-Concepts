@@ -16,11 +16,15 @@ namespace arch  = detail::specs::arch;
 namespace utils = detail::utils;
 
 void Compiler::Data::Merge(Data&& other) {
-    entrypoint_.Merge(std::move(other.entrypoint_));
-    labels_.Merge(std::move(other.labels_), code_.size(), constants_.size());
+    // move the whole parameter to avoid invalid state
+    // (this is mandated by cppcoreguidelines)
+    Data used{std::move(other)};
 
-    utils::vector::Append(code_, other.code_);
-    utils::vector::Append(constants_, other.constants_);
+    entrypoint_.Merge(std::move(used.entrypoint_));
+    labels_.Merge(std::move(used.labels_), code_.size(), constants_.size());
+
+    utils::vector::Append(code_, used.code_);
+    utils::vector::Append(constants_, used.constants_);
 }
 
 void Compiler::Data::CheckEntrypoint() {
@@ -81,9 +85,9 @@ Exec::Data Compiler::Data::ToExecData(std::ostream& log) && {
     CheckEntrypoint();
     labels_.SetCodeSize(code_.size());
 
-    log << "[compiler]: substituting labels" << std::endl;
+    log << "[compiler]: substituting labels\n";
     SubstituteLabels();
-    log << "[compiler]: successfully substituted labels" << std::endl;
+    log << "[compiler]: successfully substituted labels\n";
 
     return {
         // we have checked the presence of the entrypoint in the beginning
